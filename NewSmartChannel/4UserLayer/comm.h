@@ -74,6 +74,12 @@
 
 #define CMD_SERIAL_PORT                 0x01
 
+
+#define MAX_RXD_BUF_LEN        			128
+#define MAX_TXD_BUF_LEN					128      
+        
+
+
 typedef enum
 {
     NoCMD = 0xA0,
@@ -108,6 +114,20 @@ typedef struct
     uint8_t data[64];       //指令返回内容(若有)
 }CMD_TX_T;
 
+typedef struct
+{
+    uint8_t RxdStatus;                 //接收状态
+    uint8_t RxCRCHi;                   //校验值高8位
+    uint8_t RxCRCLo;                   //校验值低8位
+    uint8_t RxdFrameStatus;            //接收包状态
+    uint8_t NowLen;                    //接收字节指针
+    uint8_t RxdTotalLen;               //接收包数据长度
+    uint8_t RxdBuf[MAX_RXD_BUF_LEN];   //接收包数据缓存
+}RECVHOST_T;
+
+
+static RECVHOST_T gRecvHost;
+
 static CMD_TX_T gcmd_tx;
 
 
@@ -119,6 +139,7 @@ extern SemaphoreHandle_t  gxMutex;
  *----------------------------------------------*/
 void deal_rx_data(void);
 void deal_Serial_Parse(void);
+
 void init_serial_boot(void);
 uint8_t send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len);
 void send_to_device(CMD_RX_T *cmd_rx);

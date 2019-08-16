@@ -73,9 +73,7 @@ int32_t IAP_DownLoadToFlash(void)
     uint32_t file_total_size = 0 ;
     uint8_t buf_1k[1024] = {0};
     char *tmp;
-    uint32_t tmp_total_size = 0 ;
-    
-    printf("------IAP_DownLoadToFlash start----------\n");
+    uint32_t tmp_total_size = 0 ;  
     
     
     file_total_size = Ymodem_Receive(&buf_1k[0],APPLICATION_ADDRESS);
@@ -93,9 +91,7 @@ int32_t IAP_DownLoadToFlash(void)
             return 0;
         }
 
-		printf("-------------------\n");
-		printf("\n\r Programming Completed Successfully!\n\r----------------------\r\n ");	
-		printf("Name: %s, Size: %s Bytes\r\n",(char*)FileName,(char*)tmp); 
+		DBG("Name: %s, Size: %s Bytes\r\n",(char*)FileName,(char*)tmp); 
 
 
         if(ef_set_env("WSPIFLASH",W_SPI_FLASH_OK) == EF_NO_ERR)
@@ -137,7 +133,6 @@ int32_t IAP_DownLoadToSTMFlash(int32_t filesize)
         if(result != SFUD_SUCCESS)
         {
             //出错
-            printf("sfud_read error\r\n");
             return 3;        
         }
 
@@ -146,7 +141,6 @@ int32_t IAP_DownLoadToSTMFlash(int32_t filesize)
         if ( STM_FLASH_Write (&user_app_addr, ( uint32_t* ) ramsource, ( uint16_t ) DATAS_LENGTH/4 )  != 0 ) //直接写片内FLASH
         {
             //出错
-            printf("STM_FLASH_Write error\r\n");
             return 2;
         }  
 

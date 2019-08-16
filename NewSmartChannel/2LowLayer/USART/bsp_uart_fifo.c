@@ -192,7 +192,7 @@ USART_TypeDef *ComToUSARTx(COM_PORT_E _ucPort)
 	else if (_ucPort == COM4)
 	{
 		#if UART4_FIFO_EN == 1
-			return USART4;
+			return UART4;
 		#else
 			return 0;
 		#endif
@@ -200,7 +200,7 @@ USART_TypeDef *ComToUSARTx(COM_PORT_E _ucPort)
 	else if (_ucPort == COM5)
 	{
 		#if UART5_FIFO_EN == 1
-			return USART5;
+			return UART5;
 		#else
 			return 0;
 		#endif
@@ -1253,6 +1253,7 @@ static void UartIRQ(UART_T *_pUart)
 	if (USART_GetITStatus(_pUart->uart, USART_IT_TXE) != RESET)
 	{
 		//if (_pUart->usTxRead == _pUart->usTxWrite)
+
 		if (_pUart->usTxCount == 0)
 		{
 			/* 发送缓冲区的数据已取完时， 禁止发送缓冲区空中断 （注意：此时最后1个数据还未真正发送完毕）*/

@@ -275,15 +275,14 @@ void dbg(const char *file, const long line, const char *format, ...)
 void dbh(char *title,char *buf,int len)
 {
     int i = 0;
-    printf("----------%s-------\r\n",title);
+    printf("----------%s-------,buf length = %d\r\n",title,len);
     printf("< ");
     for(i=0;i<len;i++)
     {
         printf("%02x ",buf[i]);
     }
-    printf(" >\r\n");
-    
-    printf("\r\nbuf length = %d  \r\n",len);    
+    printf(" >\r\n");   
+
 }
 
 

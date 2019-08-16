@@ -297,7 +297,7 @@ void vTaskLed(void *pvParameters)
         
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_0);        
-        
+
         vTaskDelay(300);
         
     }
@@ -307,7 +307,7 @@ void vTaskLed(void *pvParameters)
 //motor to host 任务函数
 void vTaskMortorToHost(void *pvParameters)
 {
-    uint8_t buf[16] = {0};
+    uint8_t buf[8] = {0};
     uint8_t readLen = 0;
     uint16_t iCRC = 0;
     uint8_t crcBuf[2] = {0};
@@ -317,10 +317,7 @@ void vTaskMortorToHost(void *pvParameters)
         {  
             
            if(bsp_Usart4_RecvOne(buf+1) == 1)
-           {
-                 
-                dbh("vTaskMortorToHost", (char *)buf, 16);
-                 
+           {    
                 if(buf[1] == 0x03)//读取状态
                 {
                    readLen=bsp_Usart4_RecvAtTime(buf + 2, 5, 20);                   
@@ -441,9 +438,7 @@ void vTaskKey(void *pvParameters)
 
 
 void vTaskMsgPro(void *pvParameters)
-{    
-//    int16_t code = 0;
-    
+{
     while(1)
     {          
         deal_Serial_Parse();    
@@ -453,6 +448,25 @@ void vTaskMsgPro(void *pvParameters)
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_2);
         vTaskDelay(10);
     }
+
+//    uint8_t ch = 0;
+//    uint8_t cm4[54] = { 0x02,0x7B,0x22,0x63,0x6D,0x64,0x22,0x3A,0x22,0x75,0x70,0x64,0x61,0x74,0x65,0x22,0x2C,0x22,0x76,0x61,0x6C,0x75,0x65,0x22,0x3A,0x7B,0x22,0x75,0x70,0x64,0x61,0x74,0x65,0x22,0x3A,0x22,0x41,0x37,0x22,0x7D,0x2C,0x22,0x64,0x61,0x74,0x61,0x22,0x3A,0x22,0x30,0x30,0x22,0x7D,0x03 };
+
+//    while (1)
+//    {
+//        //if(bsp_Usart1_RecvOne( &ch) == 1)
+//        if(comGetChar(COM1, &ch) == 1)  //读取串口数据
+//        {
+//           //comSendChar(COM1, ch);
+//            comSendBuf(COM1, cm4, 54);
+//            //bsp_Usart1_SendOne(ch);
+//            DBG("recv and send\r\n");
+//        }
+
+//		/* 发送事件标志，表示任务正常运行 */        
+//		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_2);
+//        vTaskDelay(10);        
+//    }
 }
 
 

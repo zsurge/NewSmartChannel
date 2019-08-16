@@ -60,7 +60,6 @@
 
 
 
-void COMProcessHelp(void);
 void FlashTest(void);
 void test_env(void);
 

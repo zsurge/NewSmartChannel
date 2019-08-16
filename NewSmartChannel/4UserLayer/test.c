@@ -26,6 +26,7 @@
 #include <string.h>
 #include "bsp_flash.h"
 #include "malloc.h"
+#include "tool.h"
 
 
 
@@ -99,15 +100,6 @@ void FlashTest(void)
 
 
 
-void COMProcessHelp(void)
-{
-	printf("==========================================\r\n");
-	printf("请选择串口操作命令，电脑键盘打印数字即可:\r\n");
-	printf("1. 接收到命令1，打印消息\r\n");
-	printf("2. 接收到命令2，打印消息\r\n");
-	printf("3. 接收到命令3，打印消息\r\n");
-	printf("4. 接收到命令4，打印消息\r\n");
-}
 
 void test_env(void)
 {
@@ -133,19 +125,19 @@ void test_env(void)
 
     c_old_boot_times = ef_get_env("p1");
     
-    printf("p1 = %s\r\n", c_old_boot_times);
+    DBG("p1 = %s\r\n", c_old_boot_times);
 
     c_old_boot_times = ef_get_env("p2");
 
-    printf("p2 = %s\r\n", c_old_boot_times);
+    DBG("p2 = %s\r\n", c_old_boot_times);
 
     c_old_boot_times = ef_get_env("p3");
 
-    printf("p3 = %s\r\n", c_old_boot_times);       
+    DBG("p3 = %s\r\n", c_old_boot_times);       
 
     
 
-    printf("------------test_env end----------\r\n");
+    DBG("------------test_env end----------\r\n");
     
     
 }

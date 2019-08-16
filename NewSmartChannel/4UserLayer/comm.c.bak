@@ -34,7 +34,9 @@
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
-
+#define MAX_RXD_BUF_LEN        			128
+#define MAX_TXD_BUF_LEN					128      
+        
 /*----------------------------------------------*
  * 常量定义                                     *
  *----------------------------------------------*/
@@ -42,13 +44,21 @@
 /*----------------------------------------------*
  * 模块级变量                                   *
  *----------------------------------------------*/
-
+typedef struct
+{
+    uint8_t RxdStatus;                 //接收状态
+    uint8_t RxCRCHi;                   //校验值高8位
+    uint8_t RxCRCLo;                   //校验值低8位
+    uint8_t RxdFrameStatus;            //接收包状态
+    uint8_t NowLen;                    //接收字节指针
+    uint8_t RxdTotalLen;               //接收包数据长度
+    uint8_t RxdBuf[MAX_RXD_BUF_LEN];   //接收包数据缓存
+}RECVHOST_T;
 
 SemaphoreHandle_t  gxMutex = NULL;
 
 
-RECVHOST_T gRecvHost = NULL;
-
+static RECVHOST_T gRecvHost;
 
 static uint16_t crc_value = 0;
 
@@ -67,10 +77,9 @@ void init_serial_boot(void)
 {
 //    gRecvHost.RxdStatus = 0;
 //    gRecvHost.RxCRCHi = 0;
-//	  gRecvHost.RxCRCLo = 0;
+//	gRecvHost.RxCRCLo = 0;
 //    gRecvHost.RxdFrameStatus = SPACE;
 
-    crc_value = 0;    
     memset(&gRecvHost,0x00,sizeof(gRecvHost));
 }
 
@@ -93,14 +102,99 @@ void init_serial_boot(void)
 // 7E 01 A1 AA 25 48 00 AA 74 7E 01 A1 00 AA 74
 
 
-void deal_Serial_Parse(void)
+//void deal_Serial_Parse(void)
+//{
+//    uint8_t ch = 0; 
+//    
+//    while(1)
+//    {  
+//        #if CMD_SERIAL_PORT == 0x01
+//        //if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
+//        if(comGetChar(COM1, &ch) != 1)  //读取串口数据
+//        {
+//            delay_ms(10);
+//            
+//            return;
+//        }
+//        #else
+//        if(bsp_Usart2_RecvOne(&ch) != 1)  //读取串口数据
+//        {
+//            delay_ms(10);
+//            
+//            return;
+//        }
+//        #endif
+//        
+//        switch (gRecvHost.RxdStatus)
+//        { /*接收数据状态*/                
+//            case 0:
+//                if(STX == ch) /*接收包头*/
+//                {
+//                    gRecvHost.RxdBuf[0] = ch;
+//                    gRecvHost.NowLen = 1;
+//                    gRecvHost.RxdStatus = 20;
+//                }
+//                break;              
+//            case 20:      /* 接收整个数据包 */
+//                if (ch == ETX) 
+//                {
+//                    gRecvHost.RxdStatus = 21;
+//                }
+//                gRecvHost.RxdBuf[gRecvHost.NowLen++] = ch; //ETX
+
+//                break;
+//            case 21:
+//                crc_value = CRC16_Modbus((uint8_t *)gRecvHost.RxdBuf, gRecvHost.NowLen);                
+//                gRecvHost.RxCRCHi = crc_value>>8;
+//                gRecvHost.RxCRCLo = crc_value & 0xFF;                
+//                gRecvHost.RxdStatus = 22;
+//                gRecvHost.RxdBuf[gRecvHost.NowLen++] = ch; //CRCHI
+//                
+//                break;
+//           case 22:
+//                gRecvHost.RxdBuf[gRecvHost.NowLen++] = ch; //CRCLO
+//                
+//                if(gRecvHost.RxdBuf[gRecvHost.NowLen-2] == gRecvHost.RxCRCHi && \
+//                    gRecvHost.RxdBuf[gRecvHost.NowLen-1] == gRecvHost.RxCRCLo )
+//                {    
+//                    gRecvHost.RxdTotalLen = gRecvHost.NowLen;
+//                    gRecvHost.RxdFrameStatus = FINISH;                    
+//                    gRecvHost.RxdStatus = 0;
+
+//                    dbh("recv finish",gRecvHost.RxdBuf,gRecvHost.RxdTotalLen);
+//                    DBG("gRecvHost.RxdBuf = %s\r\n",gRecvHost.RxdBuf);
+//                }
+//                else
+//                {
+//                    gRecvHost.RxdFrameStatus = FINISH;
+//                    gRecvHost.RxdBuf[gRecvHost.NowLen++] = ch;
+//                    gRecvHost.RxdStatus = 20;
+//                }      
+//                break;
+//               
+//            default:                
+//                if (gRecvHost.RxdFrameStatus == SPACE) 
+//                {
+//                    gRecvHost.RxdFrameStatus = FINISH;
+//                    gRecvHost.RxdStatus = 0;
+//                }
+//            break;
+//         }
+//    }
+//}
+
+void deal_Serial_Parse(RECVHOST_T *recvhost_t)
 {
     uint8_t ch = 0; 
+
+    RECVHOST_T *tmp_t;
+
+    memset(tmp_t,0x00,sizeof(tmp_t));
     
     while(1)
     {  
         #if CMD_SERIAL_PORT == 0x01
-//        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
+        //if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
         if(comGetChar(COM1, &ch) != 1)  //读取串口数据
         {
             delay_ms(10);
@@ -116,72 +210,65 @@ void deal_Serial_Parse(void)
         }
         #endif
         
-        switch (gRecvHost.RxdStatus)
+        switch (tmp_t->RxdStatus)
         { /*接收数据状态*/                
             case 0:
-                gRecvHost.RxdStatus = SPACE;
                 if(STX == ch) /*接收包头*/
                 {
-                    gRecvHost.RxdBuf[0] = ch;
-                    gRecvHost.NowLen = 1;
-                    gRecvHost.RxdStatus = 20;
+                    tmp_t->RxdBuf[0] = ch;
+                    tmp_t->NowLen = 1;
+                    tmp_t->RxdStatus = 20;
                 }
                 break;              
             case 20:      /* 接收整个数据包 */
                 if (ch == ETX) 
                 {
-                    gRecvHost.RxdStatus = 21;
+                    tmp_t->RxdStatus = 21;
                 }
-                gRecvHost.RxdBuf[gRecvHost.NowLen++] = ch; //ETX
+                tmp_t->RxdBuf[tmp_t->NowLen++] = ch; //ETX
 
                 break;
             case 21:
-                crc_value = CRC16_Modbus((uint8_t *)gRecvHost.RxdBuf, gRecvHost.NowLen);                
-                gRecvHost.RxCRCHi = crc_value>>8;
-                gRecvHost.RxCRCLo = crc_value & 0xFF;                
-                gRecvHost.RxdStatus = 22;
-                gRecvHost.RxdBuf[gRecvHost.NowLen++] = ch; //CRCHI
+                crc_value = CRC16_Modbus((uint8_t *)tmp_t->RxdBuf, tmp_t->NowLen);                
+                tmp_t->RxCRCHi = crc_value>>8;
+                tmp_t->RxCRCLo = crc_value & 0xFF;                
+                tmp_t->RxdStatus = 22;
+                tmp_t->RxdBuf[tmp_t->NowLen++] = ch; //CRCHI
                 
                 break;
            case 22:
-                gRecvHost.RxdBuf[gRecvHost.NowLen++] = ch; //CRCLO
+                tmp_t->RxdBuf[tmp_t->NowLen++] = ch; //CRCLO
                 
-                if(gRecvHost.RxdBuf[gRecvHost.NowLen-2] == gRecvHost.RxCRCHi && \
-                    gRecvHost.RxdBuf[gRecvHost.NowLen-1] == gRecvHost.RxCRCLo )
+                if(tmp_t->RxdBuf[tmp_t->NowLen-2] == tmp_t->RxCRCHi && \
+                    tmp_t->RxdBuf[tmp_t->NowLen-1] == tmp_t->RxCRCLo )
                 {    
-                    gRecvHost.RxdTotalLen = gRecvHost.NowLen;
-                    gRecvHost.RxdFrameStatus = FINISH;                    
-                    gRecvHost.RxdStatus = 0;
-                    
-                    dbh("recv finish",(char *)gRecvHost.RxdBuf,gRecvHost.RxdTotalLen);
-                    break;
+                    tmp_t->RxdTotalLen = tmp_t->NowLen;
+                    tmp_t->RxdFrameStatus = FINISH;                    
+                    tmp_t->RxdStatus = 0;
+
+					recvhost_t = tmp_t;
+
+                    dbh("recv finish",recvhost_t->RxdBuf,recvhost_t->RxdTotalLen);
+                    DBG("tmp_t->RxdBuf = %s\r\n",recvhost_t->RxdBuf);
                 }
                 else
                 {
-                    gRecvHost.RxdFrameStatus = FINISH;
-                    gRecvHost.RxdBuf[gRecvHost.NowLen++] = ch;
-                    gRecvHost.RxdStatus = 20;
-                    crc_value = 0;
-
-                      DBG("\r\n\r\n<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>\r\n\r\n");
-//                      memset(&gRecvHost,0x00,sizeof(gRecvHost));
-                }
-
-
+                    tmp_t->RxdFrameStatus = FINISH;
+                    tmp_t->RxdBuf[tmp_t->NowLen++] = ch;
+                    tmp_t->RxdStatus = 20;
+                }      
                 break;
                
             default:                
-                if (gRecvHost.RxdFrameStatus == SPACE) 
+                if (tmp_t->RxdFrameStatus == SPACE) 
                 {
-                    gRecvHost.RxdFrameStatus = FINISH;
-                    gRecvHost.RxdStatus = 0;
+                    tmp_t->RxdFrameStatus = FINISH;
+                    tmp_t->RxdStatus = 0;
                 }
-                break;
+            break;
          }
     }
 }
-
-
 
 
 
@@ -201,7 +288,66 @@ void deal_Serial_Parse(void)
     修改内容   : 新生成函数
 
 *****************************************************************************/
-void deal_rx_data(void)
+//void deal_rx_data(void)
+//{
+//    uint8_t bccHi = 0;       
+//    uint8_t bccLo = 0; 
+
+
+//    uint8_t json_buf[JSON_PACK_MAX] = {0};
+//    CMD_RX_T cmd_rx;
+
+//    memset(&cmd_rx,0x00,sizeof(cmd_rx));    
+//    
+//    if (FINISH == gRecvHost.RxdFrameStatus)
+//    {        
+//        if(gRecvHost.RxdBuf[0] == STX && gRecvHost.RxdBuf[gRecvHost.RxdTotalLen -3] == ETX)                                   //解析02数据包
+//        {            
+//            //计算校验值
+//            bccHi =  crc_value >> 8;
+//            bccLo = crc_value & 0xff;
+//            
+//            if ((bccHi == gRecvHost.RxdBuf[gRecvHost.RxdTotalLen -2]) && \
+//                (bccLo == gRecvHost.RxdBuf[gRecvHost.RxdTotalLen -1]))
+//            {
+//				//转存JSON数据包
+//                memcpy(json_buf,(const char*)gRecvHost.RxdBuf+1,gRecvHost.RxdTotalLen-4);
+//                DBG("recv json data = : %s\r\n",json_buf);
+
+//                //解析JSON数据包              
+//                if(parseJSON(json_buf,&cmd_rx) == COMM_SUCCESS)
+//                {
+//                    send_to_device(&cmd_rx);
+//                }
+//                else
+//                {
+//                    //指令解析失败，向上位机发送解析失败的状态，要求重发
+//                     DBG("parseJSON error\r\n");
+//                }
+
+//                init_serial_boot();   
+
+
+//            }
+//            else
+//            {
+//                DBG("CRC ERROR\r\n");
+//                dbh("CRC ERROR RxdBuf", gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
+//                DBG("bccHi = %02x,bccLo = %02x",bccHi,bccLo);
+//                init_serial_boot();
+//                dbh("gRecvHost.RxdBuf", gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);                
+//            }
+//        }
+//        else
+//        {
+//            DBG("not finish\r\n");
+//            init_serial_boot();
+//        }
+//    }
+
+//}
+
+void deal_rx_data(RECVHOST_T *recvhost_t)
 {
     uint8_t bccHi = 0;       
     uint8_t bccLo = 0; 
@@ -210,14 +356,12 @@ void deal_rx_data(void)
     uint8_t json_buf[JSON_PACK_MAX] = {0};
     CMD_RX_T cmd_rx;
 
-    memset(&cmd_rx,0x00,sizeof(cmd_rx));  
+    memset(&cmd_rx,0x00,sizeof(cmd_rx));    
     
     if (FINISH == gRecvHost.RxdFrameStatus)
     {        
         if(gRecvHost.RxdBuf[0] == STX && gRecvHost.RxdBuf[gRecvHost.RxdTotalLen -3] == ETX)                                   //解析02数据包
-        {    
-            dbh("recv deal_rx_data",(char *)gRecvHost.RxdBuf,gRecvHost.RxdTotalLen);
-            
+        {            
             //计算校验值
             bccHi =  crc_value >> 8;
             bccLo = crc_value & 0xff;
@@ -247,20 +391,22 @@ void deal_rx_data(void)
             else
             {
                 DBG("CRC ERROR\r\n");
-                dbh("CRC ERROR RxdBuf", (char *)gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
-//                DBG("bccHi = %02x,bccLo = %02x",bccHi,bccLo);
+                dbh("CRC ERROR RxdBuf", gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
+                DBG("bccHi = %02x,bccLo = %02x",bccHi,bccLo);
                 init_serial_boot();
-              
+                dbh("gRecvHost.RxdBuf", gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);                
             }
         }
         else
         {
-            DBG("-----------execute deal_rx_data-----------\r\n");
+            DBG("not finish\r\n");
             init_serial_boot();
         }
     }
 
 }
+
+
 
 
 uint8_t send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
@@ -305,15 +451,15 @@ uint8_t send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     dbh("send_to_host",(char *)TxdBuf,i);
 
 #if CMD_SERIAL_PORT == 0x01
-    //bsp_Usart1_SendData(TxdBuf,i);
+//    bsp_Usart1_SendData(TxdBuf,i);
     //add lock avoid data error
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-        comSendBuf(COM1,TxdBuf,i);        
-//        bsp_Usart1_SendData(TxdBuf,i);
+        comSendBuf(COM1,TxdBuf,i);
+
+
     }
-    
     xSemaphoreGive(gxMutex);
 #else
     bsp_Usart2_SendData(TxdBuf,i);
@@ -553,7 +699,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
         comSendBuf(COM1,TxdBuf,i);
-//        bsp_Usart1_SendData(TxdBuf,i);
+
 
     }
     xSemaphoreGive(gxMutex);

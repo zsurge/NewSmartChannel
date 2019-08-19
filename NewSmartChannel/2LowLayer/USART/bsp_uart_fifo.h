@@ -12,7 +12,9 @@
 
 #ifndef _BSP_USART_FIFO_H_
 #define _BSP_USART_FIFO_H_
-#include "string.h"	
+
+#include "stdio.h"	
+#include "string.h"
 #include "stm32f4xx_conf.h"
 
 
@@ -37,19 +39,34 @@
 
 /* 定义使能的串口, 0 表示不使能（不增加代码大小）， 1表示使能 */
 #define	UART1_FIFO_EN	1
-#define	UART2_FIFO_EN	0
-#define	UART3_FIFO_EN	0
-#define	UART4_FIFO_EN	0
-#define	UART5_FIFO_EN	0
+#define	UART2_FIFO_EN	1
+#define	UART3_FIFO_EN	1
+#define	UART4_FIFO_EN	1
+#define	UART5_FIFO_EN	1
 #define	UART6_FIFO_EN	0
 
-/* RS485芯片发送使能GPIO, PG0 */
-//#define RCC_RS485_TXEN 	    RCC_AHB1Periph_GPIOG
-//#define PORT_RS485_TXEN     GPIOG
-//#define PIN_RS485_TXEN	    GPIO_Pin_0
 
-//#define RS485_RX_EN()	PORT_RS485_TXEN->BSRRH = PIN_RS485_TXEN
-//#define RS485_TX_EN()	PORT_RS485_TXEN->BSRRL = PIN_RS485_TXEN
+/* 定义使能的485接口, 0 表示不使能（不增加代码大小）， 1表示使能 */
+#define UART1_RS485_EN	0
+#define	UART2_RS485_EN	0
+#define	UART3_RS485_EN	0
+#define	UART4_RS485_EN	0
+#define	UART5_RS485_EN	1
+#define	UART6_RS485_EN	0
+
+
+
+
+/* RS485芯片发送使能GPIO, PE1 */
+#define RS485_U4_RX_EN()	    GPIOE->BSRRH = GPIO_Pin_15
+#define RS485_U4_TX_EN()	    GPIOE->BSRRL = GPIO_Pin_15
+
+/* RS485芯片发送使能GPIO, PE5 */
+#define RS485_U5_RX_EN()	    GPIOG->BSRRH = GPIO_Pin_0
+#define RS485_U5_TX_EN()	    GPIOG->BSRRL = GPIO_Pin_0
+
+
+
 
 
 
@@ -68,20 +85,20 @@ typedef enum
 /* 定义串口波特率和FIFO缓冲区大小，分为发送缓冲区和接收缓冲区, 支持全双工 */
 #if UART1_FIFO_EN == 1
 	#define UART1_BAUD			38400
-	#define UART1_TX_BUF_SIZE	2*1024
+	#define UART1_TX_BUF_SIZE	1*1024
 	#define UART1_RX_BUF_SIZE	1*1024
 #endif
 
 #if UART2_FIFO_EN == 1
-	#define UART2_BAUD			9600
-	#define UART2_TX_BUF_SIZE	1
-	#define UART2_RX_BUF_SIZE	2*1024
+	#define UART2_BAUD			38400
+	#define UART2_TX_BUF_SIZE	1*512
+	#define UART2_RX_BUF_SIZE	1*512
 #endif
 
 #if UART3_FIFO_EN == 1
 	#define UART3_BAUD			9600
-	#define UART3_TX_BUF_SIZE	1*1024
-	#define UART3_RX_BUF_SIZE	1*1024
+	#define UART3_TX_BUF_SIZE	1*256
+	#define UART3_RX_BUF_SIZE	1*256
 #endif
 
 #if UART4_FIFO_EN == 1
@@ -92,8 +109,8 @@ typedef enum
 
 #if UART5_FIFO_EN == 1
 	#define UART5_BAUD			115200
-	#define UART5_TX_BUF_SIZE	1*1024
-	#define UART5_RX_BUF_SIZE	1*1024
+	#define UART5_TX_BUF_SIZE	1*512
+	#define UART5_RX_BUF_SIZE	1*512
 #endif
 
 #if UART6_FIFO_EN == 1
@@ -127,15 +144,22 @@ void bsp_InitUart(void);
 void comSendBuf(COM_PORT_E _ucPort, uint8_t *_ucaBuf, uint16_t _usLen);
 void comSendChar(COM_PORT_E _ucPort, uint8_t _ucByte);
 uint8_t comGetChar(COM_PORT_E _ucPort, uint8_t *_pByte);
+uint8_t comRecvBuff(COM_PORT_E _ucPort,uint8_t *buf, uint8_t len);
+
+//uint16_t comGetBuff(COM_PORT_E _ucPort,uint8_t *Buff, uint16_t RecvSize);
+uint16_t comGetBuff(COM_PORT_E _ucPort,uint8_t *Buff, uint16_t RecvSize,uint16_t timeout_MilliSeconds);
+
 void comClearTxFifo(COM_PORT_E _ucPort);
 void comClearRxFifo(COM_PORT_E _ucPort);
 void comSetBaud(COM_PORT_E _ucPort, uint32_t _BaudRate);
 void USART_SetBaudRate(USART_TypeDef* USARTx, uint32_t BaudRate);
 
-//void RS485_SendBuf(uint8_t *_ucaBuf, uint16_t _usLen);
-//void RS485_SendStr(char *_pBuf);
-//void RS485_SetBaud(uint32_t _baud);
+void RS485_InitTXE(void);
+void RS485_SendBuf(COM_PORT_E _ucPort,uint8_t *_ucaBuf, uint16_t _usLen);
+void RS485_SendStr(COM_PORT_E _ucPort,char *_pBuf);
+void RS485_SetBaud(COM_PORT_E _ucPort,uint32_t _baud);
 
+uint8_t RS485_Recv(COM_PORT_E _ucPort,uint8_t *buf, uint8_t len);
 #endif
 
 

@@ -307,45 +307,101 @@ void vTaskLed(void *pvParameters)
 //motor to host 任务函数
 void vTaskMortorToHost(void *pvParameters)
 {
+//    uint8_t buf[8] = {0};
+//    uint8_t readLen = 0;
+//    uint16_t iCRC = 0;
+//    uint8_t crcBuf[2] = {0};
+//    while (1)
+//    {       
+//        if(bsp_Usart4_RecvOne(buf) == 1)
+//        {  
+//            
+//           if(bsp_Usart4_RecvOne(buf+1) == 1)
+//           {    
+//                if(buf[1] == 0x03)//读取状态
+//                {
+//                   readLen=bsp_Usart4_RecvAtTime(buf + 2, 5, 20);                   
+//                }
+//                else if(buf[1] == 0x06)//读取执行状态
+//                {
+//                    readLen=bsp_Usart4_RecvAtTime(buf + 2, 6, 20);
+//                }                
+
+//                if(readLen == 5 || readLen == 6) //接收到数据才上送
+//                {
+//                    iCRC = CRC16_Modbus(buf, readLen);  
+
+//                    crcBuf[0] = iCRC >> 8;
+//                    crcBuf[1] = iCRC & 0xff;  
+
+//                    if(crcBuf[1] == buf[readLen] && crcBuf[0] == buf[readLen+1])
+//                    {    
+//                        send_to_host(CONTROLMOTOR,buf,readLen+2);
+//                    }
+//                }
+//           }
+//        }
+//        
+//		/* 发送事件标志，表示任务正常运行 */        
+//		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_1);
+//        
+//        vTaskDelay(10);
+//    }
+
     uint8_t buf[8] = {0};
     uint8_t readLen = 0;
     uint16_t iCRC = 0;
     uint8_t crcBuf[2] = {0};
     while (1)
-    {       
-        if(bsp_Usart4_RecvOne(buf) == 1)
-        {  
-            
-           if(bsp_Usart4_RecvOne(buf+1) == 1)
-           {    
-                if(buf[1] == 0x03)//读取状态
-                {
-                   readLen=bsp_Usart4_RecvAtTime(buf + 2, 5, 20);                   
-                }
-                else if(buf[1] == 0x06)//读取执行状态
-                {
-                    readLen=bsp_Usart4_RecvAtTime(buf + 2, 6, 20);
-                }                
+    {   
+        readLen = comRecvBuff(COM4,buf,8);       
 
-                if(readLen == 5 || readLen == 6) //接收到数据才上送
-                {
-                    iCRC = CRC16_Modbus(buf, readLen);  
+        if(readLen == 7 || readLen == 8)
+        {            
+            iCRC = CRC16_Modbus(buf, readLen-2);  
 
-                    crcBuf[0] = iCRC >> 8;
-                    crcBuf[1] = iCRC & 0xff;  
+            crcBuf[0] = iCRC >> 8;
+            crcBuf[1] = iCRC & 0xff;  
 
-                    if(crcBuf[1] == buf[readLen] && crcBuf[0] == buf[readLen+1])
-                    {    
-                        send_to_host(CONTROLMOTOR,buf,readLen+2);
-                    }
-                }
-           }
+            if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
+            {    
+                send_to_host(CONTROLMOTOR,buf,readLen);
+            }            
         }
+            
+//        if(comGetChar(COM4, buf) == 1)
+//        {              
+//           if(comGetChar(COM4, buf+1) == 1)
+//           {    
+//                if(buf[1] == 0x03)//读取状态
+//                {
+//                   readLen=comRecvBuff(COM4,buf + 2, 5);                   
+//                }
+//                else if(buf[1] == 0x06)//读取执行状态
+//                {
+//                    readLen=comRecvBuff(COM4,buf + 2, 6);
+//                }                
+
+//                if(readLen == 5 || readLen == 6) //接收到数据才上送
+//                {
+//                    iCRC = CRC16_Modbus(buf, readLen);  
+
+//                    crcBuf[0] = iCRC >> 8;
+//                    crcBuf[1] = iCRC & 0xff;  
+
+//                    if(crcBuf[1] == buf[readLen] && crcBuf[0] == buf[readLen+1])
+//                    {    
+//                        send_to_host(CONTROLMOTOR,buf,readLen+2);
+//                    }
+//                }
+//           }
+//        }
+
         
-		/* 发送事件标志，表示任务正常运行 */        
-		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_1);
+        /* 发送事件标志，表示任务正常运行 */        
+        xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_1);
         
-        vTaskDelay(10);
+        vTaskDelay(100);
     }
 
 }
@@ -519,43 +575,101 @@ void vTaskInfrared(void *pvParameters)
 
 void vTaskRs485(void *pvParameters)
 {
-    uint8_t recv_buf[32] = {0};
-    uint16_t len = 0;
-    uint16_t iCRC = 0;
+//    uint8_t recv_buf[32] = {0};
+//    uint16_t len = 0;
+//    uint16_t iCRC = 0;
+//    uint8_t readLen = 0;
+//    uint8_t crcBuf[2] = {0};
+//    
+//    while (1)
+//    {     
+//        memset(recv_buf,0x00,sizeof(recv_buf));
+//        
+//        bsp_RS485_Receive_Data(recv_buf,&len);    
+
+//        
+//        if(len == 7 || len == 8)
+//        {
+//            if(recv_buf[1] == 0x06)
+//            {
+//                readLen = 6;
+//            }else if(recv_buf[1] == 0x03)
+//            {
+//                readLen = 5;
+//            }
+//            
+//            iCRC = CRC16_Modbus(recv_buf, readLen);  
+//            
+//            crcBuf[0] = iCRC >> 8;
+//            crcBuf[1] = iCRC & 0xff;  
+//            
+//            if(crcBuf[1] == recv_buf[readLen] && crcBuf[0] == recv_buf[readLen+1])
+//            {    
+//                send_to_host(DOOR_B,recv_buf,len);
+//            }            
+//        }
+
+//		/* 发送事件标志，表示任务正常运行 */        
+//		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_6);
+//        
+//        vTaskDelay(20);
+//    }
+
+
+    uint8_t buf[8] = {0};
     uint8_t readLen = 0;
+    uint16_t iCRC = 0;
     uint8_t crcBuf[2] = {0};
-    
     while (1)
-    {     
-        memset(recv_buf,0x00,sizeof(recv_buf));
-        
-        bsp_RS485_Receive_Data(recv_buf,&len);       
-        
-        if(len == 7 || len == 8)
-        {
-            if(recv_buf[1] == 0x06)
-            {
-                readLen = 6;
-            }else if(recv_buf[1] == 0x03)
-            {
-                readLen = 5;
-            }
-            
-            iCRC = CRC16_Modbus(recv_buf, readLen);  
-            
+    {       
+//        if(comGetChar(COM5, buf) == 1)
+//        {    
+//           if(comGetChar(COM5, buf+1) == 1)
+//           {
+//                if(buf[1] == 0x03)//读取状态
+//                {                              
+//                   readLen=comRecvBuff(COM5,buf + 2, 5);                   
+//                }
+//                else if(buf[1] == 0x06)//读取执行状态
+//                {                               
+//                    readLen=comRecvBuff(COM5,buf + 2, 6);
+//                }   
+//				
+//                if(readLen == 5 || readLen == 6) //接收到数据才上送
+//                {
+//                    iCRC = CRC16_Modbus(buf, readLen);  
+
+//                    crcBuf[0] = iCRC >> 8;
+//                    crcBuf[1] = iCRC & 0xff;  
+
+//                    if(crcBuf[1] == buf[readLen] && crcBuf[0] == buf[readLen+1])
+//                    {    
+//                        send_to_host(DOOR_B,buf,readLen+2);
+//                    }
+//                }
+//           }
+//        }
+
+        readLen = RS485_Recv(COM5,buf,8);       
+
+        if(readLen == 7 || readLen == 8)
+        {            
+            iCRC = CRC16_Modbus(buf, readLen-2);  
+
             crcBuf[0] = iCRC >> 8;
             crcBuf[1] = iCRC & 0xff;  
-            
-            if(crcBuf[1] == recv_buf[readLen] && crcBuf[0] == recv_buf[readLen+1])
+
+            if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
             {    
-                send_to_host(DOOR_B,recv_buf,len);
+                send_to_host(DOOR_B,buf,readLen);
             }            
         }
 
+        
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_6);
         
-        vTaskDelay(20);
+        vTaskDelay(100);
     }
 
 
@@ -596,22 +710,20 @@ void vTaskReader(void *pvParameters)
 
 void vTaskQR(void *pvParameters)
 { 
-    uint8_t recv_buf[256] = {0};
+    uint8_t recv_buf[245] = {0};
     uint8_t dat[256] = {0};
     uint16_t len = 0;
-
     
-
 //    while(1)
 //    {
 //       memset(recv_buf,0x00,sizeof(recv_buf));  
 //       memset(dat,0x00,sizeof(dat));  
-//       
-//       len = bsp_Usart3_Read(src,recv_buf,1000); 
-//       
-//       if(len > 0)
+//       len = bsp_Usart3_RecvAtTime(recv_buf,100,2000);
+
+//       if(len > 0  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
 //       {
-//            asc2bcd(dat, recv_buf, len, 0);         
+//            asc2bcd(dat, recv_buf, len, 0);
+//            
 //            send_to_host(QRREADER,dat,ceil(len/2));
 //       }
 
@@ -624,7 +736,7 @@ void vTaskQR(void *pvParameters)
     {
        memset(recv_buf,0x00,sizeof(recv_buf));  
        memset(dat,0x00,sizeof(dat));  
-       len = bsp_Usart3_RecvAtTime(recv_buf,100,2000);
+       len = comRecvBuff(COM3,recv_buf,sizeof(recv_buf));
 
        if(len > 0  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
        {
@@ -637,7 +749,6 @@ void vTaskQR(void *pvParameters)
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_5);  
         vTaskDelay(10);        
     }
-
 }   
 
 

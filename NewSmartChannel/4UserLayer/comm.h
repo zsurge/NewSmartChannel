@@ -122,7 +122,7 @@ typedef struct
     uint8_t RxdFrameStatus;            //接收包状态
     uint8_t NowLen;                    //接收字节指针
     uint8_t RxdTotalLen;               //接收包数据长度
-    uint8_t RxdBuf[MAX_RXD_BUF_LEN];   //接收包数据缓存
+    volatile uint8_t RxdBuf[MAX_RXD_BUF_LEN];   //接收包数据缓存
 }RECVHOST_T;
 
 

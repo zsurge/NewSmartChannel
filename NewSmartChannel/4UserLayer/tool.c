@@ -260,6 +260,7 @@ uint8_t is_bit_set(uint16_t      value, uint16_t bit)
 
 void dbg(const char *file, const long line, const char *format, ...)
 {
+    #ifndef DEBUG_PRINT
     va_list args;
 	char debug_buf[255] = {0};	
     /* args point to the first variable parameter */
@@ -269,11 +270,13 @@ void dbg(const char *file, const long line, const char *format, ...)
     vsnprintf(debug_buf, sizeof(debug_buf), format, args);
     printf("%s\n", debug_buf);
     va_end(args);
+    #endif
 
 }
 
 void dbh(char *title,char *buf,int len)
 {
+    #ifndef DEBUG_PRINT
     int i = 0;
     printf("----------%s-------,buf length = %d\r\n",title,len);
     printf("< ");
@@ -282,7 +285,7 @@ void dbh(char *title,char *buf,int len)
         printf("%02x ",buf[i]);
     }
     printf(" >\r\n");   
-
+    #endif
 }
 
 

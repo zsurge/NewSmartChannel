@@ -47,10 +47,10 @@
 
     bsp_InitUart();             //modify 2019.8.5
 //    bsp_Usart1_Init(38400);   
-    bsp_Usart2_Init(38400);     //初始化串口，DEBUG,接上位机
-	bsp_Usart3_Init(9600);     //初始化串口，做为调试串口使用
-	bsp_Usart4_Init(115200);    //初始化串口，接嘉昱电机
-	bsp_RS485_Init(115200);     //串口5，接485设备
+//    bsp_Usart2_Init(38400);     //初始化串口，DEBUG,接上位机
+//	bsp_Usart3_Init(9600);     //初始化串口，做为调试串口使用
+//	bsp_Usart4_Init(115200);    //初始化串口，接嘉昱电机
+//	bsp_RS485_Init(115200);     //串口5，接485设备
 	
 
 	

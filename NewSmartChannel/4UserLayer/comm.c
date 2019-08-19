@@ -47,7 +47,7 @@
 SemaphoreHandle_t  gxMutex = NULL;
 
 
-RECVHOST_T gRecvHost = NULL;
+RECVHOST_T gRecvHost;
 
 
 static uint16_t crc_value = 0;
@@ -69,7 +69,8 @@ void init_serial_boot(void)
 //    gRecvHost.RxCRCHi = 0;
 //	  gRecvHost.RxCRCLo = 0;
 //    gRecvHost.RxdFrameStatus = SPACE;
-
+    comClearRxFifo(COM1);
+    comClearRxFifo(COM1);
     crc_value = 0;    
     memset(&gRecvHost,0x00,sizeof(gRecvHost));
 }
@@ -535,11 +536,14 @@ void send_to_device(CMD_RX_T *cmd_rx)
              //向电机发送控制指令
 //            DBG("<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>\r\n");
             dbh("CONTROL MOTOR", (char *)cmd_rx->cmd_data, 8);
-            bsp_Usart4_SendData(cmd_rx->cmd_data,8);//发给主机
+//            bsp_Usart4_SendData(cmd_rx->cmd_data,8);//发给主机
+//            RS485_SendBuf(COM4,cmd_rx->cmd_data,8);//发给A门
+            comSendBuf(COM4, cmd_rx->cmd_data,8);
             return;
         case DOOR_B:
             dbh("CONTROL MOTOR door B", (char *)cmd_rx->cmd_data, 8);
-            bsp_RS485_Send_Data(cmd_rx->cmd_data,8);//发给B门
+            RS485_SendBuf(COM5,cmd_rx->cmd_data,8);//发给B门
+            
             return;//这里不需要向上位机上送，在另外一个任务中才上送
 
         default:

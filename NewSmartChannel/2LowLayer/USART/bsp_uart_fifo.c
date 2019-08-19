@@ -21,6 +21,76 @@
 */
 
 #include "bsp_uart_fifo.h"
+#include "bsp_time.h"
+
+#if 1
+#pragma import(__use_no_semihosting)             
+//标准库需要的支持函数                 
+struct __FILE 
+{ 
+	int handle; 
+}; 
+
+FILE __stdout;       
+//定义_sys_exit()以避免使用半主机模式    
+void _sys_exit(int x) 
+{ 
+	x = x; 
+} 
+
+/*
+*********************************************************************************************************
+*	函 数 名: fputc
+*	功能说明: 重定义putc函数，这样可以使用printf函数从串口1打印输出
+*	形    参: 无
+*	返 回 值: 无
+*********************************************************************************************************
+*/
+int fputc(int ch, FILE *f)
+{
+#if 0	/* 将需要printf的字符通过串口中断FIFO发送出去，printf函数会立即返回 */
+	comSendChar(COM1, ch);
+
+	return ch;
+#else	/* 采用阻塞方式发送每个字符,等待数据发送完毕 */
+	/* 写一个字节到USART2 */
+	USART_SendData(USART2, (uint8_t) ch);
+
+	/* 等待发送结束 */
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET)
+	{}
+
+	return ch;
+#endif
+}
+
+/*
+*********************************************************************************************************
+*	函 数 名: fgetc
+*	功能说明: 重定义getc函数，这样可以使用getchar函数从串口1输入数据
+*	形    参: 无
+*	返 回 值: 无
+*********************************************************************************************************
+*/
+int fgetc(FILE *f)
+{
+
+#if 1	/* 从串口接收FIFO中取1个数据, 只有取到数据才返回 */
+	uint8_t ucData;
+
+	while(comGetChar(COM6, &ucData) == 0);
+
+	return ucData;
+#else
+	/* 等待串口1输入数据 */
+	while (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == RESET);
+
+	return (int)USART_ReceiveData(USART1);
+#endif
+}
+
+#endif
+
 
 
 /* 定义每个串口结构体变量 */
@@ -61,14 +131,14 @@
 #endif
 
 static void UartVarInit(void);
-
 static void InitHardUart(void);
 static void UartSend(UART_T *_pUart, uint8_t *_ucaBuf, uint16_t _usLen);
 static uint8_t UartGetChar(UART_T *_pUart, uint8_t *_pByte);
 static void UartIRQ(UART_T *_pUart);
 static void ConfigUartNVIC(void);
 
-void RS485_InitTXE(void);
+
+
 
 /*
 *********************************************************************************************************
@@ -84,7 +154,7 @@ void bsp_InitUart(void)
 
 	InitHardUart();		/* 配置串口的硬件参数(波特率等) */
 
-//	RS485_InitTXE();	/* 配置RS485芯片的发送使能硬件，配置为推挽输出 */
+	RS485_InitTXE();	/* 配置RS485芯片的发送使能硬件，配置为推挽输出 */
 
 	ConfigUartNVIC();	/* 配置串口中断 */
 }
@@ -276,6 +346,32 @@ uint8_t comGetChar(COM_PORT_E _ucPort, uint8_t *_pByte)
 	return UartGetChar(pUart, _pByte);
 }
 
+uint8_t comRecvBuff(COM_PORT_E _ucPort,uint8_t *buf, uint8_t len)
+{
+    uint8_t i = 0;
+
+    UART_T *pUart;
+	pUart = ComToUart(_ucPort);
+    
+	if (pUart == 0)
+	{
+		return 0;
+	}
+    
+    if(len > pUart->usRxCount)  //指定读取长度大于实际接收到的数据长度时
+    {
+        len=pUart->usRxCount; //读取长度设置为实际接收到的数据长度
+    }
+    
+    for(i=0;i<len;i++)  //拷贝接收到的数据到接收指针中
+    {
+        UartGetChar(pUart,buf+i);  //将数据复制到buf中
+    }
+
+    return len;                   //返回实际读取长度
+}
+
+
 /*
 *********************************************************************************************************
 *	函 数 名: comClearTxFifo
@@ -418,19 +514,49 @@ void USART_SetBaudRate(USART_TypeDef* USARTx, uint32_t BaudRate)
 *	返 回 值: 无
 *********************************************************************************************************
 */
-//void RS485_InitTXE(void)
-//{
-//	GPIO_InitTypeDef GPIO_InitStructure;
+void RS485_InitTXE(void)
+{
+    
+	GPIO_InitTypeDef GPIO_InitStructure;
 
-//	RCC_AHB1PeriphClockCmd(RCC_RS485_TXEN, ENABLE);	/* 打开GPIO时钟 */
+    #if UART1_RS485_EN == 1
+  
+    #endif
 
-//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;		/* 设为输出口 */
-//	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;		/* 设为推挽 */
-//	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;	/* 无上拉电阻 */
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	/* IO口最大速度 */
-//	GPIO_InitStructure.GPIO_Pin = PIN_RS485_TXEN;
-//	GPIO_Init(PORT_RS485_TXEN, &GPIO_InitStructure);
-//}
+    #if UART2_RS485_EN == 1
+
+    #endif
+
+    #if UART3_RS485_EN == 1
+
+    #endif
+
+    #if UART4_RS485_EN == 1
+    	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);	/* 打开GPIO时钟 */
+    	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;		/* 设为输出口 */
+    	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;		/* 设为推挽 */
+    	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;	/* 无上拉电阻 */
+    	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	/* IO口最大速度 */
+    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+    	GPIO_Init(GPIOE, &GPIO_InitStructure);   
+
+    #endif    
+
+    #if UART5_RS485_EN == 1
+        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);	/* 打开GPIO时钟 */
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;		/* 设为输出口 */
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;		/* 设为推挽 */
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;	/* 无上拉电阻 */
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	/* IO口最大速度 */
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+        GPIO_Init(GPIOG, &GPIO_InitStructure); 
+
+    #endif
+
+    #if UART6_RS485_EN == 1
+
+    #endif    
+}
 
 /*
 *********************************************************************************************************
@@ -440,10 +566,10 @@ void USART_SetBaudRate(USART_TypeDef* USARTx, uint32_t BaudRate)
 *	返 回 值: 无
 *********************************************************************************************************
 */
-//void RS485_SetBaud(uint32_t _baud)
-//{
-//	comSetBaud(COM3, _baud);
-//}
+void RS485_SetBaud(COM_PORT_E _ucPort,uint32_t _baud)
+{
+	comSetBaud(_ucPort, _baud);
+}
 
 /*
 *********************************************************************************************************
@@ -454,10 +580,33 @@ void USART_SetBaudRate(USART_TypeDef* USARTx, uint32_t BaudRate)
 *	返 回 值: 无
 *********************************************************************************************************
 */
-//void RS485_SendBefor(void)
-//{
-//	RS485_TX_EN();	/* 切换RS485收发芯片为发送模式 */
-//}
+void RS485_SendBefor(void)
+{
+	
+    #if UART1_RS485_EN == 1
+    
+    #endif
+
+    #if UART2_RS485_EN == 1
+
+    #endif
+
+    #if UART3_RS485_EN == 1
+
+    #endif
+
+    #if UART4_RS485_EN == 1
+    RS485_U4_TX_EN();   /* 切换RS485收发芯片为发送模式 */
+    #endif    
+
+    #if UART5_RS485_EN == 1
+    RS485_U5_TX_EN();	/* 切换RS485收发芯片为发送模式 */
+    #endif
+
+    #if UART6_RS485_EN == 1
+
+    #endif        
+}
 
 /*
 *********************************************************************************************************
@@ -468,10 +617,33 @@ void USART_SetBaudRate(USART_TypeDef* USARTx, uint32_t BaudRate)
 *	返 回 值: 无
 *********************************************************************************************************
 */
-//void RS485_SendOver(void)
-//{
-//	RS485_RX_EN();	/* 切换RS485收发芯片为接收模式 */
-//}
+void RS485_SendOver(void)
+{
+	
+    #if UART1_RS485_EN == 1
+    
+    #endif
+
+    #if UART2_RS485_EN == 1
+
+    #endif
+
+    #if UART3_RS485_EN == 1
+
+    #endif
+
+    #if UART4_RS485_EN == 1
+    RS485_U4_RX_EN();   /* 切换RS485收发芯片为接收模式 */
+    #endif    
+
+    #if UART5_RS485_EN == 1
+    RS485_U5_RX_EN();	/* 切换RS485收发芯片为接收模式 */
+    #endif
+
+    #if UART6_RS485_EN == 1
+
+    #endif   
+}
 
 
 /*
@@ -483,10 +655,10 @@ void USART_SetBaudRate(USART_TypeDef* USARTx, uint32_t BaudRate)
 *	返 回 值: 无
 *********************************************************************************************************
 */
-//void RS485_SendBuf(uint8_t *_ucaBuf, uint16_t _usLen)
-//{
-//	comSendBuf(COM3, _ucaBuf, _usLen);
-//}
+void RS485_SendBuf(COM_PORT_E _ucPort,uint8_t *_ucaBuf, uint16_t _usLen)
+{
+	comSendBuf(_ucPort, _ucaBuf, _usLen);
+}
 
 
 /*
@@ -497,10 +669,10 @@ void USART_SetBaudRate(USART_TypeDef* USARTx, uint32_t BaudRate)
 *	返 回 值: 无
 *********************************************************************************************************
 */
-//void RS485_SendStr(char *_pBuf)
-//{
-//	RS485_SendBuf((uint8_t *)_pBuf, strlen(_pBuf));
-//}
+void RS485_SendStr(COM_PORT_E _ucPort,char *_pBuf)
+{
+	RS485_SendBuf(_ucPort,(uint8_t *)_pBuf, strlen(_pBuf));
+}
 
 /*
 *********************************************************************************************************
@@ -511,10 +683,37 @@ void USART_SetBaudRate(USART_TypeDef* USARTx, uint32_t BaudRate)
 *********************************************************************************************************
 */
 //extern void MODBUS_ReciveNew(uint8_t _byte);
-//void RS485_ReciveNew(uint8_t _byte)
-//{
-//    //MODBUS_ReciveNew(_byte);
-//}
+void RS485_ReciveNew(uint8_t _byte)
+{
+//	MODBUS_ReciveNew(_byte);
+}
+
+uint8_t RS485_Recv(COM_PORT_E _ucPort,uint8_t *buf, uint8_t len)
+{
+    uint8_t i = 0;
+
+    UART_T *pUart;
+	pUart = ComToUart(_ucPort);
+    
+	if (pUart == 0)
+	{
+		return 0;
+	}
+    
+    if(len > pUart->usRxCount)  //指定读取长度大于实际接收到的数据长度时
+    {
+        len=pUart->usRxCount; //读取长度设置为实际接收到的数据长度
+    }
+    
+    for(i=0;i<len;i++)  //拷贝接收到的数据到接收指针中
+    {
+        UartGetChar(pUart,buf+i);  //将数据复制到buf中
+    }
+
+    return len;                   //返回实际读取长度
+}
+
+
 
 /*
 *********************************************************************************************************
@@ -572,9 +771,9 @@ static void UartVarInit(void)
 	g_tUart3.usRxRead = 0;						/* 接收FIFO读索引 */
 	g_tUart3.usRxCount = 0;						/* 接收到的新数据个数 */
 	g_tUart3.usTxCount = 0;						/* 待发送的数据个数 */
-	g_tUart3.SendBefor = RS485_SendBefor;		/* 发送数据前的回调函数 */
-	g_tUart3.SendOver = RS485_SendOver;			/* 发送完毕后的回调函数 */
-	g_tUart3.ReciveNew = RS485_ReciveNew;		/* 接收到新数据后的回调函数 */
+	g_tUart3.SendBefor = 0;		/* 发送数据前的回调函数 */
+	g_tUart3.SendOver = 0;			/* 发送完毕后的回调函数 */
+	g_tUart3.ReciveNew = 0;		/* 接收到新数据后的回调函数 */
 #endif
 
 #if UART4_FIFO_EN == 1
@@ -606,9 +805,9 @@ static void UartVarInit(void)
 	g_tUart5.usRxRead = 0;						/* 接收FIFO读索引 */
 	g_tUart5.usRxCount = 0;						/* 接收到的新数据个数 */
 	g_tUart5.usTxCount = 0;						/* 待发送的数据个数 */
-	g_tUart5.SendBefor = 0;						/* 发送数据前的回调函数 */
-	g_tUart5.SendOver = 0;						/* 发送完毕后的回调函数 */
-	g_tUart5.ReciveNew = 0;						/* 接收到新数据后的回调函数 */
+	g_tUart5.SendBefor = RS485_SendBefor;						/* 发送数据前的回调函数 */
+	g_tUart5.SendOver = RS485_SendOver;						/* 发送完毕后的回调函数 */
+	g_tUart5.ReciveNew = RS485_ReciveNew;						/* 接收到新数据后的回调函数 */
 #endif
 
 
@@ -758,8 +957,8 @@ static void InitHardUart(void)
 		/* 打开 UART 时钟 */
 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 
-		/* 将 PA2 映射为 USART2_TX. 在STM32-V5板中，PA2 管脚用于以太网 */
-		//GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
+		/* 将 PA2 映射为 USART2_TX. */
+		GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
 
 		/* 将 PA3 映射为 USART2_RX */
 		GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2);
@@ -769,9 +968,9 @@ static void InitHardUart(void)
 		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;	/* 内部上拉电阻使能 */
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;	/* 复用模式 */
 
-		//GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
-		//GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-		//GPIO_Init(GPIOA, &GPIO_InitStructure);
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+		GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 		/* 配置 USART Rx 为复用功能 */
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
@@ -786,7 +985,7 @@ static void InitHardUart(void)
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No ;
 	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-	USART_InitStructure.USART_Mode = USART_Mode_Rx;		/* 仅选择接收模式 */
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;		/* 选择发接收模式 */
 	USART_Init(USART2, &USART_InitStructure);
 
 	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);	/* 使能接收中断 */
@@ -802,46 +1001,33 @@ static void InitHardUart(void)
 	USART_ClearFlag(USART2, USART_FLAG_TC);     /* 清发送完成标志，Transmission Complete flag */
 #endif
 
-#if UART3_FIFO_EN == 1			/* 串口3 TX = PB10   RX = PB11 */
-
-	/* 配置 PB2为推挽输出，用于切换 RS485芯片的收发状态 */
-	{
-		RCC_AHB1PeriphClockCmd(RCC_RS485_TXEN, ENABLE);
-
-		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;		/* 设为输出口 */
-		GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;		/* 设为推挽模式 */
-		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;	/* 上下拉电阻不使能 */
-		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	/* IO口最大速度 */
-
-		GPIO_InitStructure.GPIO_Pin = PIN_RS485_TXEN;
-		GPIO_Init(PORT_RS485_TXEN, &GPIO_InitStructure);
-	}
+#if UART3_FIFO_EN == 1			/* 串口3 TX = PD8   RX = PD9 */
 
 	/* 打开 GPIO 时钟 */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 
 	/* 打开 UART 时钟 */
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
 
 	/* 将 PB10 映射为 USART3_TX */
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_USART3);
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_USART3);
 
 	/* 将 PB11 映射为 USART3_RX */
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_USART3);
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_USART3);
 
 	/* 配置 USART Tx 为复用功能 */
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;	/* 输出类型为推挽 */
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;	/* 内部上拉电阻使能 */
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;	/* 复用模式 */
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
 
 	/* 配置 USART Rx 为复用功能 */
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
 
 	/* 第2步： 配置串口硬件参数 */
 	USART_InitStructure.USART_BaudRate = UART3_BAUD;	/* 波特率 */
@@ -875,10 +1061,10 @@ static void InitHardUart(void)
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
 
 	/* 将 PC10 映射为 UART4_TX */
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_USART1);
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_UART4);
 
 	/* 将 PC11 映射为 UART4_RX */
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_USART1);
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_UART4);
 
 	/* 配置 USART Tx 为复用功能 */
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;	/* 输出类型为推挽 */
@@ -895,13 +1081,14 @@ static void InitHardUart(void)
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 
 	/* 第2步： 配置串口硬件参数 */
-	USART_InitStructure.USART_BaudRate = UART1_BAUD;	/* 波特率 */
+	USART_InitStructure.USART_BaudRate = UART4_BAUD;	/* 波特率 */
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No ;
 	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	USART_Init(UART4, &USART_InitStructure);
+
 
 	USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);	/* 使能接收中断 */
 	/*
@@ -1112,7 +1299,7 @@ static void ConfigUartNVIC(void)
 static void UartSend(UART_T *_pUart, uint8_t *_ucaBuf, uint16_t _usLen)
 {
 	uint16_t i;
-    __IO uint16_t usCount;
+    
 
 	for (i = 0; i < _usLen; i++)
 	{
@@ -1145,6 +1332,7 @@ static void UartSend(UART_T *_pUart, uint8_t *_ucaBuf, uint16_t _usLen)
 		/* 当 _pUart->usTxBufSize == 1 时, 下面的函数会死掉(待完善) */
 		while (1)
 		{
+			__IO uint16_t usCount;
 			DISABLE_INT();
 			usCount = _pUart->usTxCount;
 			ENABLE_INT();
@@ -1210,6 +1398,61 @@ static uint8_t UartGetChar(UART_T *_pUart, uint8_t *_pByte)
 		return 1;
 	}
 }
+
+/*
+*********************************************************************************************************
+*	函 数 名: comGetBuff
+*	功能说明: 读取指字长度的字符
+*	形    参: _ucPort: 端口号(COM1 - COM5)
+*			  Buff: 接收到的数据存放在这个地址
+             len:要读取的字符长度 
+*	返 回 值: 0 读取失败； 非零为读取到的数据长度
+*********************************************************************************************************
+*/
+uint16_t comGetBuff(COM_PORT_E _ucPort,uint8_t *Buff, uint16_t RecvSize,uint16_t timeout_MilliSeconds)
+{
+
+//	uint16_t RecvLen = 0;
+//	uint8_t ch[1] = {0};
+
+//	if (len == 0 || Buff == NULL) return 0;
+
+//	while (len--)
+//	{
+//		if (comGetChar (_ucPort,ch) == 1)
+//		{
+//			Buff[RecvLen++] = ch[0];
+//            printf("push : %d\r\n",RecvLen);
+//		}
+
+//		if (RecvLen >= len) return RecvLen;
+//	}
+
+//	return RecvLen;
+
+
+	uint16_t RecvLen = 0;
+	uint8_t tmp[1] = {0};
+
+	if (RecvSize == 0) return 0;
+
+	g1msTimerUART1 = timeout_MilliSeconds;
+
+	while (1)
+	{
+		if (g1msTimerUART1 == 0) return RecvLen;
+
+		if (comGetChar (_ucPort,tmp) == 1) 
+		{
+			Buff[RecvLen++] = tmp[0];
+		}
+
+		if (RecvLen >= RecvSize) return RecvLen;
+	} 
+
+}
+
+
 
 /*
 *********************************************************************************************************

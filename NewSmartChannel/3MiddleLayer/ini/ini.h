@@ -21,12 +21,21 @@
 #define __INI_H
 #include "easyflash.h"
 #include "sfud.h"
+#include "errorcode.h"
+#include "tool.h"
 
 void ReadIAP(void);
 
 void RestoreDefaultSetting(void);
 
 void SystemReset(void);
+
+SYSERRORCODE_E RecordBootTimes(void);
+
+
+
+
+
 
 
 #endif

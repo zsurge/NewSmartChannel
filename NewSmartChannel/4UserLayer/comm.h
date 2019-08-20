@@ -28,6 +28,8 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
+#include "errorcode.h"
+
 
 
 
@@ -64,10 +66,13 @@
 
 #define DOOR_B                          0xB8
 
+#define HANDSHAKE                       0XB1
+
 
 #define DEV_MOTOR                       0x01
 #define DEV_SENSOR                      0x02
 #define DEV_HEARTBEAT                   0x03
+
 
 
 #define JSON_PACK_MAX                   512
@@ -90,12 +95,12 @@ typedef enum
     UpGradeApp    
 }CommandType;
 
-typedef enum {
-    COMM_SUCCESS = 0,                                       /**< success */
-    COMM_ERR_PACKET = 1,                                    /**< cJSON packet error*/
-    COMM_ERR_PARSE = 2,                                     /**< cJSON parse error*/
-    COMM_ERR_GETITEM = 3                                    /**< get cJSON item error*/ 
-}COMM_ERR;  
+//typedef enum {
+//    COMM_SUCCESS = 0,                                       /**< success */
+//    COMM_ERR_PACKET = 1,                                    /**< cJSON packet error*/
+//    COMM_ERR_PARSE = 2,                                     /**< cJSON parse error*/
+//    COMM_ERR_GETITEM = 3                                    /**< get cJSON item error*/ 
+//}COMM_ERR;  
     
 
 typedef struct
@@ -143,6 +148,8 @@ void deal_Serial_Parse(void);
 void init_serial_boot(void);
 uint8_t send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len);
 void send_to_device(CMD_RX_T *cmd_rx);
+SYSERRORCODE_E SendErrcodeToHost(SYSERRORCODE_E code,uint8_t *buf);
+
 
 #endif
 

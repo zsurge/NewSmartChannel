@@ -92,7 +92,7 @@ void RestoreDefaultSetting(void)
 {
     if(ef_env_set_default()== EF_NO_ERR)
     {
-        printf("RestoreDefaultSetting success\r\n");
+        DBG("RestoreDefaultSetting success\r\n");
     }
     
 }
@@ -104,8 +104,38 @@ void SystemReset(void)
     {
         ef_set_env("WMCUFLASH","6060");
         //jump iap
-        printf("jump iap\r\n");
+        DBG("jump iap\r\n");
         NVIC_SystemReset();
     }
 }
+
+SYSERRORCODE_E RecordBootTimes(void)
+{
+    SYSERRORCODE_E result = NO_ERR;
+    
+    uint32_t i_boot_times = NULL;
+    char *c_old_boot_times, c_new_boot_times[11] = {0};
+
+    /* get the boot count number from Env */
+    c_old_boot_times = ef_get_env("boot_times");
+    assert_param(c_old_boot_times);
+    i_boot_times = atol(c_old_boot_times);
+
+    DBG("boot_times = %ld\r\n",i_boot_times);
+    
+    /* boot count +1 */
+    i_boot_times ++;
+
+    /* interger to string */
+    sprintf(c_new_boot_times,"%ld", i_boot_times);
+    
+    /* set and store the boot count number to Env */
+    if(ef_set_env("boot_times", c_new_boot_times) != EF_NO_ERR)
+    {
+        result = FLASH_W_ERR;  
+    }
+    
+    return result;
+}
+
 

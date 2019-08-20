@@ -19,14 +19,12 @@
 #include "ver.h"
 
 
-const  unsigned char g_revision_date[12] = __DATE__;
-const  unsigned char g_revision_time[16] = __TIME__;
 
 
-const unsigned char VersionString[] = "1.0.2.1";
+const unsigned char VersionString[] = "1.0.1";
 const unsigned char VersionDate[] = __DATE__ " " __TIME__;
 
 
-const VERSION PosVersion = {VersionString, VersionDate};
+const VERSION_T DevVersion = {VersionString, VersionDate};
 
 

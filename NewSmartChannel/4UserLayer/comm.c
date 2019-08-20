@@ -21,15 +21,14 @@
  * 包含头文件                                   *
  *----------------------------------------------*/
 #include "comm.h"
-#include "bsp_usart4.h"
-#include "bsp_usart3.h"
 #include "tool.h"
 #include "bsp_led.h"
 #include "malloc.h"
 #include "ini.h"
 #include "ymodem.h"
-#include "bsp_rs485.h"
 #include "bsp_uart_fifo.h"
+
+
 
 /*----------------------------------------------*
  * 宏定义                                       *
@@ -53,7 +52,7 @@ RECVHOST_T gRecvHost;
 static uint16_t crc_value = 0;
 
 
-static COMM_ERR parseJSON(uint8_t *text,CMD_RX_T *cmd_rx); //私有函数
+static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx); //私有函数
 static uint8_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
 
 
@@ -65,10 +64,6 @@ static uint8_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
     
 void init_serial_boot(void)
 {
-//    gRecvHost.RxdStatus = 0;
-//    gRecvHost.RxCRCHi = 0;
-//	  gRecvHost.RxCRCLo = 0;
-//    gRecvHost.RxdFrameStatus = SPACE;
     comClearRxFifo(COM1);
     comClearRxFifo(COM1);
     crc_value = 0;    
@@ -154,7 +149,7 @@ void deal_Serial_Parse(void)
                     gRecvHost.RxdFrameStatus = FINISH;                    
                     gRecvHost.RxdStatus = 0;
                     
-                    dbh("recv finish",(char *)gRecvHost.RxdBuf,gRecvHost.RxdTotalLen);
+//                    dbh("recv finish",(char *)gRecvHost.RxdBuf,gRecvHost.RxdTotalLen);
                     break;
                 }
                 else
@@ -163,9 +158,7 @@ void deal_Serial_Parse(void)
                     gRecvHost.RxdBuf[gRecvHost.NowLen++] = ch;
                     gRecvHost.RxdStatus = 20;
                     crc_value = 0;
-
-                      DBG("\r\n\r\n<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>\r\n\r\n");
-//                      memset(&gRecvHost,0x00,sizeof(gRecvHost));
+                    DBG("\r\n\r\n<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>\r\n\r\n");
                 }
 
 
@@ -231,7 +224,7 @@ void deal_rx_data(void)
                 DBG("recv json data = : %s\r\n",json_buf);
 
                 //解析JSON数据包              
-                if(parseJSON(json_buf,&cmd_rx) == COMM_SUCCESS)
+                if(parseJSON(json_buf,&cmd_rx) == NO_ERR)
                 {
                     send_to_device(&cmd_rx);
                 }
@@ -239,6 +232,7 @@ void deal_rx_data(void)
                 {
                     //指令解析失败，向上位机发送解析失败的状态，要求重发
                      DBG("parseJSON error\r\n");
+                    SendErrcodeToHost(COMM_PARSE_ERR,"cmd parse error\r\n");
                 }
 
                 init_serial_boot();   
@@ -250,6 +244,8 @@ void deal_rx_data(void)
                 DBG("CRC ERROR\r\n");
                 dbh("CRC ERROR RxdBuf", (char *)gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
 //                DBG("bccHi = %02x,bccLo = %02x",bccHi,bccLo);
+                SendErrcodeToHost(COMM_CRC_ERR,"deal rx data crc error\r\n");
+
                 init_serial_boot();
               
             }
@@ -287,7 +283,7 @@ uint8_t send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     json_len = packetJSON(&cmd_tx,tmpBuf);  
     if(json_len == 0)
     {        
-        return 255;
+        return CJSON_PACKET_ERR;
     }
     else
     {
@@ -324,11 +320,11 @@ uint8_t send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
 }
 
 
-static COMM_ERR parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
+static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
 {
     cJSON  *root = NULL;			                    // root    
     cJSON  *cmd = NULL;			                        // cmd     
-    COMM_ERR result = COMM_SUCCESS;
+    SYSERRORCODE_E result = NO_ERR;
     
     uint8_t bcd_cmd[2] = {0};
     uint8_t bcd_dat[16] = {0};
@@ -343,7 +339,7 @@ static COMM_ERR parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     if (root == NULL)                 // 如果转化错误，则报错退出
     {
         DBG("1.Error before: [%s]\n", cJSON_GetErrorPtr());
-        return COMM_ERR_PARSE;
+        return CJSON_PARSE_ERR;
     }
 
     //获取KEY,指令描述
@@ -351,7 +347,7 @@ static COMM_ERR parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     if(cmd_rx->cmd_desc == NULL)
     {
         DBG("2.Error before: [%s]\n", cJSON_GetErrorPtr());
-        return COMM_ERR_GETITEM;
+        return CJSON_GETITEM_ERR;
     }
 
 
@@ -360,14 +356,14 @@ static COMM_ERR parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     if(cmd == NULL)
     {
         DBG("3.Error before: [%s]\n", cJSON_GetErrorPtr());
-        return COMM_ERR_GETITEM;
+        return CJSON_GETITEM_ERR;
     }    
 
     tmpCmd = (uint8_t *)cJSON_GetObjectItem(cmd,(const char*)cmd_rx->cmd_desc)->valuestring; 
     if(tmpCmd == NULL)
     {
         DBG("3.Error before: [%s]\n", cJSON_GetErrorPtr());
-        return COMM_ERR_GETITEM;
+        return CJSON_GETITEM_ERR;
     }      
 
 
@@ -565,6 +561,61 @@ void send_to_device(CMD_RX_T *cmd_rx)
 #else
     bsp_Usart2_SendData(TxdBuf,i);
 #endif 
+}
+
+
+SYSERRORCODE_E SendErrcodeToHost(SYSERRORCODE_E code,uint8_t *buf)
+{
+    SYSERRORCODE_E result = NO_ERR;
+
+    uint8_t i = 0;
+    uint8_t json_len = 0;
+    uint8_t TxdBuf[MAX_TXD_BUF_LEN]={0};
+    uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
+    uint16_t iCRC = 0;
+    CMD_TX_T cmd_tx;
+
+    memset(tmpBuf,0x00,sizeof(tmpBuf));
+    memset(TxdBuf,0x00,sizeof(TxdBuf));
+    memset(&cmd_tx,0x00,sizeof(cmd_tx));
+
+    i = 3;
+    TxdBuf[0] = STX;
+    cmd_tx.cmd = 0;
+    cmd_tx.code = code;    
+    strcpy((char *)tmpBuf,(char *)buf);    
+
+    json_len = packetJSON(&cmd_tx,tmpBuf);  
+    if(json_len == 0)
+    {        
+        return CJSON_PACKET_ERR;
+    }
+    else
+    {
+        i += json_len;
+    }
+    
+    memcpy(TxdBuf+3,tmpBuf,i-3); 
+    TxdBuf[i++] = ETX;   
+
+    TxdBuf[1] = i>>8; //high
+    TxdBuf[2] = i&0xFF; //low
+            
+    iCRC = CRC16_Modbus(TxdBuf, i);  
+    TxdBuf[i++] = iCRC >> 8;
+    TxdBuf[i++] = iCRC & 0xff;  
+
+    dbh("send_to_host",(char *)TxdBuf,i);
+
+
+    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+    {
+        comSendBuf(COM1,TxdBuf,i);        
+    }
+    
+    xSemaphoreGive(gxMutex);
+    
+    return result;
 }
 
 

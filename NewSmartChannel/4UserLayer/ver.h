@@ -29,9 +29,9 @@ typedef struct
 {
 	const unsigned char *vString;
 	const unsigned char *vDate;
-}VERSION;
+}VERSION_T;
 
-extern const VERSION PosVersion;
+extern const VERSION_T DevVersion;
 
 
 

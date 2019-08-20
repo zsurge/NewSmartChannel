@@ -30,6 +30,9 @@
 
 #define LED_TASK_PRIO	    ( tskIDLE_PRIORITY)
 
+#define HANDSHAKE_TASK_PRIO	( tskIDLE_PRIORITY)
+
+
 #define READER_TASK_PRIO	( tskIDLE_PRIORITY + 1)
 #define QR_TASK_PRIO	    ( tskIDLE_PRIORITY + 1)
 
@@ -51,6 +54,8 @@
 #define START_STK_SIZE 	    128
 #define QR_STK_SIZE 		512
 #define READER_STK_SIZE     512
+#define HANDSHAKE_STK_SIZE  256
+
 
 
 
@@ -79,6 +84,8 @@ static TaskHandle_t xHandleTaskReader = NULL;   //韦根读卡器
 static TaskHandle_t xHandleTaskQr = NULL;       //二维码读头
 static TaskHandle_t xHandleTaskRs485 = NULL;
 static TaskHandle_t xHandleTaskStart = NULL;    //看门狗
+static TaskHandle_t xHandleTaskHandShake = NULL;    //看门狗
+
 
 static EventGroupHandle_t xCreatedEventGroup = NULL;
 
@@ -99,9 +106,8 @@ static void vTaskReader(void *pvParameters);
 static void vTaskQR(void *pvParameters);
 static void vTaskStart(void *pvParameters);
 
-
-
-
+//上送开机次数
+static void vTaskHandShake(void *pvParameters);
 
 
 static void AppTaskCreate(void);
@@ -114,6 +120,9 @@ int main(void)
 {    
     //硬件初始化
     bsp_Init();  
+
+    //记录开机次数
+    RecordBootTimes();
     
 	/* 创建任务 */
 	AppTaskCreate();
@@ -137,6 +146,14 @@ int main(void)
 */
 static void AppTaskCreate (void)
 {
+    //跟android握手
+    xTaskCreate((TaskFunction_t )vTaskHandShake,
+                (const char*    )"vHandShake",       
+                (uint16_t       )HANDSHAKE_STK_SIZE, 
+                (void*          )NULL,              
+                (UBaseType_t    )HANDSHAKE_TASK_PRIO,    
+                (TaskHandle_t*  )&xHandleTaskHandShake);  
+
     //创建LED任务
     xTaskCreate((TaskFunction_t )vTaskLed,         
                 (const char*    )"vTaskLed",       
@@ -504,25 +521,6 @@ void vTaskMsgPro(void *pvParameters)
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_2);
         vTaskDelay(10);
     }
-
-//    uint8_t ch = 0;
-//    uint8_t cm4[54] = { 0x02,0x7B,0x22,0x63,0x6D,0x64,0x22,0x3A,0x22,0x75,0x70,0x64,0x61,0x74,0x65,0x22,0x2C,0x22,0x76,0x61,0x6C,0x75,0x65,0x22,0x3A,0x7B,0x22,0x75,0x70,0x64,0x61,0x74,0x65,0x22,0x3A,0x22,0x41,0x37,0x22,0x7D,0x2C,0x22,0x64,0x61,0x74,0x61,0x22,0x3A,0x22,0x30,0x30,0x22,0x7D,0x03 };
-
-//    while (1)
-//    {
-//        //if(bsp_Usart1_RecvOne( &ch) == 1)
-//        if(comGetChar(COM1, &ch) == 1)  //读取串口数据
-//        {
-//           //comSendChar(COM1, ch);
-//            comSendBuf(COM1, cm4, 54);
-//            //bsp_Usart1_SendOne(ch);
-//            DBG("recv and send\r\n");
-//        }
-
-//		/* 发送事件标志，表示任务正常运行 */        
-//		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_2);
-//        vTaskDelay(10);        
-//    }
 }
 
 
@@ -534,8 +532,6 @@ void vTaskInfrared(void *pvParameters)
     while(1)
     {
         code = bsp_infrared_scan();       
-
-//        code = bsp_InfraredExitScan();
 
         if(code != ERR_INFRARED)
         {
@@ -552,70 +548,10 @@ void vTaskInfrared(void *pvParameters)
         
         vTaskDelay(1);
     }
-
-//    while(1)
-//    {
-//        code = bsp_GetStatus();        
-//        
-//        if(code != ERR_INFRARED)
-//        {
-//            printf("gSensorTop = %d, gSensorEnd = %d\r\n",gSensorTop,gSensorEnd);
-//            memset(dat,0x00,sizeof(dat));            
-//            dat[2] = code;            
-//            send_to_host(GETSENSOR,dat,3);
-//        }
-
-//      /* 发送事件标志，表示任务正常运行 */        
-//      xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_3);    
-//        
-//      vTaskDelay(1);
-//    }
-
 }
 
 void vTaskRs485(void *pvParameters)
 {
-//    uint8_t recv_buf[32] = {0};
-//    uint16_t len = 0;
-//    uint16_t iCRC = 0;
-//    uint8_t readLen = 0;
-//    uint8_t crcBuf[2] = {0};
-//    
-//    while (1)
-//    {     
-//        memset(recv_buf,0x00,sizeof(recv_buf));
-//        
-//        bsp_RS485_Receive_Data(recv_buf,&len);    
-
-//        
-//        if(len == 7 || len == 8)
-//        {
-//            if(recv_buf[1] == 0x06)
-//            {
-//                readLen = 6;
-//            }else if(recv_buf[1] == 0x03)
-//            {
-//                readLen = 5;
-//            }
-//            
-//            iCRC = CRC16_Modbus(recv_buf, readLen);  
-//            
-//            crcBuf[0] = iCRC >> 8;
-//            crcBuf[1] = iCRC & 0xff;  
-//            
-//            if(crcBuf[1] == recv_buf[readLen] && crcBuf[0] == recv_buf[readLen+1])
-//            {    
-//                send_to_host(DOOR_B,recv_buf,len);
-//            }            
-//        }
-
-//		/* 发送事件标志，表示任务正常运行 */        
-//		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_6);
-//        
-//        vTaskDelay(20);
-//    }
-
-
     uint8_t buf[8] = {0};
     uint8_t readLen = 0;
     uint16_t iCRC = 0;
@@ -671,8 +607,6 @@ void vTaskRs485(void *pvParameters)
         
         vTaskDelay(100);
     }
-
-
 
 }
 
@@ -747,9 +681,32 @@ void vTaskQR(void *pvParameters)
 
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_5);  
-        vTaskDelay(10);        
+        vTaskDelay(300);        
     }
 }   
+
+
+void vTaskHandShake(void *pvParameters)
+{        
+    uint32_t i_boot_times = NULL;
+    char *c_old_boot_times, c_new_boot_times[12] = {0};
+    uint8_t bcdbuf[6] = {0};
+
+    /* get the boot count number from Env */
+    c_old_boot_times = ef_get_env("boot_times");
+    assert_param(c_old_boot_times);
+    i_boot_times = atol(c_old_boot_times);
+
+    /* interger to string */
+    sprintf(c_new_boot_times,"%012ld", i_boot_times);
+
+    asc2bcd(bcdbuf,(uint8_t *)c_new_boot_times , 12, 0);
+
+    send_to_host(HANDSHAKE,bcdbuf,6);
+
+    vTaskDelete( NULL ); //删除自己
+
+}
 
 
 

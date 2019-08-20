@@ -417,6 +417,11 @@
               <FileType>1</FileType>
               <FilePath>..\4UserLayer\tool.c</FilePath>
             </File>
+            <File>
+              <FileName>errorcode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\4UserLayer\errorcode.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

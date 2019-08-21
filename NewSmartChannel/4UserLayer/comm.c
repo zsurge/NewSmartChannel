@@ -507,7 +507,6 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[0] = STX;
             cmd_tx.cmd = GETVER;
             cmd_tx.code = 0x00;
-//            DBG("cmd_rx->cmd_data = %s,len = %d\r\n",cmd_rx->cmd_data,strlen((const char*)cmd_rx->cmd_data));
             strcpy((char *)cmd_tx.data,"V1.0.1");            
             i += packetJSON(&cmd_tx,tmpBuf); 
             memcpy(TxdBuf+3,tmpBuf,i-3); 
@@ -523,6 +522,9 @@ void send_to_device(CMD_RX_T *cmd_rx)
             
         case HEARTBEAT:
 
+            //不需要心跳
+            //android一直在发查询指令，可以替换心跳
+
             break;
         case UPGRADE:
             SystemReset();
@@ -530,15 +532,11 @@ void send_to_device(CMD_RX_T *cmd_rx)
 
         case CONTROLMOTOR:       
              //向电机发送控制指令
-//            DBG("<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>\r\n");
-            dbh("CONTROL MOTOR", (char *)cmd_rx->cmd_data, 8);
-//            bsp_Usart4_SendData(cmd_rx->cmd_data,8);//发给主机
-//            RS485_SendBuf(COM4,cmd_rx->cmd_data,8);//发给A门
             comSendBuf(COM4, cmd_rx->cmd_data,8);
-            return;
+            return;//这里不需要向上位机上送，在另外一个任务中才上送
         case DOOR_B:
-            dbh("CONTROL MOTOR door B", (char *)cmd_rx->cmd_data, 8);
-            RS485_SendBuf(COM5,cmd_rx->cmd_data,8);//发给B门
+            //发给B门
+            RS485_SendBuf(COM5,cmd_rx->cmd_data,8);
             
             return;//这里不需要向上位机上送，在另外一个任务中才上送
 
@@ -547,14 +545,10 @@ void send_to_device(CMD_RX_T *cmd_rx)
             return;
     }
 
-//    dbh("send_to_device",(char *)TxdBuf,i);
 #if CMD_SERIAL_PORT == 0x01
-//    bsp_Usart1_SendData(TxdBuf,i);
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
         comSendBuf(COM1,TxdBuf,i);
-//        bsp_Usart1_SendData(TxdBuf,i);
-
     }
     xSemaphoreGive(gxMutex);
 

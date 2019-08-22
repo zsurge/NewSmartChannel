@@ -36,7 +36,7 @@
 #define READER_TASK_PRIO	( tskIDLE_PRIORITY + 1)
 #define QR_TASK_PRIO	    ( tskIDLE_PRIORITY + 1)
 
-#define INFRARED_TASK_PRIO	( tskIDLE_PRIORITY + 2)
+#define INFRARED_TASK_PRIO	( tskIDLE_PRIORITY + 4)
 
 #define CMD_TASK_PRIO		( tskIDLE_PRIORITY + 3)
 #define MOTOR_TASK_PRIO		( tskIDLE_PRIORITY + 3)
@@ -546,7 +546,7 @@ void vTaskInfrared(void *pvParameters)
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_3);    
         
-        vTaskDelay(1);
+        vTaskDelay(10);
     }
 }
 

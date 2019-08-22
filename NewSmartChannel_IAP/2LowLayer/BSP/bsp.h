@@ -38,7 +38,7 @@
 #include "bsp_flash.h"
 //#include "bsp_usart.h"
 #include "bsp_usart1.h"
-//#include "bsp_usart2.h"
+#include "bsp_usart2.h"
 #include "rs485.h"
 #include "bsp_usart3.h"
 #include "bsp_usart4.h"

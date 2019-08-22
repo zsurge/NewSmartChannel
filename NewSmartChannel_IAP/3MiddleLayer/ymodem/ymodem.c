@@ -189,7 +189,7 @@ int32_t Ymodem_Receive ( uint8_t* buf, uint32_t appaddr )
             if (g500usTimerUpDate == 0)
             {
                 printf("2 min reset\r\n");
-                //超过10分钟，就自动退出升级模式
+                //超过2分钟，就自动退出升级模式
                 ef_set_env("WSPIFLASH",W_SPI_FLASH_OK);
                 ef_set_env("WMCUFLASH",W_MCU_FLASH_OK);
                 NVIC_SystemReset();

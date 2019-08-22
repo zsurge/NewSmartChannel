@@ -66,6 +66,8 @@
 
 #define DOOR_B                          0xB8
 
+#define ERRORINFO                       0XB0
+
 #define HANDSHAKE                       0XB1
 
 
@@ -146,9 +148,9 @@ void deal_rx_data(void);
 void deal_Serial_Parse(void);
 
 void init_serial_boot(void);
-uint8_t send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len);
+SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len);
 void send_to_device(CMD_RX_T *cmd_rx);
-SYSERRORCODE_E SendErrcodeToHost(SYSERRORCODE_E code,uint8_t *buf);
+SYSERRORCODE_E SendErrcodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf);
 
 
 #endif

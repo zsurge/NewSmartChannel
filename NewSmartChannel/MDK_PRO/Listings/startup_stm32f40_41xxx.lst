@@ -868,12 +868,11 @@ ARM Macro Assembler    Page 14
               00000200 
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
-erwork --depend=.\compileoutput\startup_stm32f40_41xxx.d -o.\compileoutput\star
-tup_stm32f40_41xxx.o -I.\RTE\_SmartChannelAPP -Id:\Keil_v5\Packs\Keil\STM32F4xx
-_DFP\2.14.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include -Id:\Keil_v5\ARM\CMSIS\In
-clude --predefine="__UVISION_VERSION SETA 527" --predefine="STM32F407xx SETA 1"
- --list=.\listings\startup_stm32f40_41xxx.lst ..\1McuLayer\CMSIS\startup_stm32f
-40_41xxx.s
+erwork --depend=..\6bin\startup_stm32f40_41xxx.d -o..\6bin\startup_stm32f40_41x
+xx.o -I.\RTE\_SmartChannelAPP -Id:\Keil_v5\Packs\Keil\STM32F4xx_DFP\2.14.0\Driv
+ers\CMSIS\Device\ST\STM32F4xx\Include -Id:\Keil_v5\ARM\CMSIS\Include --predefin
+e="__UVISION_VERSION SETA 527" --predefine="STM32F407xx SETA 1" --list=.\listin
+gs\startup_stm32f40_41xxx.lst ..\1McuLayer\CMSIS\startup_stm32f40_41xxx.s
 
 
 

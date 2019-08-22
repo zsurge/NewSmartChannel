@@ -27,6 +27,8 @@
 #include "ini.h"
 #include "ymodem.h"
 #include "bsp_uart_fifo.h"
+#include "version.h" 
+
 
 
 
@@ -232,7 +234,7 @@ void deal_rx_data(void)
                 {
                     //指令解析失败，向上位机发送解析失败的状态，要求重发
                      DBG("parseJSON error\r\n");
-                    SendErrcodeToHost(COMM_PARSE_ERR,"cmd parse error\r\n");
+                    SendErrcodeToHost(ERRORINFO,COMM_PARSE_ERR,"cmd parse error\r\n");
                 }
 
                 init_serial_boot();   
@@ -244,7 +246,7 @@ void deal_rx_data(void)
                 DBG("CRC ERROR\r\n");
                 dbh("CRC ERROR RxdBuf", (char *)gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
 //                DBG("bccHi = %02x,bccLo = %02x",bccHi,bccLo);
-                SendErrcodeToHost(COMM_CRC_ERR,"deal rx data crc error\r\n");
+                SendErrcodeToHost(ERRORINFO,COMM_CRC_ERR,"deal rx data crc error\r\n");
 
                 init_serial_boot();
               
@@ -260,7 +262,7 @@ void deal_rx_data(void)
 }
 
 
-uint8_t send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
+SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
 {
     uint8_t i = 0;
     uint8_t json_len = 0;
@@ -316,7 +318,7 @@ uint8_t send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     bsp_Usart2_SendData(TxdBuf,i);
 #endif
 
-    return 0;
+    return NO_ERR;
 }
 
 
@@ -500,14 +502,14 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[i++] = iCRC & 0xff;   
             break;                        
         case GETDEVICESAT://获取设备状态
-
+            //不需要整体获取，需要各个部分状态，分别获取
             break; 
         case GETVER:
             i = 3;
             TxdBuf[0] = STX;
             cmd_tx.cmd = GETVER;
             cmd_tx.code = 0x00;
-            strcpy((char *)cmd_tx.data,"V1.0.1");            
+            strcpy((char *)cmd_tx.data,(const char*)DevVersion.vString);            
             i += packetJSON(&cmd_tx,tmpBuf); 
             memcpy(TxdBuf+3,tmpBuf,i-3); 
             TxdBuf[i++] = ETX;     
@@ -521,10 +523,8 @@ void send_to_device(CMD_RX_T *cmd_rx)
             break; 
             
         case HEARTBEAT:
-
             //不需要心跳
             //android一直在发查询指令，可以替换心跳
-
             break;
         case UPGRADE:
             SystemReset();
@@ -558,7 +558,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 }
 
 
-SYSERRORCODE_E SendErrcodeToHost(SYSERRORCODE_E code,uint8_t *buf)
+SYSERRORCODE_E SendErrcodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
 {
     SYSERRORCODE_E result = NO_ERR;
 
@@ -575,7 +575,7 @@ SYSERRORCODE_E SendErrcodeToHost(SYSERRORCODE_E code,uint8_t *buf)
 
     i = 3;
     TxdBuf[0] = STX;
-    cmd_tx.cmd = 0;
+    cmd_tx.cmd = cmd;
     cmd_tx.code = code;    
     strcpy((char *)tmpBuf,(char *)buf);    
 

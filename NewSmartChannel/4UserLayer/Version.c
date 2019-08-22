@@ -38,7 +38,7 @@
  * 内部函数原型说明                             *
  *----------------------------------------------*/
 
-const unsigned char VersionString[] = "1.0.0.1";
+const unsigned char VersionString[] = "1.0.1";
 const unsigned char VersionDate[] = __DATE__ " " __TIME__;
 
 

@@ -56,15 +56,10 @@
 	
 	bsp_LED_Init();		        //初始化LED端口	    
 	bsp_Ex_LED_Init();          //初始化外部LED灯/灯带
-
-
-    bsp_WiegandInit();          //韦根读卡器初始化
-
-    
+    bsp_key_Init();             //全高门按键初始化
+    bsp_WiegandInit();          //韦根读卡器初始化    
     STM_FLASH_Init();           //芯片内部FLASH初始化
     easyflash_init();           //外部FLASH初始化，使用easyflash    
-
-
     bsp_beep_init();            //蜂鸣器初始化    
     bsp_infrared_init();        //红外传感器初始化
 //    

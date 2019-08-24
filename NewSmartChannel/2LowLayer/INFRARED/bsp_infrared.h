@@ -126,7 +126,6 @@
 
 
 
-#define SENSORMAXBUFFSIZE 128
 
 /*----------------------------------------------*
  * 常量定义                                     *
@@ -135,9 +134,7 @@
 /*----------------------------------------------*
  * 模块级变量                                   *
  *----------------------------------------------*/
-extern volatile uint8_t gSensorStatus[SENSORMAXBUFFSIZE];
-extern volatile uint16_t gSensorTop;
-extern volatile uint16_t gSensorEnd;
+
 
 /*----------------------------------------------*
  * 内部函数原型说明                             *
@@ -149,9 +146,7 @@ uint32_t bsp_infrared_scan(void);
 
 void bsp_GetSensorStatus(uint8_t *dat);
 
-//void bsp_putStatus(uint8_t dat);
 
-//int16_t bsp_GetStatus(void);
 
 
 

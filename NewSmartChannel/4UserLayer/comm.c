@@ -27,7 +27,7 @@
 #include "ini.h"
 #include "ymodem.h"
 #include "bsp_uart_fifo.h"
-#include "version.h" 
+#include "Devinfo.h"
 
 
 
@@ -56,6 +56,8 @@ static uint16_t crc_value = 0;
 
 static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx); //私有函数
 static uint8_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
+static uint16_t  packetDeviceInfo(uint8_t *command_data);
+
 
 
 
@@ -234,7 +236,7 @@ void deal_rx_data(void)
                 {
                     //指令解析失败，向上位机发送解析失败的状态，要求重发
                      DBG("parseJSON error\r\n");
-                    SendErrcodeToHost(ERRORINFO,COMM_PARSE_ERR,"cmd parse error\r\n");
+                    SendAsciiCodeToHost(ERRORINFO,COMM_PARSE_ERR,"cmd parse error\r\n");
                 }
 
                 init_serial_boot();   
@@ -246,7 +248,7 @@ void deal_rx_data(void)
                 DBG("CRC ERROR\r\n");
                 dbh("CRC ERROR RxdBuf", (char *)gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
 //                DBG("bccHi = %02x,bccLo = %02x",bccHi,bccLo);
-                SendErrcodeToHost(ERRORINFO,COMM_CRC_ERR,"deal rx data crc error\r\n");
+                SendAsciiCodeToHost(ERRORINFO,COMM_CRC_ERR,"deal rx data crc error\r\n");
 
                 init_serial_boot();
               
@@ -301,16 +303,14 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     TxdBuf[i++] = iCRC >> 8;
     TxdBuf[i++] = iCRC & 0xff;  
 
-    dbh("send_to_host",(char *)TxdBuf,i);
+//    dbh("send_to_host",(char *)TxdBuf,i);
 
 #if CMD_SERIAL_PORT == 0x01
-    //bsp_Usart1_SendData(TxdBuf,i);
-    //add lock avoid data error
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
         comSendBuf(COM1,TxdBuf,i);        
-//        bsp_Usart1_SendData(TxdBuf,i);
+
     }
     
     xSemaphoreGive(gxMutex);
@@ -451,6 +451,51 @@ static uint8_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
     return len;
 }
 
+//static uint16_t  packetDeviceInfo(uint8_t *command_data)
+//{
+//    char *TxdBuf;
+//    cJSON *root; // cJSON指针
+//    uint8_t len = 0;//返回json的长度
+
+//    uint8_t tmp_data[256] = {0}; 
+//    
+//    memset(tmp_data,0x00,sizeof(tmp_data));
+//    root=cJSON_CreateObject(); // 创建root对象，返回值为cJSON指针
+
+//    if (root == NULL)                 // 如果转化错误，则报错退出
+//    {
+//        return CJSON_CREATE_ERR;//直接返回一个较大的值，超出数组长度
+//    }
+
+
+//    
+//    cJSON_AddStringToObject(root,"Version",gDevinfo.SoftwareVersion);
+//    cJSON_AddStringToObject(root,"BulidTime",gDevinfo.BulidDate);
+//    cJSON_AddStringToObject(root,"BootTimes",(const char*)tmp_data);
+//     cJSON_AddStringToObject(root,"SN",(const char*)tmp_data);
+//    
+//    memset(TxdBuf,0x00,sizeof(TxdBuf));
+//    TxdBuf = cJSON_PrintUnformatted(root); 
+
+//    if(TxdBuf == NULL)
+//    {
+//        return 0;
+//    }
+
+//    strcpy((char *)command_data,TxdBuf);
+
+
+
+//    len = strlen((const char*)TxdBuf);
+
+//    cJSON_Delete(root);
+
+//    my_free(TxdBuf);
+
+//    return len;    
+//}
+
+
 
 void send_to_device(CMD_RX_T *cmd_rx)
 {
@@ -509,7 +554,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[0] = STX;
             cmd_tx.cmd = GETVER;
             cmd_tx.code = 0x00;
-            strcpy((char *)cmd_tx.data,(const char*)DevVersion.vString);            
+            strcpy((char *)cmd_tx.data,(const char*)gDevinfo.SoftwareVersion);            
             i += packetJSON(&cmd_tx,tmpBuf); 
             memcpy(TxdBuf+3,tmpBuf,i-3); 
             TxdBuf[i++] = ETX;     
@@ -558,7 +603,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 }
 
 
-SYSERRORCODE_E SendErrcodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
+SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
 {
     SYSERRORCODE_E result = NO_ERR;
 

@@ -47,7 +47,7 @@
 #include "iap.h"
 #include "tool.h"
 #include "comm.h"
-#include "version.h" 
+#include "Devinfo.h"
 
 
 /*

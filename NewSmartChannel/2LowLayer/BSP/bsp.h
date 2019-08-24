@@ -44,7 +44,7 @@
 #include "bsp_usart3.h"
 #include "bsp_usart4.h"
 //#include "bsp_usart5.h"
-//#include "bsp_key.h"
+#include "bsp_key.h"
 #include "bsp_time.h"
 #include "bsp_led.h"
 #include "bsp_beep.h" 

@@ -35,9 +35,7 @@
 /*----------------------------------------------*
  * 模块级变量                                   *
  *----------------------------------------------*/
-volatile uint8_t gSensorStatus[SENSORMAXBUFFSIZE] = {0};
-volatile uint16_t gSensorTop = 0;
-volatile uint16_t gSensorEnd = 0;
+
 
 /*----------------------------------------------*
  * 内部函数原型说明                             *

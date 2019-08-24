@@ -1,5 +1,6 @@
 #include "bsp_led.h" 
 #include "string.h"
+#include "tool.h"
  
 
 //初始化PF9和PF10为输出口.并使能这两个口的时钟		    
@@ -59,7 +60,15 @@ void bsp_Ex_LED_Init(void)
 	GPIO_Init(GPIO_PORT_EX_LED, &GPIO_InitStructure);			    //初始化GPIO
 
 
-	GPIO_ResetBits(GPIO_PORT_EX_LED,GPIO_PIN_L_G|GPIO_PIN_M_R|GPIO_PIN_M_G|GPIO_PIN_R_R|GPIO_PIN_R_G );	//灯灭
+	//GPIO_SetBits(GPIO_PORT_EX_LED,GPIO_PIN_L_G|GPIO_PIN_M_R|GPIO_PIN_M_G|GPIO_PIN_R_R|GPIO_PIN_R_G );	//灯灭
+
+
+    LED_L_R = 1;
+    LED_L_G = 1;
+    LED_M_R = 1;
+    LED_M_G = 1;
+    LED_R_R = 1;
+    LED_R_G = 1;
 
 }
 
@@ -78,6 +87,8 @@ void bsp_Ex_SetLed(uint8_t *dat)
         LED_M_G = buf[9];
         LED_R_R = buf[12];
         LED_R_G = buf[14];
+
+        DBG("2,4,7,9,12,14 = %d,%d,%d,%d,%d,%d\r\n",buf[2],buf[4],buf[7],buf[9],buf[12],buf[14]);
     }    
     
 }

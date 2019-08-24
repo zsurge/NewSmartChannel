@@ -33,10 +33,11 @@ typedef enum {
     //系统异常类错误代码
     CJSON_PACKET_ERR,   //cjson 打包失败
     CJSON_PARSE_ERR,    //cjson 解析失败
-    CJSON_GETITEM_ERR,  //cjson 获取员素失败
+    CJSON_GETITEM_ERR,  //cjson 获取员素失败    
     COMM_PARSE_ERR,     //指令解析失败
     COMM_CRC_ERR,      //解析指令，CRC校验失败
     FLASH_W_ERR,        //写FLASH失败
+    CJSON_CREATE_ERR = 512,   //创建cjson对象失败
     //韦根读卡错误代码
     READ_ERR = 1000,
     //QR扫码器错误代码

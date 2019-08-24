@@ -64,6 +64,7 @@
 #define WGREADER                        0xA9
 #define QRREADER                        0xA0
 
+#define REQUEST_OPEN_DOOR_B             0xB7
 #define DOOR_B                          0xB8
 
 #define ERRORINFO                       0XB0
@@ -150,7 +151,7 @@ void deal_Serial_Parse(void);
 void init_serial_boot(void);
 SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len);
 void send_to_device(CMD_RX_T *cmd_rx);
-SYSERRORCODE_E SendErrcodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf);
+SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf);
 
 
 #endif

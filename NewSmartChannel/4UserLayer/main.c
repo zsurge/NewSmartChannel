@@ -29,19 +29,19 @@
 
 
 #define LED_TASK_PRIO	    ( tskIDLE_PRIORITY)
-
 #define HANDSHAKE_TASK_PRIO	( tskIDLE_PRIORITY)
-
 
 #define READER_TASK_PRIO	( tskIDLE_PRIORITY + 1)
 #define QR_TASK_PRIO	    ( tskIDLE_PRIORITY + 1)
 
-#define INFRARED_TASK_PRIO	( tskIDLE_PRIORITY + 4)
+#define KEY_TASK_PRIO	    ( tskIDLE_PRIORITY + 2)
+
 
 #define CMD_TASK_PRIO		( tskIDLE_PRIORITY + 3)
 #define MOTOR_TASK_PRIO		( tskIDLE_PRIORITY + 3)
 #define RS485_TASK_PRIO	    ( tskIDLE_PRIORITY + 3)
 
+#define INFRARED_TASK_PRIO	( tskIDLE_PRIORITY + 4)
 #define START_TASK_PRIO		( tskIDLE_PRIORITY + 4)
 
 
@@ -55,6 +55,8 @@
 #define QR_STK_SIZE 		512
 #define READER_STK_SIZE     512
 #define HANDSHAKE_STK_SIZE  256
+#define KEY_STK_SIZE        256
+
 
 
 
@@ -67,10 +69,12 @@
 #define TASK_BIT_4	 (1 << 4)
 #define TASK_BIT_5	 (1 << 5)
 #define TASK_BIT_6	 (1 << 6)
+#define TASK_BIT_7	 (1 << 7)
+
 
 
 //#define TASK_BIT_ALL (TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 | TASK_BIT_3|TASK_BIT_4 | TASK_BIT_5 | TASK_BIT_6 )
-#define TASK_BIT_ALL ( TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 |TASK_BIT_3|TASK_BIT_4|TASK_BIT_5|TASK_BIT_6)
+#define TASK_BIT_ALL ( TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 |TASK_BIT_3|TASK_BIT_4|TASK_BIT_5|TASK_BIT_6|TASK_BIT_7)
 
 /*----------------------------------------------*
  * 模块级变量                                   *
@@ -82,9 +86,11 @@ static TaskHandle_t xHandleTaskCmd = NULL;      //android通讯
 static TaskHandle_t xHandleTaskInfrared = NULL; //红外感映
 static TaskHandle_t xHandleTaskReader = NULL;   //韦根读卡器
 static TaskHandle_t xHandleTaskQr = NULL;       //二维码读头
-static TaskHandle_t xHandleTaskRs485 = NULL;
+static TaskHandle_t xHandleTaskRs485 = NULL;    //B门电机
 static TaskHandle_t xHandleTaskStart = NULL;    //看门狗
-static TaskHandle_t xHandleTaskHandShake = NULL;    //看门狗
+static TaskHandle_t xHandleTaskHandShake = NULL;    // 握手
+static TaskHandle_t xHandleTaskKey = NULL;      //B门按键
+
 
 
 static EventGroupHandle_t xCreatedEventGroup = NULL;
@@ -98,7 +104,7 @@ static EventGroupHandle_t xCreatedEventGroup = NULL;
 //任务函数
 static void vTaskLed(void *pvParameters);
 static void vTaskMortorToHost(void *pvParameters);
-//static void vTaskKey(void *pvParameters);
+static void vTaskKey(void *pvParameters);
 static void vTaskMsgPro(void *pvParameters);
 static void vTaskInfrared(void *pvParameters);
 static void vTaskRs485(void *pvParameters);
@@ -115,15 +121,29 @@ static void AppObjCreate (void);
 static void App_Printf(char *format, ...);
 //static void AppEventCreate (void);
 
+static void DisplayDevInfo (void);
+
+static void DisplayDevInfo(void)
+{
+	printf("Softversion :%s\r\n",gDevinfo.SoftwareVersion);
+	printf("BulidDate :%s\r\n", gDevinfo.BulidDate);
+	printf("Model :%s\r\n", gDevinfo.Model);
+	printf("ProductBatch :%s\r\n", gDevinfo.ProductBatch);
+	printf("HardwareVersion :%s\r\n", gDevinfo.HardwareVersion);
+	printf("DevSn :%s\r\n", gDevinfo.GetSn());
+}
+
 
 int main(void)
-{    
+{   
     //硬件初始化
     bsp_Init();  
 
     //记录开机次数
     RecordBootTimes();
-    
+
+    DisplayDevInfo();
+                    
 	/* 创建任务 */
 	AppTaskCreate();
 
@@ -209,7 +229,15 @@ static void AppTaskCreate (void)
                 (uint16_t       )QR_STK_SIZE, 
                 (void*          )NULL,
                 (UBaseType_t    )QR_TASK_PRIO,
-                (TaskHandle_t*  )&xHandleTaskQr);                  
+                (TaskHandle_t*  )&xHandleTaskQr);      
+
+    //B门按键
+    xTaskCreate((TaskFunction_t )vTaskKey,         
+                (const char*    )"vTaskKey",       
+                (uint16_t       )KEY_STK_SIZE, 
+                (void*          )NULL,              
+                (UBaseType_t    )KEY_TASK_PRIO,    
+                (TaskHandle_t*  )&xHandleTaskKey);                   
 
     //看门狗
 	xTaskCreate((TaskFunction_t )vTaskStart,     		/* 任务函数  */
@@ -306,17 +334,14 @@ void vTaskLed(void *pvParameters)
 {
     while(1)
     {
-
         LED1=!LED1;  
         LED2=!LED2; 
         LED3=!LED3; 
         LED4=!LED4; 
         
 		/* 发送事件标志，表示任务正常运行 */        
-		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_0);        
-
-        vTaskDelay(300);
-        
+		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_0);  
+        vTaskDelay(1000);     
     }
 
 }   
@@ -324,47 +349,6 @@ void vTaskLed(void *pvParameters)
 //motor to host 任务函数
 void vTaskMortorToHost(void *pvParameters)
 {
-//    uint8_t buf[8] = {0};
-//    uint8_t readLen = 0;
-//    uint16_t iCRC = 0;
-//    uint8_t crcBuf[2] = {0};
-//    while (1)
-//    {       
-//        if(bsp_Usart4_RecvOne(buf) == 1)
-//        {  
-//            
-//           if(bsp_Usart4_RecvOne(buf+1) == 1)
-//           {    
-//                if(buf[1] == 0x03)//读取状态
-//                {
-//                   readLen=bsp_Usart4_RecvAtTime(buf + 2, 5, 20);                   
-//                }
-//                else if(buf[1] == 0x06)//读取执行状态
-//                {
-//                    readLen=bsp_Usart4_RecvAtTime(buf + 2, 6, 20);
-//                }                
-
-//                if(readLen == 5 || readLen == 6) //接收到数据才上送
-//                {
-//                    iCRC = CRC16_Modbus(buf, readLen);  
-
-//                    crcBuf[0] = iCRC >> 8;
-//                    crcBuf[1] = iCRC & 0xff;  
-
-//                    if(crcBuf[1] == buf[readLen] && crcBuf[0] == buf[readLen+1])
-//                    {    
-//                        send_to_host(CONTROLMOTOR,buf,readLen+2);
-//                    }
-//                }
-//           }
-//        }
-//        
-//		/* 发送事件标志，表示任务正常运行 */        
-//		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_1);
-//        
-//        vTaskDelay(10);
-//    }
-
     uint8_t buf[8] = {0};
     uint8_t readLen = 0;
     uint16_t iCRC = 0;
@@ -423,89 +407,102 @@ void vTaskMortorToHost(void *pvParameters)
 
 }
 
-
-#if 0
 void vTaskKey(void *pvParameters)
 {
     
 	uint8_t ucKeyCode;
-	uint8_t pcWriteBuffer[500];
-    uint32_t id[3] = {0};
-
-    uint16_t crc_value = 0;
-
-    uint8_t cm4[] = { 0x02,0x7B,0x22,0x63,0x6D,0x64,0x22,0x3A,0x22,0x75,0x70,0x64,0x61,0x74,0x65,0x22,0x2C,0x22,0x76,0x61,0x6C,0x75,0x65,0x22,0x3A,0x7B,0x22,0x75,0x70,0x64,0x61,0x74,0x65,0x22,0x3A,0x22,0x41,0x37,0x22,0x7D,0x2C,0x22,0x64,0x61,0x74,0x61,0x22,0x3A,0x22,0x30,0x30,0x22,0x7D,0x03 };
     
     while(1)
     {
-		ucKeyCode = bsp_key_Scan(0);
-      
+		ucKeyCode = bsp_key_Scan(0);      
 		
 		if (ucKeyCode != KEY_NONE)
-		{
-            //dbg("ucKeyCode = %d\r\n",ucKeyCode);
-              
+		{                
 			switch (ucKeyCode)
 			{
-				/* K1键按下 打印任务执行情况 */
-				case KEY_SET_PRES:	
-
-					App_Printf("=================================================\r\n");
-					App_Printf("任务名      任务状态 优先级   剩余栈 任务序号\r\n");
-					vTaskList((char *)&pcWriteBuffer);
-					App_Printf("%s\r\n", pcWriteBuffer);
-                    
-					App_Printf("\r\n任务名       运行计数         使用率\r\n");
-					vTaskGetRunTimeStats((char *)&pcWriteBuffer);
-					App_Printf("%s\r\n", pcWriteBuffer);                    
-					break;				
-				/* K2键按下，打印串口操作命令 */
-				case KEY_RR_PRES:
-                    App_Printf("KEY_DOWN_K2\r\n");
-					//FlashTest();
-					//ReadIAP();  
-                    ef_erase_bak_app( 0x10000 ); 
-                    RestoreDefaultSetting();
-                    SystemReset();
-                    //IAP_DownLoadToFlash();					
-					break;
-				case KEY_LL_PRES:
-                    App_Printf("KEY_DOWN_K3\r\n");
-                    //ef_print_env();
-					//SystemReset();
-					//json_test();
-                    Get_ChipID(id);
-                    dbg("mcu id = %x %x %x\r\n",id[0],id[1],id[2]); 
-					break;
-				case KEY_OK_PRES:
-                    App_Printf("KEY_DOWN_K4\r\n");
-                    crc_value = CRC16_Modbus(cm4, 54);
-                    App_Printf("hi = %02x, lo = %02x\r\n", crc_value>>8, crc_value & 0xff);
-                    
-//                    bsp_Usart3_SendString("1234");   
-//                    spi_flash_demo();
-//                    FlashTest();                    
-//                  if(SPI_Flash_Test() == 0)
-                    {
-//                        BEEP = ~BEEP;
-                    } 
-					break;                
-				
+				/* 开门键按下执行向上位机发送开门请求 */
+				case KEY_DOOR_B_PRES:	 
+                    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+					break;			
+			
 				/* 其他的键值不处理 */
 				default:   
 				App_Printf("KEY_default\r\n");
 					break;
 			}
-		}
+		}	
 
-        /* 发送事件标志，表示任务正常运行 */
-//		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_2);
-		
+		/* 发送事件标志，表示任务正常运行 */        
+		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_7);  
+
+        
 		vTaskDelay(20);
-	}   
+	}  
 
 }
-#endif
+
+
+//void vTaskKey(void *pvParameters)
+//{
+//    
+//	uint8_t ucKeyCode;
+//    
+//    while(1)
+//    {
+//		ucKeyCode = bsp_key_Scan(0);      
+//		
+//		if (ucKeyCode != KEY_NONE)
+//		{                
+//			switch (ucKeyCode)
+//			{
+//				/* K1键按下 打印任务执行情况 */
+//				case KEY_SET_PRES:	
+
+//					App_Printf("=================================================\r\n");
+//					App_Printf("任务名      任务状态 优先级   剩余栈 任务序号\r\n");
+//					vTaskList((char *)&pcWriteBuffer);
+//					App_Printf("%s\r\n", pcWriteBuffer);
+//                    
+//					App_Printf("\r\n任务名       运行计数         使用率\r\n");
+//					vTaskGetRunTimeStats((char *)&pcWriteBuffer);
+//					App_Printf("%s\r\n", pcWriteBuffer);                    
+//					break;				
+//				/* K2键按下，打印串口操作命令 */
+//				case KEY_RR_PRES:
+//                    App_Printf("KEY_DOWN_K2\r\n");
+//					//FlashTest();
+//					//ReadIAP();  
+//                    ef_erase_bak_app( 0x10000 ); 
+//                    RestoreDefaultSetting();
+//                    SystemReset();
+//                    //IAP_DownLoadToFlash();					
+//					break;
+//				case KEY_LL_PRES:
+//                    App_Printf("KEY_DOWN_K3\r\n");
+//                    //ef_print_env();
+//					//SystemReset();
+//					//json_test();
+//                    Get_ChipID(id);
+//                    dbg("mcu id = %x %x %x\r\n",id[0],id[1],id[2]); 
+//					break;
+//				case KEY_OK_PRES:
+//                    App_Printf("KEY_DOWN_K4\r\n");
+//                    crc_value = CRC16_Modbus(cm4, 54);
+//                    App_Printf("hi = %02x, lo = %02x\r\n", crc_value>>8, crc_value & 0xff);                   
+
+//					break;                
+//				
+//				/* 其他的键值不处理 */
+//				default:   
+//				App_Printf("KEY_default\r\n");
+//					break;
+//			}
+//		}		
+//		vTaskDelay(20);
+//	}  
+
+//}
+
 
 
 

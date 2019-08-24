@@ -3,7 +3,7 @@
                   版权所有 (C), 2013-2023, 深圳博思高科技有限公司
 
  ******************************************************************************
-  文 件 名   : Version.h
+  文 件 名   : Dev.h
   版 本 号   : 初稿
   作    者   : 张舵
   生成日期   : 2019年8月21日
@@ -37,21 +37,26 @@
  * 内部函数原型说明                             *
  *----------------------------------------------*/
 
-#ifndef __VERSION_H__
-#define __VERSION_H__
+#ifndef __DEVINFO_H__
+#define __DEVINFO_H__
+#include "stm32f4xx_conf.h"
+
+typedef uint8_t*(*CallBackFun)(void); //获取SN的回调
 
 
 typedef struct
 {
-	const unsigned char *vString;
-	const unsigned char *vDate;
-}VERSION;
+	const uint8_t *SoftwareVersion;       //软件版本号
+	const uint8_t *BulidDate;         //编译时间
+    const uint8_t *Model;        //设备型号
+    const uint8_t *ProductBatch; //生产批次
+    const uint8_t *HardwareVersion;  //硬件版本    
+    CallBackFun GetSn; //获取当前设备SN    
+}DEVICEINFO_T;
 
-extern const VERSION DevVersion;
+extern const DEVICEINFO_T gDevinfo;
 
 
 
 
-
-
-#endif /* __VERSION_H__ */
+#endif /* __DEVINFO_H__ */

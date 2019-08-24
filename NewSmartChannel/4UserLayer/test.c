@@ -354,3 +354,44 @@ int CJSON_CDECL json_test(void)
 //}
 
 
+void testled(uint8_t flag)
+{
+    if(flag == 0)
+    {
+    LED_L_R = flag;
+    LED_L_G = flag;
+    LED_M_R = flag;
+    LED_M_G = flag;
+    LED_R_R = flag;
+    LED_R_G = flag;
+    }
+    else if(flag == 1)
+    {
+        LED_L_R = flag;
+        LED_L_G = 0;
+        LED_M_R = flag;
+        LED_M_G = 0;
+        LED_R_R = flag;
+        LED_R_G = 0;       
+    }
+    else if(flag == 2)
+    {
+        LED_L_R = 0;
+        LED_L_G = 1;
+        LED_M_R = 0;
+        LED_M_G = 1;
+        LED_R_R = 0;
+        LED_R_G = 1;
+    }
+    else if(flag == 3)
+    {
+        LED_L_R = 1;
+        LED_L_G = 1;
+        LED_M_R = 1;
+        LED_M_G = 1;
+        LED_R_R = 1;
+        LED_R_G = 1;
+    }    
+    
+}
+

@@ -70,6 +70,10 @@ int CJSON_CDECL json_test(void);
 //void spi_flash_demo(void);
 
 
+void testled(uint8_t flag);
+
+
+
 #endif
 
 

@@ -54,9 +54,9 @@ void bsp_Ex_LED_Init(void)
 	//GPIOG9,D2初始化设置
 	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_L_G|GPIO_PIN_L_R|GPIO_PIN_M_R|GPIO_PIN_M_G|GPIO_PIN_R_R|GPIO_PIN_R_G;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;		//普通输出模式
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;		//推挽输出
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;		//开漏输出，若是推挽输出会出现半灭半亮的现象
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	//100MHz
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;		//上拉
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;    
 	GPIO_Init(GPIO_PORT_EX_LED, &GPIO_InitStructure);			    //初始化GPIO
 
 

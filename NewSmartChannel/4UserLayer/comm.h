@@ -54,7 +54,7 @@
 
 #define GETSENSOR                       0xA1
 #define SETLED                          0xA2
-#define GETDEVICESAT                    0xA3
+#define GETDEVICEINFO                   0xA3
 #define GETVER                          0xA4
 #define UPSENSOR                        0xA5
 #define HEARTBEAT                       0xA6

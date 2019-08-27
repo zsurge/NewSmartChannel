@@ -162,7 +162,7 @@ void deal_Serial_Parse(void)
                     gRecvHost.RxdBuf[gRecvHost.NowLen++] = ch;
                     gRecvHost.RxdStatus = 20;
                     crc_value = 0;
-                    DBG("\r\n\r\n<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>\r\n\r\n");
+                    DBG("CRC check error,The correct value should be:HI=%02x,LO=%02x\r\n",gRecvHost.RxCRCHi,gRecvHost.RxCRCLo);
                 }
 
 
@@ -214,7 +214,7 @@ void deal_rx_data(void)
     {        
         if(gRecvHost.RxdBuf[0] == STX && gRecvHost.RxdBuf[gRecvHost.RxdTotalLen -3] == ETX)                                   //解析02数据包
         {    
-            dbh("recv deal_rx_data",(char *)gRecvHost.RxdBuf,gRecvHost.RxdTotalLen);
+//            dbh("recv deal_rx_data",(char *)gRecvHost.RxdBuf,gRecvHost.RxdTotalLen);
             
             //计算校验值
             bccHi =  crc_value >> 8;
@@ -236,7 +236,7 @@ void deal_rx_data(void)
                 {
                     //指令解析失败，向上位机发送解析失败的状态，要求重发
                      DBG("parseJSON error\r\n");
-                    SendAsciiCodeToHost(ERRORINFO,COMM_PARSE_ERR,"cmd parse error\r\n");
+                    SendAsciiCodeToHost(ERRORINFO,COMM_PARSE_ERR,"cmd parse error");
                 }
 
                 init_serial_boot();   
@@ -248,7 +248,7 @@ void deal_rx_data(void)
                 DBG("CRC ERROR\r\n");
                 dbh("CRC ERROR RxdBuf", (char *)gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
 //                DBG("bccHi = %02x,bccLo = %02x",bccHi,bccLo);
-                SendAsciiCodeToHost(ERRORINFO,COMM_CRC_ERR,"deal rx data crc error\r\n");
+                SendAsciiCodeToHost(ERRORINFO,COMM_CRC_ERR,"deal rx data crc error");
 
                 init_serial_boot();
               
@@ -303,6 +303,7 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     TxdBuf[i++] = iCRC >> 8;
     TxdBuf[i++] = iCRC & 0xff;  
 
+//    DBG("send json data = %s\r\n",tmpBuf);
 //    dbh("send_to_host",(char *)TxdBuf,i);
 
 #if CMD_SERIAL_PORT == 0x01
@@ -439,9 +440,7 @@ static uint8_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
     }
 
     strcpy((char *)command_data,TxdBuf);
-
-//    DBG("command_data = %s\r\n",TxdBuf);
-
+    
     len = strlen((const char*)TxdBuf);
 
     cJSON_Delete(root);
@@ -451,57 +450,65 @@ static uint8_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
     return len;
 }
 
-//static uint16_t  packetDeviceInfo(uint8_t *command_data)
-//{
-//    char *TxdBuf;
-//    cJSON *root; // cJSON指针
-//    uint8_t len = 0;//返回json的长度
+static uint16_t  packetDeviceInfo(uint8_t *command_data)
+{
+    char *TxdBuf;
+    cJSON *root,*dataobj; // cJSON指针
 
-//    uint8_t tmp_data[256] = {0}; 
-//    
-//    memset(tmp_data,0x00,sizeof(tmp_data));
-//    root=cJSON_CreateObject(); // 创建root对象，返回值为cJSON指针
+    uint8_t len = 0;//返回json的长度
 
-//    if (root == NULL)                 // 如果转化错误，则报错退出
-//    {
-//        return CJSON_CREATE_ERR;//直接返回一个较大的值，超出数组长度
-//    }
+    root=cJSON_CreateObject(); // 创建root对象，返回值为cJSON指针
+    dataobj=cJSON_CreateObject(); // 创建dataobj对象，返回值为cJSON指针
+
+    if (root == NULL||dataobj == NULL)                 // 如果转化错误，则报错退出
+    {
+        return CJSON_CREATE_ERR;//直接返回一个较大的值，超出数组长度
+    }
+
+    cJSON_AddStringToObject(root,"cmd","A3");
+    cJSON_AddNumberToObject(root,"code",0);
+    cJSON_AddItemToObject (root,"data",dataobj);
+    
+    cJSON_AddStringToObject(dataobj,"SW Version",(const char *)gDevinfo.SoftwareVersion);
+    cJSON_AddStringToObject(dataobj,"HW Version",(const char *)gDevinfo.HardwareVersion);
+    cJSON_AddStringToObject(dataobj,"BulidTime",(const char *)gDevinfo.BulidDate);
+    cJSON_AddStringToObject(dataobj,"Model",(const char *)gDevinfo.Model);
+    cJSON_AddStringToObject(dataobj,"ProductBatch",(const char *)gDevinfo.ProductBatch);
+    cJSON_AddStringToObject(dataobj,"SN",(const char *)gDevinfo.GetSn());
+    
+    memset(TxdBuf,0x00,sizeof(TxdBuf));
+    
+    TxdBuf = cJSON_PrintUnformatted(root); 
+
+    if(TxdBuf == NULL)
+    {
+        return 0;
+    }    
+
+    strcpy((char *)command_data,TxdBuf);
 
 
-//    
-//    cJSON_AddStringToObject(root,"Version",gDevinfo.SoftwareVersion);
-//    cJSON_AddStringToObject(root,"BulidTime",gDevinfo.BulidDate);
-//    cJSON_AddStringToObject(root,"BootTimes",(const char*)tmp_data);
-//     cJSON_AddStringToObject(root,"SN",(const char*)tmp_data);
-//    
-//    memset(TxdBuf,0x00,sizeof(TxdBuf));
-//    TxdBuf = cJSON_PrintUnformatted(root); 
+    DBG("send json data = %s\r\n",TxdBuf);
 
-//    if(TxdBuf == NULL)
-//    {
-//        return 0;
-//    }
+    len = strlen((const char*)TxdBuf);
 
-//    strcpy((char *)command_data,TxdBuf);
+    cJSON_Delete(root);
 
+    my_free(dataobj);
+    my_free(TxdBuf);
 
-
-//    len = strlen((const char*)TxdBuf);
-
-//    cJSON_Delete(root);
-
-//    my_free(TxdBuf);
-
-//    return len;    
-//}
+    return len;    
+}
 
 
 
 void send_to_device(CMD_RX_T *cmd_rx)
 {
     uint8_t i = 0;
-    uint8_t TxdBuf[MAX_TXD_BUF_LEN]={0};
-    uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
+//    uint8_t TxdBuf[MAX_TXD_BUF_LEN]={0};
+//    uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
+    uint8_t TxdBuf[255]={0};
+    uint8_t tmpBuf[255] = {0};    
     uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
     
@@ -546,9 +553,24 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[i++] = iCRC >> 8;
             TxdBuf[i++] = iCRC & 0xff;   
             break;                        
-        case GETDEVICESAT://获取设备状态
-            //不需要整体获取，需要各个部分状态，分别获取
-            break; 
+        case GETDEVICEINFO://获取设备状态
+            i = 3;
+            TxdBuf[0] = STX; 
+            i += packetDeviceInfo(tmpBuf); 
+            memcpy(TxdBuf+3,tmpBuf,i-3); 
+            TxdBuf[i++] = ETX;  
+            
+            TxdBuf[1] = i>>8; //high
+            TxdBuf[2] = i&0xFF; //low
+            
+            iCRC = CRC16_Modbus(TxdBuf, i);  
+            
+            TxdBuf[i++] = iCRC >> 8;
+            TxdBuf[i++] = iCRC & 0xff;    
+
+//            dbh("send_to_GETDEVICEINFO",(char *)TxdBuf,i);
+            break;           
+      
         case GETVER:
             i = 3;
             TxdBuf[0] = STX;
@@ -622,7 +644,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     TxdBuf[0] = STX;
     cmd_tx.cmd = cmd;
     cmd_tx.code = code;    
-    strcpy((char *)tmpBuf,(char *)buf);    
+    strcpy((char *)cmd_tx.data,(char *)buf);    
 
     json_len = packetJSON(&cmd_tx,tmpBuf);  
     if(json_len == 0)
@@ -644,7 +666,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     TxdBuf[i++] = iCRC >> 8;
     TxdBuf[i++] = iCRC & 0xff;  
 
-    dbh("send_to_host",(char *)TxdBuf,i);
+//    dbh("send_to_host",(char *)TxdBuf,i);
 
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))

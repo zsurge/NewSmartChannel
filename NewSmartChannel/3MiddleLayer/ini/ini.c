@@ -116,7 +116,7 @@ SYSERRORCODE_E RecordBootTimes(void)
     uint32_t i_boot_times = NULL;
     char *c_old_boot_times, c_new_boot_times[11] = {0};
 
-    DBG("Build by BSG->%s %s\r\n",gDevinfo.SoftwareVersion, gDevinfo.BulidDate);
+//    DBG("Build by BSG->%s %s\r\n",gDevinfo.SoftwareVersion, gDevinfo.BulidDate);
 
     /* get the boot count number from Env */
     c_old_boot_times = ef_get_env("boot_times");

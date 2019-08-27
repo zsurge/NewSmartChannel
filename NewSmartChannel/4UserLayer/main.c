@@ -126,10 +126,10 @@ static void DisplayDevInfo (void);
 static void DisplayDevInfo(void)
 {
 	printf("Softversion :%s\r\n",gDevinfo.SoftwareVersion);
-	printf("BulidDate :%s\r\n", gDevinfo.BulidDate);
+    printf("HardwareVersion :%s\r\n", gDevinfo.HardwareVersion);
 	printf("Model :%s\r\n", gDevinfo.Model);
-	printf("ProductBatch :%s\r\n", gDevinfo.ProductBatch);
-	printf("HardwareVersion :%s\r\n", gDevinfo.HardwareVersion);
+	printf("ProductBatch :%s\r\n", gDevinfo.ProductBatch);	    
+	printf("BulidDate :%s\r\n", gDevinfo.BulidDate);
 	printf("DevSn :%s\r\n", gDevinfo.GetSn());
 }
 
@@ -142,7 +142,7 @@ int main(void)
     //记录开机次数
     RecordBootTimes();
 
-    DisplayDevInfo();
+//    DisplayDevInfo();
                     
 	/* 创建任务 */
 	AppTaskCreate();
@@ -699,7 +699,7 @@ void vTaskHandShake(void *pvParameters)
 
     asc2bcd(bcdbuf,(uint8_t *)c_new_boot_times , 12, 0);
 
-    send_to_host(HANDSHAKE,bcdbuf,6);
+    send_to_host(HANDSHAKE,bcdbuf,6);    
 
     vTaskDelete( NULL ); //删除自己
 

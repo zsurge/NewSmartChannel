@@ -97,7 +97,7 @@ void RestoreDefaultSetting(void)
     
 }
 
-void SystemReset(void)
+void SystemUpdate(void)
 {
     //写升级标志位
     if(ef_set_env("WSPIFLASH","5050") == EF_NO_ERR)

@@ -16,7 +16,7 @@ void bsp_LED_Init(void)
       GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;           //普通输出模式
       GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;          //推挽输出
       GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;      //100MHz
-      GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;        //上拉
+      GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;        //上拉
       GPIO_Init(GPIO_PORT_LED1, &GPIO_InitStructure);         //初始化GPIO
     
       //GPIOF23
@@ -24,7 +24,7 @@ void bsp_LED_Init(void)
       GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;           //普通输出模式
       GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;          //推挽输出
       GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;      //100MHz
-      GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;        //上拉
+      GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;        //上拉
       GPIO_Init(GPIO_PORT_LED23, &GPIO_InitStructure);            //初始化GPIO
     
       //GPIOF4
@@ -32,15 +32,18 @@ void bsp_LED_Init(void)
       GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;           //普通输出模式
       GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;          //推挽输出
       GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;      //100MHz
-      GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;            //上拉
+      GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;            //上拉
       GPIO_Init(GPIO_PORT_LED4, &GPIO_InitStructure);         //初始化GPIO        
     
     
-      GPIO_SetBits(GPIO_PORT_LED1,GPIO_PIN_LED1 );            
-      GPIO_SetBits(GPIO_PORT_LED23,GPIO_PIN_LED2|GPIO_PIN_LED3);
-      GPIO_SetBits(GPIO_PORT_LED4,GPIO_PIN_LED4);
+//      GPIO_SetBits(GPIO_PORT_LED1,GPIO_PIN_LED1 );            
+//      GPIO_SetBits(GPIO_PORT_LED23,GPIO_PIN_LED2|GPIO_PIN_LED3);
+//      GPIO_SetBits(GPIO_PORT_LED4,GPIO_PIN_LED4);
 
-
+      LED1 = 0;
+      LED2 = 0;
+      LED3 = 0;
+      LED4 = 0;
 
 }
 

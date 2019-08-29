@@ -28,7 +28,7 @@ void ReadIAP(void);
 
 void RestoreDefaultSetting(void);
 
-void SystemReset(void);
+void SystemUpdate(void);
 
 SYSERRORCODE_E RecordBootTimes(void);
 

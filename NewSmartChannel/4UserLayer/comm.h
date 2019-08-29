@@ -56,7 +56,7 @@
 #define SETLED                          0xA2
 #define GETDEVICEINFO                   0xA3
 #define GETVER                          0xA4
-#define UPSENSOR                        0xA5
+#define DEVRESET                        0xA5
 #define HEARTBEAT                       0xA6
 #define UPGRADE                         0xA7
 #define CONTROLMOTOR                    0xA8

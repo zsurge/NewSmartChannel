@@ -66,9 +66,8 @@
 #define RS485_U5_TX_EN()	    GPIOG->BSRRL = GPIO_Pin_0
 
 
-
-
-
+extern volatile uint8_t Motro_A;
+extern volatile uint8_t Motro_B;
 
 
 /* ¶¨Òå¶Ë¿ÚºÅ */

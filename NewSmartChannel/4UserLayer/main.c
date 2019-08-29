@@ -334,14 +334,22 @@ void vTaskLed(void *pvParameters)
 {
     while(1)
     {
-        LED1=!LED1;  
-        LED2=!LED2; 
-        LED3=!LED3; 
         LED4=!LED4; 
+
+                
+        if(Motro_A== 1)
+        {
+          LED3=!LED3;   
+        }
+        
+        if(Motro_B == 1)
+        {
+          LED2=!LED2;   
+        }
         
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_0);  
-        vTaskDelay(1000);     
+        vTaskDelay(50);     
     }
 
 }   
@@ -367,6 +375,8 @@ void vTaskMortorToHost(void *pvParameters)
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
             {    
                 send_to_host(CONTROLMOTOR,buf,readLen);
+                Motro_A = 0;
+                LED3 = 0;
             }            
         }
             
@@ -474,13 +484,13 @@ void vTaskKey(void *pvParameters)
 //					//ReadIAP();  
 //                    ef_erase_bak_app( 0x10000 ); 
 //                    RestoreDefaultSetting();
-//                    SystemReset();
+//                    SystemUpdate();
 //                    //IAP_DownLoadToFlash();					
 //					break;
 //				case KEY_LL_PRES:
 //                    App_Printf("KEY_DOWN_K3\r\n");
 //                    //ef_print_env();
-//					//SystemReset();
+//					//SystemUpdate();
 //					//json_test();
 //                    Get_ChipID(id);
 //                    dbg("mcu id = %x %x %x\r\n",id[0],id[1],id[2]); 
@@ -593,8 +603,10 @@ void vTaskRs485(void *pvParameters)
             crcBuf[1] = iCRC & 0xff;  
 
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
-            {    
+            {                   
                 send_to_host(DOOR_B,buf,readLen);
+                Motro_B = 0;
+                LED2 = 0;
             }            
         }
 

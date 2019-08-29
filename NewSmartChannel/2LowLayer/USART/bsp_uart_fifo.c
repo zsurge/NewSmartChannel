@@ -23,6 +23,11 @@
 #include "bsp_uart_fifo.h"
 #include "bsp_time.h"
 
+volatile uint8_t Motro_A = 0;
+volatile uint8_t Motro_B = 0;
+
+
+
 #if 1
 #pragma import(__use_no_semihosting)             
 //标准库需要的支持函数                 
@@ -271,6 +276,14 @@ USART_TypeDef *ComToUSARTx(COM_PORT_E _ucPort)
 	{
 		#if UART5_FIFO_EN == 1
 			return UART5;
+		#else
+			return 0;
+		#endif
+	}
+	else if (_ucPort == COM6)
+	{
+		#if UART6_FIFO_EN == 1
+			return USART6;
 		#else
 			return 0;
 		#endif
@@ -600,6 +613,7 @@ void RS485_SendBefor(void)
     #endif    
 
     #if UART5_RS485_EN == 1
+//    Motro_B = 1;
     RS485_U5_TX_EN();	/* 切换RS485收发芯片为发送模式 */
     #endif
 
@@ -637,6 +651,7 @@ void RS485_SendOver(void)
     #endif    
 
     #if UART5_RS485_EN == 1
+//    Motro_B = 1;
     RS485_U5_RX_EN();	/* 切换RS485收发芯片为接收模式 */
     #endif
 
@@ -706,7 +721,7 @@ uint8_t RS485_Recv(COM_PORT_E _ucPort,uint8_t *buf, uint8_t len)
     }
     
     for(i=0;i<len;i++)  //拷贝接收到的数据到接收指针中
-    {
+    {       
         UartGetChar(pUart,buf+i);  //将数据复制到buf中
     }
 
@@ -1304,31 +1319,7 @@ static void UartSend(UART_T *_pUart, uint8_t *_ucaBuf, uint16_t _usLen)
 	for (i = 0; i < _usLen; i++)
 	{
 		/* 如果发送缓冲区已经满了，则等待缓冲区空 */
-	#if 0
-		/*
-			在调试GPRS例程时，下面的代码出现死机，while 死循环
-			原因： 发送第1个字节时 _pUart->usTxWrite = 1；_pUart->usTxRead = 0;
-			将导致while(1) 无法退出
-		*/
-		while (1)
-		{
-			uint16_t usRead;
 
-			DISABLE_INT();
-			usRead = _pUart->usTxRead;
-			ENABLE_INT();
-
-			if (++usRead >= _pUart->usTxBufSize)
-			{
-				usRead = 0;
-			}
-
-			if (usRead != _pUart->usTxWrite)
-			{
-				break;
-			}
-		}
-	#else
 		/* 当 _pUart->usTxBufSize == 1 时, 下面的函数会死掉(待完善) */
 		while (1)
 		{
@@ -1341,8 +1332,15 @@ static void UartSend(UART_T *_pUart, uint8_t *_ucaBuf, uint16_t _usLen)
 			{
 				break;
 			}
+            else if(usCount == _pUart->usTxBufSize)/* 数据已填满缓冲区 */
+			{
+				if((_pUart->uart->CR1 & USART_CR1_TXEIE) == 0)
+				{
+					SET_BIT(_pUart->uart->CR1, USART_CR1_TXEIE);
+				}  
+			}
 		}
-	#endif
+	
 
 		/* 将新数据填入发送缓冲区 */
 		_pUart->pTxBuf[_pUart->usTxWrite] = _ucaBuf[i];
@@ -1579,6 +1577,7 @@ void USART3_IRQHandler(void)
 #if UART4_FIFO_EN == 1
 void UART4_IRQHandler(void)
 {
+    Motro_A = 1;
 	UartIRQ(&g_tUart4);
 }
 #endif
@@ -1586,6 +1585,7 @@ void UART4_IRQHandler(void)
 #if UART5_FIFO_EN == 1
 void UART5_IRQHandler(void)
 {
+    Motro_B = 1;
 	UartIRQ(&g_tUart5);
 }
 #endif

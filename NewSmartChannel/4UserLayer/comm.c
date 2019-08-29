@@ -553,7 +553,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[i++] = iCRC >> 8;
             TxdBuf[i++] = iCRC & 0xff;   
             break;                        
-        case GETDEVICEINFO://获取设备状态
+        case GETDEVICEINFO://获取设备信息
             i = 3;
             TxdBuf[0] = STX; 
             i += packetDeviceInfo(tmpBuf); 
@@ -571,7 +571,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 //            dbh("send_to_GETDEVICEINFO",(char *)TxdBuf,i);
             break;           
       
-        case GETVER:
+        case GETVER:  //有获取设备
             i = 3;
             TxdBuf[0] = STX;
             cmd_tx.cmd = GETVER;
@@ -593,8 +593,11 @@ void send_to_device(CMD_RX_T *cmd_rx)
             //不需要心跳
             //android一直在发查询指令，可以替换心跳
             break;
+        case DEVRESET:
+            NVIC_SystemReset();
+            break;
         case UPGRADE:
-            SystemReset();
+            SystemUpdate();
             break;   
 
         case CONTROLMOTOR:       

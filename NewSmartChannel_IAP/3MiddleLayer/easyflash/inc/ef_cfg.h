@@ -86,6 +86,6 @@
 #define LOG_AREA_SIZE              (10 * EF_ERASE_MIN_SIZE)    /* 40K *//* @note you must define it for a value if you used log */
 
 /* print debug information of flash */
-#define PRINT_DEBUG
+//#define PRINT_DEBUG
 
 #endif /* EF_CFG_H_ */

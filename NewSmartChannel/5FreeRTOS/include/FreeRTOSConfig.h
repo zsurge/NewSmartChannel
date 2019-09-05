@@ -94,9 +94,11 @@
 /*                                FreeRTOS与运行时间和任务状态收集有关的配置选项                                 */
 /***************************************************************************************************************/
 #define configGENERATE_RUN_TIME_STATS	        1                       //为1时启用运行时间统计功能
+
+//设置宏configUSE_TRACE_FACILITY为1会编译vTaskList()和vTaskGetRunTimeStats()和prvWriteNameToBuffer()函数
 #define configUSE_TRACE_FACILITY				1                       //为1启用可视化跟踪调试
 
-//设置宏configUSE_TRACE_FACILITY和configUSE_STATS_FORMATTING_FUNCTIONS为1会编译vTaskList()和vTaskGetRunTimeStats()函数
+
 #define configUSE_STATS_FORMATTING_FUNCTIONS    1  //add0527
 
 //设置宏configGENERATE_RUN_TIME_STATS为1使能运行时间统计功能。一旦设置为1，则下面两个宏必须被定义：

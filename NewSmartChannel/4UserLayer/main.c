@@ -41,7 +41,7 @@
 #define MOTOR_TASK_PRIO		( tskIDLE_PRIORITY + 3)
 #define RS485_TASK_PRIO	    ( tskIDLE_PRIORITY + 3)
 
-#define INFRARED_TASK_PRIO	( tskIDLE_PRIORITY + 4)
+#define INFRARED_TASK_PRIO	( tskIDLE_PRIORITY + 2)
 #define START_TASK_PRIO		( tskIDLE_PRIORITY + 4)
 
 
@@ -142,7 +142,7 @@ int main(void)
     //记录开机次数
     RecordBootTimes();
 
-//    DisplayDevInfo();
+    //DisplayDevInfo();
                     
 	/* 创建任务 */
 	AppTaskCreate();
@@ -207,7 +207,7 @@ static void AppTaskCreate (void)
                 (TaskHandle_t*  )&xHandleTaskInfrared);    
 
 
-    //485任务
+    //全高门电机状态返回
     xTaskCreate((TaskFunction_t )vTaskRs485,     
                 (const char*    )"vTaskRs485",   
                 (uint16_t       )RS485_STK_SIZE, 
@@ -335,7 +335,6 @@ void vTaskLed(void *pvParameters)
     while(1)
     {
         LED4=!LED4; 
-
                 
         if(Motro_A== 1)
         {
@@ -537,7 +536,7 @@ void vTaskInfrared(void *pvParameters)
     uint8_t dat[3] = {0};
     
     while(1)
-    {
+    {    
         code = bsp_infrared_scan();       
 
         if(code != ERR_INFRARED)

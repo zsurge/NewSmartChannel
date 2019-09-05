@@ -32,6 +32,7 @@
 #include "easyflash.h"
 #include "bsp_time.h"
 
+
 /*----------------------------------------------*
  * 模块级变量                                   *
  *----------------------------------------------*/
@@ -179,7 +180,7 @@ int32_t Ymodem_Receive ( uint8_t* buf, uint32_t appaddr )
 	//flashdestination = appaddr;
 	
 	
-	g500usTimerUpDate = 3  * 60 * 2000; //进入升级模式2分钟不升级，就退出升级模式
+	g500usTimerUpDate = 2  * 60 * 2000; //进入升级模式2分钟不升级，就退出升级模式
 	
 	flag_EOT = 0;
 	for ( session_done = 0, errors = 0, session_begin = 0; ; )
@@ -188,7 +189,7 @@ int32_t Ymodem_Receive ( uint8_t* buf, uint32_t appaddr )
 		{           
             if (g500usTimerUpDate == 0)
             {
-                printf("2 min reset\r\n");
+                //printf("2 min reset\r\n");
                 //超过2分钟，就自动退出升级模式
                 ef_set_env("WSPIFLASH",W_SPI_FLASH_OK);
                 ef_set_env("WMCUFLASH",W_MCU_FLASH_OK);

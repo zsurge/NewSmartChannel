@@ -75,7 +75,6 @@ int32_t IAP_DownLoadToFlash(void)
     char *tmp;
     uint32_t tmp_total_size = 0 ;
     
-    printf("------IAP_DownLoadToFlash start----------\n");
     
     
     file_total_size = Ymodem_Receive(&buf_1k[0],APPLICATION_ADDRESS);
@@ -93,9 +92,9 @@ int32_t IAP_DownLoadToFlash(void)
             return 0;
         }
 
-		printf("-------------------\n");
-		printf("\n\r Programming Completed Successfully!\n\r----------------------\r\n ");	
-		printf("Name: %s, Size: %s Bytes\r\n",(char*)FileName,(char*)tmp); 
+//		printf("-------------------\n");
+//		printf("\n\r Programming Completed Successfully!\n\r----------------------\r\n ");	
+//		printf("Name: %s, Size: %s Bytes\r\n",(char*)FileName,(char*)tmp); 
 
 
         if(ef_set_env("WSPIFLASH",W_SPI_FLASH_OK) == EF_NO_ERR)

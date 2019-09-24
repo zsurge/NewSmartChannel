@@ -44,8 +44,9 @@
 
 	bsp_TIM6_Init();            //定时器6初始化
 //	
-
+    BSP_UartOpen(SCOM1,  38400, 8, 1, 0);
     bsp_InitUart();             //modify 2019.8.5
+    
 //    bsp_Usart1_Init(38400);   
 //    bsp_Usart2_Init(38400);     //初始化串口，DEBUG,接上位机
 //	bsp_Usart3_Init(9600);     //初始化串口，做为调试串口使用

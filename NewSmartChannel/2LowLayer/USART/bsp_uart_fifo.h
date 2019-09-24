@@ -38,7 +38,7 @@
 */
 
 /* 定义使能的串口, 0 表示不使能（不增加代码大小）， 1表示使能 */
-#define	UART1_FIFO_EN	1
+#define	UART1_FIFO_EN	0
 #define	UART2_FIFO_EN	1
 #define	UART3_FIFO_EN	1
 #define	UART4_FIFO_EN	1

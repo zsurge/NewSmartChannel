@@ -1,40 +1,34 @@
-/*
- * bsp_infrared.h
- *
- *  Created on: 2017年6月7日
- *      Author: foreversun
- */
+/******************************************************************************
 
-#ifndef _BSP_INFRARED_H_
-#define _BSP_INFRARED_H_
+                  版权所有 (C), 2013-2023, 深圳博思高科技有限公司
 
-#define KEY1_ID 0x01
-#define KEY2_ID 0x02
-#define KEY3_ID 0x04
-#define KEY4_ID 0x08
-#define KEY5_ID 0x10
-#define KEY6_ID 0x20
-#define KEY7_ID 0x40 
-#define KEY8_ID 0x80
+ ******************************************************************************
+  文 件 名   : bsp_infrared.h
+  版 本 号   : 初稿
+  作    者   : 张舵
+  生成日期   : 2019年6月28日
+  最近修改   :
+  功能描述   : 获取红外传感器状态
+  函数列表   :
+  修改历史   :
+  1.日    期   : 2019年6月28日
+    作    者   : 张舵
+    修改内容   : 创建文件
 
-#define KEY9_ID  0x0100
-#define KEY10_ID 0x0200
-#define KEY11_ID 0x0400
-#define KEY12_ID 0x0800
-#define KEY13_ID 0x1000
-#define KEY14_ID 0x2000
-#define KEY15_ID 0x4000
-#define KEY16_ID 0x8000
+******************************************************************************/
+#ifndef __bsp_INFRARED_
+#define __bsp_INFRARED_
 
-#define KEY17_ID 0x010000
-#define KEY18_ID 0x020000
-#define KEY19_ID 0x040000
-#define KEY20_ID 0x080000
-#define KEY21_ID 0x100000
-#define KEY22_ID 0x200000
-#define KEY23_ID 0x400000
-#define KEY24_ID 0x800000
+#include "delay.h"
 
+/*----------------------------------------------*
+ * 包含头文件                                   *
+ *----------------------------------------------*/
+
+/*----------------------------------------------*
+ * 宏定义                                       *
+ *----------------------------------------------*/
+//LED端口定义
 
 #define ERR_INFRARED    (0xF0000000)
     
@@ -132,12 +126,33 @@
 
 
 
-#define KEY_LONG_TIME 100  //1s
-#define KEY_REPEAT_SPEED 5 //50ms
+
+/*----------------------------------------------*
+ * 常量定义                                     *
+ *----------------------------------------------*/
+
+/*----------------------------------------------*
+ * 模块级变量                                   *
+ *----------------------------------------------*/
+
+
+/*----------------------------------------------*
+ * 内部函数原型说明                             *
+ *----------------------------------------------*/
 
 void bsp_infrared_init(void);
-unsigned int bsp_infrared_scan(void);
-void bsp_GetSensorStatus(unsigned char *dat); 
-#endif /* BSP_BSP_KEY_H_ */
+
+uint32_t bsp_infrared_scan(void);
+
+void bsp_GetSensorStatus(uint8_t *dat);
+
+
+
+
+
+#endif
+
+
+
 
 

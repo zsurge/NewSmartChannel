@@ -36,7 +36,7 @@
 
 //驱动层头文件
 #include "bsp_flash.h"
-//#include "bsp_usart.h"
+#include "bsp_uart.h"
 #include "bsp_uart_fifo.h"
 #include "bsp_usart1.h"
 #include "bsp_usart2.h"

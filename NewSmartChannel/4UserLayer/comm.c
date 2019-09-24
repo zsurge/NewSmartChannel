@@ -28,7 +28,7 @@
 #include "ymodem.h"
 #include "bsp_uart_fifo.h"
 #include "Devinfo.h"
-
+#include "bsp_uart.h"
 
 
 
@@ -68,8 +68,8 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data);
     
 void init_serial_boot(void)
 {
-    comClearRxFifo(COM1);
-    comClearRxFifo(COM1);
+//    comClearRxFifo(COM1);
+//    comClearRxFifo(COM1);
     crc_value = 0;    
     memset(&gRecvHost,0x00,sizeof(gRecvHost));
 }
@@ -101,7 +101,8 @@ void deal_Serial_Parse(void)
     {  
         #if CMD_SERIAL_PORT == 0x01
 //        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
-        if(comGetChar(COM1, &ch) != 1)  //读取串口数据
+//        if(comGetChar(COM1, &ch) != 1)  //读取串口数据
+        if(BSP_UartRead(SCOM1,&ch,1)!=1)
         {
             delay_ms(10);
             
@@ -310,8 +311,8 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-        comSendBuf(COM1,TxdBuf,i);        
-
+//        comSendBuf(COM1,TxdBuf,i); 
+          BSP_UartSend(SCOM1,TxdBuf,i); 
     }
     
     xSemaphoreGive(gxMutex);
@@ -618,7 +619,8 @@ void send_to_device(CMD_RX_T *cmd_rx)
 #if CMD_SERIAL_PORT == 0x01
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-        comSendBuf(COM1,TxdBuf,i);
+//        comSendBuf(COM1,TxdBuf,i);
+        BSP_UartSend(SCOM1,TxdBuf,i); 
     }
     xSemaphoreGive(gxMutex);
 
@@ -674,7 +676,8 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-        comSendBuf(COM1,TxdBuf,i);        
+//        comSendBuf(COM1,TxdBuf,i);        
+        BSP_UartSend(SCOM1,TxdBuf,i); 
     }
     
     xSemaphoreGive(gxMutex);

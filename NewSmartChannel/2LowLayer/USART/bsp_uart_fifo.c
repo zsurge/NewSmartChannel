@@ -1265,6 +1265,7 @@ static void ConfigUartNVIC(void)
 #if UART2_FIFO_EN == 1
 	/* 使能串口2中断 */
 	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
@@ -1273,6 +1274,7 @@ static void ConfigUartNVIC(void)
 #if UART3_FIFO_EN == 1
 	/* 使能串口3中断t */
 	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
@@ -1281,6 +1283,7 @@ static void ConfigUartNVIC(void)
 #if UART4_FIFO_EN == 1
 	/* 使能串口4中断t */
 	NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
@@ -1289,6 +1292,7 @@ static void ConfigUartNVIC(void)
 #if UART5_FIFO_EN == 1
 	/* 使能串口5中断t */
 	NVIC_InitStructure.NVIC_IRQChannel = UART5_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
@@ -1297,6 +1301,7 @@ static void ConfigUartNVIC(void)
 #if UART6_FIFO_EN == 1
 	/* 使能串口6中断t */
 	NVIC_InitStructure.NVIC_IRQChannel = USART6_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 5;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
@@ -1313,14 +1318,11 @@ static void ConfigUartNVIC(void)
 */
 static void UartSend(UART_T *_pUart, uint8_t *_ucaBuf, uint16_t _usLen)
 {
-	uint16_t i;
-    
+	uint16_t i;   
 
 	for (i = 0; i < _usLen; i++)
 	{
 		/* 如果发送缓冲区已经满了，则等待缓冲区空 */
-
-		/* 当 _pUart->usTxBufSize == 1 时, 下面的函数会死掉(待完善) */
 		while (1)
 		{
 			__IO uint16_t usCount;

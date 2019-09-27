@@ -61,35 +61,32 @@ void bsp_infrared_init ( void )
 	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_SENSOR7 |GPIO_PIN_SENSOR8;	    //LED0和LED1对应IO口
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;			//普通输入模式
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;		    //上拉
-	GPIO_Init ( GPIO_PORT_SENSOR78, &GPIO_InitStructure );		//初始化GPIO
+	GPIO_Init ( GPIO_PORT_SENSOR78, &GPIO_InitStructure );		//初始化GPIO    
 
-	GPIO_SetBits ( GPIO_PORT_SENSOR14,GPIO_PIN_SENSOR1|GPIO_PIN_SENSOR2|GPIO_PIN_SENSOR3|GPIO_PIN_SENSOR4 );
+	GPIO_SetBits ( GPIO_PORT_SENSOR14,GPIO_PIN_SENSOR1|GPIO_PIN_SENSOR2|GPIO_PIN_SENSOR3|GPIO_PIN_SENSOR4);
 	GPIO_SetBits ( GPIO_PORT_SENSOR56,GPIO_PIN_SENSOR5 |GPIO_PIN_SENSOR6 );
 	GPIO_SetBits ( GPIO_PORT_SENSOR78,GPIO_PIN_SENSOR7 |GPIO_PIN_SENSOR8 );
 
-	memset ( &SR_INF,0,sizeof ( SR_INF ) );
-
+	memset(&SR_INF,0,sizeof(SR_INF));
+    
 }
 
 
-void bsp_inf_clk ( void )
+void bsp_inf_clk(void)
 {
 	uint8_t i;
-	for ( i = 0; i < 24; ++i )
-	{
-		if ( SR_INF.NUMBUF[i] > TIM_UP )
+	for (i = 0; i < 24; ++i)
 		{
-			SR_INF.NUMBUF[i]--;
+			if(SR_INF.NUMBUF[i] > TIM_UP)SR_INF.NUMBUF[i]--;
 		}
-	}
 }
 
 
 uint32_t bsp_infrared_scan ( void )
 {
-	static uint32_t iret = 0;
+    static uint32_t iret = 0;
 	static uint8_t i=0;
-
+	
 	//将各IO口当前状态映射在线性数组中
 	SR_INF.STRBUF[0]=GETS1;
 	SR_INF.STRBUF[1]=GETS2;
@@ -117,31 +114,25 @@ uint32_t bsp_infrared_scan ( void )
 	SR_INF.STRBUF[23]=GETS24;
 
 	//24个红外防抖判断
-	for ( i=0; i<24; i++ )
-	{
-		if ( SR_INF.STRBUF[i]==INF_T )  //红外触发
+	for(i=0;i<24;i++)
 		{
-			if ( SR_INF.NUMBUF[i]==0 )  //刷新防抖时间
-			{
-				SR_INF.NUMBUF[i]=JET_TIM;
-			}
-			else if ( SR_INF.NUMBUF[i]==TIM_UP )    //红外信号稳定
-			{
-				SR_INF.code |= ( 0x01<<i );
-			}
+			if(SR_INF.STRBUF[i]==INF_T)
+				{
+					if(SR_INF.NUMBUF[i]==0)					SR_INF.NUMBUF[i]=JET_TIM; 
+					else if(SR_INF.NUMBUF[i]==TIM_UP)		SR_INF.code |= (0x01<<i);
+				}
+			else
+				{
+					SR_INF.NUMBUF[i]=0;
+					SR_INF.code &= ~(0x01<<i);
+				}
 		}
-		else //离开
+    
+	if(SR_INF.code!=SR_INF.frecode) 
 		{
-			SR_INF.NUMBUF[i]=0;
-			SR_INF.code &= ~ ( 0x01<<i );
+			SR_INF.frecode=SR_INF.code;
+			return SR_INF.code;	
 		}
-	}
-
-	if ( SR_INF.code!=SR_INF.frecode )
-	{
-		SR_INF.frecode=SR_INF.code;
-		return SR_INF.code;
-	}
 
 	return ERR_INFRARED;// 无按键按下
 }
@@ -150,22 +141,22 @@ uint32_t bsp_infrared_scan ( void )
 
 
 
-void bsp_GetSensorStatus ( uint8_t* dat )
+void bsp_GetSensorStatus(uint8_t *dat)
 {
-	static uint32_t code = 0;
-	uint8_t bcd[3] = {0};
-	uint8_t buf[6] = {0};
+    static uint32_t code = 0;
+    uint8_t bcd[3] = {0};
+    uint8_t buf[6] = {0};
 	uint8_t i;
 
-	bcd[0] = SR_INF.code>>16;
-	bcd[1] = SR_INF.code>>8;
-	bcd[2] = SR_INF.code&0xff;
+    bcd[0] = SR_INF.code>>16;    
+    bcd[1] = SR_INF.code>>8;
+    bcd[2] = SR_INF.code&0xff;
+    
+    memset(buf,0x00,sizeof(buf));
 
-	memset ( buf,0x00,sizeof ( buf ) );
-
-	bcd2asc ( buf, bcd, 6, 0 );
-
-	memcpy ( dat,buf,6 );
+    bcd2asc(buf, bcd, 6, 0);
+    
+    memcpy(dat,buf,6);
 
 }
 

@@ -87,7 +87,7 @@ void bsp_inf_clk ( void )
 
 uint32_t bsp_infrared_scan ( void )
 {
-	static uint32_t iret = 0;
+	//static uint32_t iret = 0;
 	static uint8_t i=0;
 
 	//将各IO口当前状态映射在线性数组中
@@ -152,10 +152,10 @@ uint32_t bsp_infrared_scan ( void )
 
 void bsp_GetSensorStatus ( uint8_t* dat )
 {
-	static uint32_t code = 0;
+	//static uint32_t code = 0;
 	uint8_t bcd[3] = {0};
 	uint8_t buf[6] = {0};
-	uint8_t i;
+	//uint8_t i;
 
 	bcd[0] = SR_INF.code>>16;
 	bcd[1] = SR_INF.code>>8;

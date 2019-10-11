@@ -68,8 +68,6 @@ void sfud_log_debug(const char *file, const long line, const char *format, ...);
 
 static void rcc_configuration(spi_user_data_t spi) {
     if (spi->spix == SPI1) {
-        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);//使能GPIOB时钟
-        RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);//使能SPI1时钟
     } else if (spi->spix == SPI2) {
         /* you can add SPI2 code here */
     
@@ -82,27 +80,7 @@ static void gpio_configuration(spi_user_data_t spi) {
     GPIO_InitTypeDef GPIO_InitStructure;
 
     if (spi->spix == SPI1) {
-
-    	GPIO_PinAFConfig(FLASH_PORT,FLASH_SCK_PINSource,FLASH_AF); //PB3复用为 SPI1
-    	GPIO_PinAFConfig(FLASH_PORT,FLASH_MISO_PINSource,FLASH_AF); //PB4复用为 SPI1
-    	GPIO_PinAFConfig(FLASH_PORT,FLASH_MOSI_PINSource,FLASH_AF); //PB5复用为 SPI1
-    	
-        /* SCK:PB3  MISO:PB4  MOSI:PB5 */
-        GPIO_InitStructure.GPIO_Pin = FLASH_SCK_PIN|FLASH_MISO_PIN|FLASH_MOSI_PIN;//PB3~5复用功能输出  
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用功能
-        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
-        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-        GPIO_Init(FLASH_PORT, &GPIO_InitStructure);//初始化  
-
-        SF_CS_HIGH();
-        //GPIOB14
-        GPIO_InitStructure.GPIO_Pin = FLASH_CS_PIN;//PB14
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//输出
-        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
-        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-        GPIO_Init(FLASH_PORT, &GPIO_InitStructure);//初始化       
+    
 
     } else if (spi->spix == SPI2) {
         /* you can add SPI2 code here */
@@ -139,7 +117,7 @@ static void spi_configuration(spi_user_data_t spi) {
     SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;                       //数据捕获于第一个时钟沿
     //TODO 以后可以尝试硬件 CS
     SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;                          //内部  NSS 信号由 SSI 位控制
-    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256; //波特率预分频值为 2
+    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4; //波特率预分频值为 2
     SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;                 //数据传输从 MSB 位开始
     SPI_InitStructure.SPI_CRCPolynomial = 7;                           // CRC 值计算的多项式
 

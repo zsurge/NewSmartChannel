@@ -57,7 +57,7 @@
 #define GETDEVICEINFO                   0xA3
 #define GETVER                          0xA4
 #define DEVRESET                        0xA5
-#define HEARTBEAT                       0xA6
+#define SETDEVPARAM                     0xA6
 #define UPGRADE                         0xA7
 #define CONTROLMOTOR                    0xA8
 
@@ -79,9 +79,6 @@
 
 
 #define JSON_PACK_MAX                   512
-
-#define CMD_SERIAL_PORT                 0x01
-
 
 #define MAX_RXD_BUF_LEN        			128
 #define MAX_TXD_BUF_LEN					128      

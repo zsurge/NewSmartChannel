@@ -79,6 +79,12 @@ void bsp_Ex_LED_Init(void)
 void bsp_Ex_SetLed(uint8_t *dat)
 {
     uint8_t buf[64] = {0};
+
+    if(!dat)
+    {
+        DBG("param error!\r\n");
+        return;
+    }
     
     memcpy(buf,dat,15);    
 

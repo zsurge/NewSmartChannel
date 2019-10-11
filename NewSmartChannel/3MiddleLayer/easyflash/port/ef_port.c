@@ -33,29 +33,18 @@
 #include <sfud.h>
 
 
-
-#define SF_VERSION "V1.0.1"
-#define HD_VERSION "V1.0"
-
 /* default environment variables set for user */
  
 static const ef_env default_env_set[] = 
 {
    {"boot_times","0001"},
-   {"mcu_id","0000"},
-   {"release","20190810"},
-   {"software version",SF_VERSION},
-   {"hardware version",HD_VERSION},
    {"WSPIFLASH","5555"},
    {"WMCUFLASH","6666"},    
-   {"key1","key1_value"},
-   {"key2","key2_value"},
-   {"key3","key3_value"},
-   {"key4","key4_value"},
-   {"key5","key5_value"},
-   {"key6","key6_value"},
-   {"key7","key7_value"},
-   {"key8","key8_value"}   
+   {"ICSTATE","01"},
+   {"QRSTATE","01"},
+   {"LIGHTMODE","01"},
+   {"SCANMODE","01"},
+   {"TIMEINTERVAL","03"}
 };
 
 

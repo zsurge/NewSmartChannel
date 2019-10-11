@@ -37,7 +37,7 @@ volatile uint32_t g1msCount = 0;
 
 void bsp_TimeSysTickHandler (void)
 {
-//    if (g1msCount > 0) g1msCount--;
+    if (g1msCount > 0) g1msCount--;
 	if (g1msTimerUART1 > 0) g1msTimerUART1--;
     if (g1msTimerUART2 > 0) g1msTimerUART2--;
     if (g1msTimerUART3 > 0) g1msTimerUART3--;

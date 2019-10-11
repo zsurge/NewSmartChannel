@@ -276,7 +276,7 @@ void dbg(const char *file, const long line, const char *format, ...)
 
 void dbh(char *title,char *buf,int len)
 {
-    //#ifndef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     int i = 0;
     printf("----------%s-------,buf length = %d\r\n",title,len);
     printf("< ");
@@ -285,7 +285,7 @@ void dbh(char *title,char *buf,int len)
         printf("%02x ",buf[i]);
     }
     printf(" >\r\n");   
-    //#endif
+    #endif
 }
 
 

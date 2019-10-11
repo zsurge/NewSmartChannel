@@ -22,6 +22,17 @@
  *----------------------------------------------*/
 #include "ini.h"
 #include "Devinfo.h"
+#include "string.h"
+#include "bsp_uart_fifo.h"
+
+ICREADER_T   gICReaderParam; 
+QRCODE_T     gQRCodeParam;
+
+static SYSERRORCODE_E SaveICParam(void);
+static SYSERRORCODE_E SaveQRParam(void);
+
+
+
 #define SFUD_DEMO_TEST_BUFFER_SIZE 1024
 
 static uint8_t sfud_demo_test_buf[SFUD_DEMO_TEST_BUFFER_SIZE];
@@ -138,5 +149,176 @@ SYSERRORCODE_E RecordBootTimes(void)
     
     return result;
 }
+
+static SYSERRORCODE_E SaveICParam(void)
+{
+    SYSERRORCODE_E result = NO_ERR;
+    char CurrentICstate[4] = {0};      
+
+    sprintf(CurrentICstate,"%04d", gICReaderParam.FunState);
+
+    DBG("CurrentICstate = %s\r\n",CurrentICstate);
+
+    if(ef_set_env("ICSTATE", CurrentICstate) != EF_NO_ERR)
+    {
+        result = FLASH_W_ERR;  
+    }
+    
+    return result;
+
+}
+
+static SYSERRORCODE_E SaveQRParam(void)
+{
+    SYSERRORCODE_E result = NO_ERR;
+    
+    char CurrentQRstate[4] = {0};  
+    char CurrentQRLightMode[4] = {0}; 
+    char CurrentQRScanMode[4] = {0}; 
+    char CurrentQRTimeInterval[4] = {0}; 
+
+    uint8_t LightOn[6] = { 0x31,0x32,0x36,0x30,0x31,0x35 };//打开补光灯
+    uint8_t LightOff[6] = { 0x31,0x32,0x36,0x30,0x30,0x35 };//关闭补光灯
+    
+    uint8_t AlwaysScan[6] = { 0x38,0x31,0x38,0x39,0x30,0x30 }; //相同条码没有时间间隔
+    uint8_t SingleScan[6] = { 0x31,0x31,0x38,0x39,0x31,0x37 }; //不识别相同条码，即仅识别一次
+    
+    uint8_t Timeout1Sec[7] = { 0x38,0x31,0x38,0x39,0x32,0x30,0x30 };//相同条码1秒延时
+    uint8_t Timeout2Sec[7] = { 0x38,0x31,0x38,0x39,0x34,0x30,0x30 };//相同条码2秒延时
+    uint8_t Timeout3Sec[7] = { 0x38,0x31,0x38,0x39,0x36,0x30,0x30 };//相同条码3秒延时
+
+    //QR功能使能-禁止
+    sprintf(CurrentQRstate,"%04d", gQRCodeParam.FunState);      
+    if(ef_set_env("QRSTATE", CurrentQRstate) != EF_NO_ERR)
+    {
+        result = FLASH_W_ERR;  
+    }
+
+    DBG("CurrentQRstate = %s\r\n",CurrentQRstate);
+
+    //设置灯光模式    
+    if(gQRCodeParam.LightMode == 0)
+    {
+        comSendBuf(COM3,LightOff,6); 
+    }
+    else
+    {
+        comSendBuf(COM3,LightOn,6); 
+    }
+        
+    sprintf(CurrentQRLightMode,"%04d", gQRCodeParam.LightMode);
+     DBG("CurrentQRLightMode = %s\r\n",CurrentQRLightMode);
+
+    if(ef_set_env("LIGHTMODE", CurrentQRLightMode) != EF_NO_ERR)
+    {
+        result = FLASH_W_ERR;  
+    }
+
+    //设置 扫描模式 
+    if(gQRCodeParam.ScanMode == 0)
+    {
+        comSendBuf(COM3,AlwaysScan,6); 
+    }
+    else
+    {
+        comSendBuf(COM3,SingleScan,6); 
+    }
+
+    sprintf(CurrentQRScanMode,"%04d", gQRCodeParam.ScanMode);
+         DBG("CurrentQRScanMode = %s\r\n",CurrentQRScanMode);
+    
+
+    if(ef_set_env("SCANMODE", CurrentQRScanMode) != EF_NO_ERR)
+    {
+        result = FLASH_W_ERR;  
+    }
+
+    //设置扫描时间间隔
+    if(gQRCodeParam.TimeInterval == 1)
+    {
+        comSendBuf(COM3,Timeout1Sec,7); 
+    }
+    else if(gQRCodeParam.TimeInterval == 2)
+    {
+        comSendBuf(COM3,Timeout2Sec,7); 
+    }
+    else
+    {
+        comSendBuf(COM3,Timeout3Sec,7); 
+    }    
+
+    sprintf(CurrentQRTimeInterval,"%04d", gQRCodeParam.TimeInterval);
+    DBG("CurrentQRTimeInterval = %s\r\n",CurrentQRTimeInterval);
+
+    
+
+    if(ef_set_env("TIMEINTERVAL", CurrentQRTimeInterval) != EF_NO_ERR)
+    {
+        result = FLASH_W_ERR;  
+    } 
+    
+    return result;
+}
+
+
+
+SYSERRORCODE_E ParseDevParam(uint8_t *ParamBuff)
+{
+    SYSERRORCODE_E result = NO_ERR;
+    uint8_t buff[6] = {0};
+
+    if(!ParamBuff)
+    {
+        DBG("param error!\r\n");
+        return CJSON_PARSE_ERR;  
+    }
+
+    memcpy(buff,ParamBuff,5);
+
+    dbh("ParseDevParam buff n",buff,5);
+
+     if(buff[4] == 0x00)
+    {
+        //禁止IC卡
+        gICReaderParam.FunState = 0;
+    }
+    else
+    {
+        //使能IC卡并设置默认值
+        gICReaderParam.FunState = 1;
+    }   
+
+    DBG("gICReaderParam.FunState = %d\r\n",gICReaderParam.FunState);
+
+    gICReaderParam.SaveICParam = SaveICParam;
+    gICReaderParam.SaveICParam();
+
+    if(buff[3] == 0)
+    {
+        //禁止QR CODE
+        gQRCodeParam.FunState = 0;
+    }
+    else
+    {
+        //使能QR CDOE 并设置默认值
+        gQRCodeParam.FunState = 1;        
+    } 
+
+    DBG("gQRCodeParam.FunState = %d\r\n",gQRCodeParam.FunState);
+
+    gQRCodeParam.LightMode = buff[2];
+    gQRCodeParam.ScanMode = buff[1];
+    gQRCodeParam.TimeInterval = buff[0];
+
+    DBG("gQRCodeParam.LightMode = %d\r\n",gQRCodeParam.LightMode);
+    DBG("gQRCodeParam.ScanMode = %d\r\n",gQRCodeParam.ScanMode);
+    DBG("gQRCodeParam.TimeInterval = %d\r\n",gQRCodeParam.TimeInterval);
+
+    gQRCodeParam.SaveQRParam = SaveQRParam;
+    gQRCodeParam.SaveQRParam();
+    
+    return result;
+}
+
 
 

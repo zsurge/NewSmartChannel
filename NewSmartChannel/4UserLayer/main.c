@@ -311,9 +311,9 @@ static void vTaskStart(void *pvParameters)
 	bsp_InitIwdg(4000);
 	
 	/* 打印系统开机状态，方便查看系统是否复位 */
-//	App_Printf("=====================================================\r\n");
-//	App_Printf("系统开机执行\r\n");
-//	App_Printf("=====================================================\r\n");
+	App_Printf("=====================================================\r\n");
+	App_Printf("系统开机执行\r\n");
+	App_Printf("=====================================================\r\n");
 	
     while(1)
     {   
@@ -341,8 +341,7 @@ static void vTaskStart(void *pvParameters)
 void vTaskQueryMotor(void *pvParameters)
 {
     uint8_t ReadStatus[8] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
-
-        
+    
     while(1)
     {
         comSendBuf(COM4, ReadStatus,8);//查询A电机状态
@@ -539,21 +538,33 @@ void vTaskReader(void *pvParameters)
 { 
     uint32_t CardID = 0;
     uint8_t dat[4] = {0};
+    
+    uint32_t FunState = 0;
+    char *IcReaderState;
+
+    IcReaderState = ef_get_env("ICSTATE");
+    assert_param(IcReaderState);
+    FunState = atol(IcReaderState);
+    
     while(1)
     {
-        CardID = bsp_WeiGenScanf();
 
-        if(CardID != 0)
+        if(FunState != 0x00)
         {
-            memset(dat,0x00,sizeof(dat));            
-            
-			dat[0] = CardID>>24;
-			dat[1] = CardID>>16;
-			dat[2] = CardID>>8;
-			dat[3] = CardID&0XFF;    
-            
-            send_to_host(WGREADER,dat,4);
-        }  
+            CardID = bsp_WeiGenScanf();
+
+            if(CardID != 0)
+            {
+                memset(dat,0x00,sizeof(dat));            
+                
+    			dat[0] = CardID>>24;
+    			dat[1] = CardID>>16;
+    			dat[2] = CardID>>8;
+    			dat[3] = CardID&0XFF;    
+                
+                send_to_host(WGREADER,dat,4);
+            }  
+        }
 
 
 		/* 发送事件标志，表示任务正常运行 */        
@@ -570,19 +581,29 @@ void vTaskQR(void *pvParameters)
 { 
     uint8_t recv_buf[245] = {0};
     uint8_t dat[256] = {0};
-    uint16_t len = 0;   
+    uint16_t len = 0;  
+    
+    uint32_t FunState = 0;
+    char *QrCodeState;
 
+    QrCodeState = ef_get_env("QRSTATE");
+    assert_param(QrCodeState);
+    FunState = atol(QrCodeState);    
+    
     while(1)
     {
-       memset(recv_buf,0x00,sizeof(recv_buf));  
-       memset(dat,0x00,sizeof(dat));  
-       len = comRecvBuff(COM3,recv_buf,sizeof(recv_buf));
-
-       if(len > 0  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
+       if(FunState != 0x00)
        {
-            asc2bcd(dat, recv_buf, len, 0);
-            
-            send_to_host(QRREADER,dat,ceil(len/2));
+           memset(recv_buf,0x00,sizeof(recv_buf));  
+           memset(dat,0x00,sizeof(dat));  
+           len = comRecvBuff(COM3,recv_buf,sizeof(recv_buf));
+
+           if(len > 0  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
+           {
+                asc2bcd(dat, recv_buf, len, 0);
+                
+                send_to_host(QRREADER,dat,ceil(len/2));
+           }
        }
 
 		/* 发送事件标志，表示任务正常运行 */        
@@ -593,7 +614,7 @@ void vTaskQR(void *pvParameters)
 
 
 void vTaskHandShake(void *pvParameters)
-{        
+{
     uint32_t i_boot_times = NULL;
     char *c_old_boot_times, c_new_boot_times[12] = {0};
     uint8_t bcdbuf[6] = {0};
@@ -617,6 +638,46 @@ void vTaskHandShake(void *pvParameters)
     send_to_host(HANDSHAKE,bcdbuf,6);  
     
     vTaskDelete( NULL ); //删除自己
+
+
+//    uint32_t i_boot_times = NULL;
+//    char *c_old_boot_times, c_new_boot_times[12] = {0};
+//    
+
+//    g1msCount = 1000*10;
+
+//    c_old_boot_times = ef_get_env("boot_times");
+
+//    DBG("1.c_old_boot_times = %s\r\n",c_old_boot_times);
+
+//    while(1)
+//    {
+//        if(g1msCount == 0)
+//        {
+//            break;
+//        }
+//        /* get the boot count number from Env */
+//        c_old_boot_times = ef_get_env("boot_times");
+//        assert_param(c_old_boot_times);
+//        i_boot_times = atol(c_old_boot_times);
+//        
+//        /* boot count +1 */
+//        i_boot_times ++;
+
+//        /* interger to string */
+//        sprintf(c_new_boot_times,"%012ld", i_boot_times);
+
+//        /* set and store the boot count number to Env */
+//        ef_set_env("boot_times", c_new_boot_times);   
+
+
+//    }
+
+//    c_old_boot_times = ef_get_env("boot_times");
+
+//    DBG("2.c_old_boot_times = %s\r\n",c_old_boot_times);    
+
+//    vTaskDelete( NULL ); //删除自己
 }
 
 

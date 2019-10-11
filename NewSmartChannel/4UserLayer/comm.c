@@ -99,7 +99,6 @@ void deal_Serial_Parse(void)
     
     while(1)
     {  
-        #if CMD_SERIAL_PORT == 0x01
 //        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
 //        if(comGetChar(COM1, &ch) != 1)  //读取串口数据
         if(BSP_UartRead(SCOM1,&ch,1)!=1)
@@ -108,14 +107,7 @@ void deal_Serial_Parse(void)
             
             return;
         }
-        #else
-        if(bsp_Usart2_RecvOne(&ch) != 1)  //读取串口数据
-        {
-            delay_ms(10);
-            
-            return;
-        }
-        #endif
+
         
         switch (gRecvHost.RxdStatus)
         { /*接收数据状态*/                
@@ -307,7 +299,7 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
 //    DBG("send json data = %s\r\n",tmpBuf);
 //    dbh("send_to_host",(char *)TxdBuf,i);
 
-#if CMD_SERIAL_PORT == 0x01
+
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
@@ -316,9 +308,6 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     }
     
     xSemaphoreGive(gxMutex);
-#else
-    bsp_Usart2_SendData(TxdBuf,i);
-#endif
 
     return NO_ERR;
 }
@@ -572,7 +561,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 //            dbh("send_to_GETDEVICEINFO",(char *)TxdBuf,i);
             break;           
       
-        case GETVER:  //有获取设备
+        case GETVER:  //获取软件版本号
             i = 3;
             TxdBuf[0] = STX;
             cmd_tx.cmd = GETVER;
@@ -590,10 +579,25 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[i++] = iCRC & 0xff;   
             break; 
             
-        case HEARTBEAT:
-            //不需要心跳
-            //android一直在发查询指令，可以替换心跳
-            break;
+        case SETDEVPARAM://设置设备参数
+            ParseDevParam(cmd_rx->cmd_data);//解析参数并写入FLASH
+            i = 3;
+            TxdBuf[0] = STX;
+            cmd_tx.cmd = SETDEVPARAM;
+            cmd_tx.code = 0x00;
+            strcpy((char *)cmd_tx.data,"00");      
+            i += packetJSON(&cmd_tx,tmpBuf); 
+            memcpy(TxdBuf+3,tmpBuf,i-3); 
+            TxdBuf[i++] = ETX;     
+
+            TxdBuf[1] = i>>8; //high
+            TxdBuf[2] = i&0xFF; //low
+            
+            iCRC = CRC16_Modbus(TxdBuf, i);  
+            TxdBuf[i++] = iCRC >> 8;
+            TxdBuf[i++] = iCRC & 0xff;   
+            break; 
+
         case DEVRESET:
             NVIC_SystemReset();
             break;
@@ -616,7 +620,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
             return;
     }
 
-#if CMD_SERIAL_PORT == 0x01
+
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
 //        comSendBuf(COM1,TxdBuf,i);
@@ -624,9 +628,6 @@ void send_to_device(CMD_RX_T *cmd_rx)
     }
     xSemaphoreGive(gxMutex);
 
-#else
-    bsp_Usart2_SendData(TxdBuf,i);
-#endif 
 }
 
 

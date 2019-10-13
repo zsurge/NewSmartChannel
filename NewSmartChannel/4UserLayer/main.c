@@ -47,11 +47,11 @@
 #define CMD_STK_SIZE 		1024*2
 #define INFRARED_STK_SIZE 	512
 #define RS485_STK_SIZE 		1024*1
-#define START_STK_SIZE 	    128
+#define START_STK_SIZE 	    256
 #define QR_STK_SIZE 		512
-#define READER_STK_SIZE     512
+#define READER_STK_SIZE     256
 #define HANDSHAKE_STK_SIZE  256
-#define KEY_STK_SIZE        256
+#define KEY_STK_SIZE        128
 #define QUERYMOTOR_STK_SIZE      256
 
 
@@ -119,6 +119,7 @@ static void vTaskQueryMotor(void *pvParameters);
 static void AppTaskCreate(void);
 static void AppObjCreate (void);
 static void App_Printf(char *format, ...);
+
 //static void AppEventCreate (void);
 
 //static void DisplayDevInfo (void);
@@ -126,7 +127,7 @@ static void App_Printf(char *format, ...);
 //static void DisplayDevInfo(void)
 //{
 //	printf("Softversion :%s\r\n",gDevinfo.SoftwareVersion);
-//    printf("HardwareVersion :%s\r\n", gDevinfo.HardwareVersion);
+//  printf("HardwareVersion :%s\r\n", gDevinfo.HardwareVersion);
 //	printf("Model :%s\r\n", gDevinfo.Model);
 //	printf("ProductBatch :%s\r\n", gDevinfo.ProductBatch);	    
 //	printf("BulidDate :%s\r\n", gDevinfo.BulidDate);
@@ -138,9 +139,6 @@ int main(void)
 {   
     //硬件初始化
     bsp_Init();  
-
-    //记录开机次数
-//    RecordBootTimes();
 
     //DisplayDevInfo();
                     
@@ -177,7 +175,7 @@ static void AppTaskCreate (void)
 
     //查询电机状态
     xTaskCreate((TaskFunction_t )vTaskQueryMotor,
-                (const char*    )"vTaskQueryMotor",       
+                (const char*    )"vQueryMotor",       
                 (uint16_t       )QUERYMOTOR_STK_SIZE, 
                 (void*          )NULL,              
                 (UBaseType_t    )QUERYMOTOR_TASK_PRIO,    
@@ -209,7 +207,7 @@ static void AppTaskCreate (void)
 
     //红外传感器状态上送
     xTaskCreate((TaskFunction_t )vTaskInfrared,     
-                (const char*    )"vTaskInfrared",   
+                (const char*    )"vInfrared",   
                 (uint16_t       )INFRARED_STK_SIZE, 
                 (void*          )NULL,
                 (UBaseType_t    )INFRARED_TASK_PRIO,
@@ -218,7 +216,7 @@ static void AppTaskCreate (void)
 
     //全高门电机状态返回
     xTaskCreate((TaskFunction_t )vTaskRs485,     
-                (const char*    )"vTaskRs485",   
+                (const char*    )"vRs485",   
                 (uint16_t       )RS485_STK_SIZE, 
                 (void*          )NULL,
                 (UBaseType_t    )RS485_TASK_PRIO,
@@ -226,7 +224,7 @@ static void AppTaskCreate (void)
 
     //韦根读卡器
     xTaskCreate((TaskFunction_t )vTaskReader,     
-                (const char*    )"vTaskReader",   
+                (const char*    )"vReader",   
                 (uint16_t       )READER_STK_SIZE, 
                 (void*          )NULL,
                 (UBaseType_t    )READER_TASK_PRIO,
@@ -352,21 +350,18 @@ void vTaskQueryMotor(void *pvParameters)
         vTaskDelay(300);     
     }
 
-}   
-
+} 
 
 //LED任务函数 
 void vTaskLed(void *pvParameters)
 {   
+    uint8_t i = 0;
     BEEP = 0;
     vTaskDelay(300);
     BEEP = 1;
-
-        
+    
     while(1)
-    {
-        LED4=!LED4; 
-                
+    {    
         if(Motro_A== 1)
         {
           LED3=!LED3;   
@@ -383,12 +378,20 @@ void vTaskLed(void *pvParameters)
         else
         {
             LED2 = 0;
-        }        
+        }    
+
+        //系统状态运行灯，每500ms 一次
+        i++;
+        if(i == 5)
+        {
+            i = 0;
+            LED4=!LED4; 
+        }
+        
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_0);  
         vTaskDelay(100);     
     }
-
 }   
 
 //motor to host 任务函数
@@ -570,7 +573,7 @@ void vTaskReader(void *pvParameters)
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_4);        
         
-        vTaskDelay(20);
+        vTaskDelay(50);
         
     }
 
@@ -596,19 +599,19 @@ void vTaskQR(void *pvParameters)
        {
            memset(recv_buf,0x00,sizeof(recv_buf));  
            memset(dat,0x00,sizeof(dat));  
-           len = comRecvBuff(COM3,recv_buf,sizeof(recv_buf));
+           len = comRecvBuff(COM3,recv_buf,sizeof(recv_buf));           
 
            if(len > 0  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
            {
-                asc2bcd(dat, recv_buf, len, 0);
-                
-                send_to_host(QRREADER,dat,ceil(len/2));
+                //asc2bcd(dat, recv_buf, len, 0);                
+                //send_to_host(QRREADER,dat,ceil(len/2));
+                SendAsciiCodeToHost(QRREADER,NO_ERR,recv_buf);
            }
        }
 
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_5);  
-        vTaskDelay(300);        
+        vTaskDelay(50);        
     }
 }   
 

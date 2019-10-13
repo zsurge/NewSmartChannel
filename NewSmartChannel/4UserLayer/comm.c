@@ -58,6 +58,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx); //私有函数
 static uint8_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
 static uint16_t  packetDeviceInfo(uint8_t *command_data);
 
+static void displayTask(void);
 
 
 
@@ -218,7 +219,7 @@ void deal_rx_data(void)
             {
 				//转存JSON数据包
                 memcpy(json_buf,(const char*)gRecvHost.RxdBuf+1,gRecvHost.RxdTotalLen-4);
-                DBG("recv json data = : %s\r\n",json_buf);
+//                DBG("recv json data = : %s\r\n",json_buf);
 
                 //解析JSON数据包              
                 if(parseJSON(json_buf,&cmd_rx) == NO_ERR)
@@ -491,6 +492,21 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
 }
 
 
+static void displayTask(void)
+{
+    #ifdef DEBUG_PRINT
+    uint8_t pcWriteBuffer[1024];
+    printf("=================================================\r\n");
+    printf("任务名      任务状态 优先级   剩余栈 任务序号\r\n");
+    vTaskList((char *)&pcWriteBuffer);
+    printf("%s\r\n", pcWriteBuffer);
+    
+    printf("\r\n任务名       运行计数         使用率\r\n");
+    vTaskGetRunTimeStats((char *)&pcWriteBuffer);
+    printf("%s\r\n", pcWriteBuffer);    
+    #endif
+}
+
 
 void send_to_device(CMD_RX_T *cmd_rx)
 {
@@ -507,6 +523,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
     switch (cmd_rx->cmd)
     {
         case GETSENSOR://获取红外状态，目前只有两组红外
+            displayTask();
             i = 3;
             TxdBuf[0] = STX;            
             cmd_tx.cmd = GETSENSOR;

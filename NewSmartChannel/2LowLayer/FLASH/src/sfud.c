@@ -38,6 +38,7 @@
 
 /* user configured flash device information table */
 static sfud_flash flash_table[] = SFUD_FLASH_DEVICE_TABLE;
+
 /* supported manufacturer information table */
 static const sfud_mf mf_table[] = SFUD_MF_TABLE;
 
@@ -1034,3 +1035,5 @@ sfud_err sfud_write_status(const sfud_flash *flash, bool is_volatile, uint8_t st
 
     return result;
 }
+
+

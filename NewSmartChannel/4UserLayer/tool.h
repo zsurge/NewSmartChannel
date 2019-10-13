@@ -25,9 +25,14 @@
 #include "stdlib.h" 
 #include <stdint.h>
 
+
+
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
+ 
+#define DEBUG_PRINT
+ 
 #define setbit(x,y) x|=(1<<y)         //将X的第Y位置1    
 #define clrbit(x,y) x&=~(1<<y)        //将X的第Y位清0
 

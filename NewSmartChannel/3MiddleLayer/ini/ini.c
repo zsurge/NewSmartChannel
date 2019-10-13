@@ -177,15 +177,17 @@ static SYSERRORCODE_E SaveQRParam(void)
     char CurrentQRScanMode[4] = {0}; 
     char CurrentQRTimeInterval[4] = {0}; 
 
-    uint8_t LightOn[6] = { 0x31,0x32,0x36,0x30,0x31,0x35 };//打开补光灯
-    uint8_t LightOff[6] = { 0x31,0x32,0x36,0x30,0x30,0x35 };//关闭补光灯
+    uint8_t Configuration[8] = {0x02,0x39,0x39,0x39,0x39,0x39,0x39,0x03};
+
+    uint8_t LightOn[8] = {0x02, 0x31,0x32,0x36,0x30,0x31,0x35 ,0x03};//打开补光灯
+    uint8_t LightOff[8] = { 0x02,0x31,0x32,0x36,0x30,0x30,0x35,0x03 };//关闭补光灯
     
-    uint8_t AlwaysScan[6] = { 0x38,0x31,0x38,0x39,0x30,0x30 }; //相同条码没有时间间隔
-    uint8_t SingleScan[6] = { 0x31,0x31,0x38,0x39,0x31,0x37 }; //不识别相同条码，即仅识别一次
+    uint8_t AlwaysScan[8] = { 0x02,0x38,0x31,0x38,0x39,0x30,0x30,0x03 }; //相同条码没有时间间隔
+    uint8_t SingleScan[8] = { 0x02,0x31,0x31,0x38,0x39,0x31,0x37,0x03 }; //不识别相同条码，即仅识别一次
     
-    uint8_t Timeout1Sec[7] = { 0x38,0x31,0x38,0x39,0x32,0x30,0x30 };//相同条码1秒延时
-    uint8_t Timeout2Sec[7] = { 0x38,0x31,0x38,0x39,0x34,0x30,0x30 };//相同条码2秒延时
-    uint8_t Timeout3Sec[7] = { 0x38,0x31,0x38,0x39,0x36,0x30,0x30 };//相同条码3秒延时
+//    uint8_t Timeout1Sec[9] = { 0x02,0x38,0x31,0x38,0x39,0x32,0x30,0x30,0x03 };//相同条码1秒延时
+//    uint8_t Timeout2Sec[9] = { 0x02,0x38,0x31,0x38,0x39,0x34,0x30,0x30,0x03 };//相同条码2秒延时
+    uint8_t Timeout600mSec[9] = { 0x02,0x38,0x31,0x38,0x39,0x31,0x32,0x30,0x03 };//相同条码600ms秒延时
 
     //QR功能使能-禁止
     sprintf(CurrentQRstate,"%04d", gQRCodeParam.FunState);      
@@ -196,14 +198,18 @@ static SYSERRORCODE_E SaveQRParam(void)
 
     DBG("CurrentQRstate = %s\r\n",CurrentQRstate);
 
+
+    //开启设置模式
+    comSendBuf(COM3,Configuration,8);
+     
     //设置灯光模式    
     if(gQRCodeParam.LightMode == 0)
     {
-        comSendBuf(COM3,LightOff,6); 
+        comSendBuf(COM3,LightOff,8); 
     }
     else
     {
-        comSendBuf(COM3,LightOn,6); 
+        comSendBuf(COM3,LightOn,8); 
     }
         
     sprintf(CurrentQRLightMode,"%04d", gQRCodeParam.LightMode);
@@ -217,11 +223,11 @@ static SYSERRORCODE_E SaveQRParam(void)
     //设置 扫描模式 
     if(gQRCodeParam.ScanMode == 0)
     {
-        comSendBuf(COM3,AlwaysScan,6); 
+        comSendBuf(COM3,AlwaysScan,8); 
     }
     else
     {
-        comSendBuf(COM3,SingleScan,6); 
+        comSendBuf(COM3,SingleScan,8); 
     }
 
     sprintf(CurrentQRScanMode,"%04d", gQRCodeParam.ScanMode);
@@ -233,19 +239,22 @@ static SYSERRORCODE_E SaveQRParam(void)
         result = FLASH_W_ERR;  
     }
 
-    //设置扫描时间间隔
-    if(gQRCodeParam.TimeInterval == 1)
-    {
-        comSendBuf(COM3,Timeout1Sec,7); 
-    }
-    else if(gQRCodeParam.TimeInterval == 2)
-    {
-        comSendBuf(COM3,Timeout2Sec,7); 
-    }
-    else
-    {
-        comSendBuf(COM3,Timeout3Sec,7); 
-    }    
+    //设置扫描时间间隔 设备有问题，暂时不启用
+//    if(gQRCodeParam.TimeInterval == 1)
+//    {
+//        comSendBuf(COM3,Timeout1Sec,9); 
+//    }
+//    else if(gQRCodeParam.TimeInterval == 2)
+//    {
+//        comSendBuf(COM3,Timeout2Sec,9); 
+//    }
+//    else
+//    {
+        comSendBuf(COM3,Timeout600mSec,9); 
+//    }    
+
+    //关闭设置模式
+    comSendBuf(COM3,Configuration,8);
 
     sprintf(CurrentQRTimeInterval,"%04d", gQRCodeParam.TimeInterval);
     DBG("CurrentQRTimeInterval = %s\r\n",CurrentQRTimeInterval);
@@ -273,9 +282,7 @@ SYSERRORCODE_E ParseDevParam(uint8_t *ParamBuff)
         return CJSON_PARSE_ERR;  
     }
 
-    memcpy(buff,ParamBuff,5);
-
-    dbh("ParseDevParam buff n",buff,5);
+    memcpy(buff,ParamBuff,5);    
 
      if(buff[4] == 0x00)
     {

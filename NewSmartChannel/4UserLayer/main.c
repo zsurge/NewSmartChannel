@@ -42,17 +42,30 @@
 
 
 //任务堆栈大小    
-#define LED_STK_SIZE 		128
-#define MOTOR_STK_SIZE 		512 
-#define CMD_STK_SIZE 		1024*2
-#define INFRARED_STK_SIZE 	512
-#define RS485_STK_SIZE 		1024*1
-#define START_STK_SIZE 	    256
-#define QR_STK_SIZE 		512
-#define READER_STK_SIZE     256
-#define HANDSHAKE_STK_SIZE  256
-#define KEY_STK_SIZE        128
-#define QUERYMOTOR_STK_SIZE      256
+#define LED_STK_SIZE 		(256)
+#define MOTOR_STK_SIZE 		(1024) 
+#define CMD_STK_SIZE 		(1024*2)
+#define INFRARED_STK_SIZE 	(1024)
+#define RS485_STK_SIZE 		(1024*1)
+#define START_STK_SIZE 	    (1024)
+#define QR_STK_SIZE 		(1024)
+#define READER_STK_SIZE     (1024)
+#define HANDSHAKE_STK_SIZE  (1024)
+#define KEY_STK_SIZE        (1024)
+#define QUERYMOTOR_STK_SIZE      (1024)
+
+//#define LED_STK_SIZE 		512
+//#define MOTOR_STK_SIZE 		512 
+//#define CMD_STK_SIZE 		1024*2
+//#define INFRARED_STK_SIZE 	512
+//#define RS485_STK_SIZE 		1024*1
+//#define START_STK_SIZE 	    512
+//#define QR_STK_SIZE 		512
+//#define READER_STK_SIZE     512
+//#define HANDSHAKE_STK_SIZE  512
+//#define KEY_STK_SIZE        512
+//#define QUERYMOTOR_STK_SIZE      512
+
 
 
 
@@ -398,7 +411,7 @@ void vTaskLed(void *pvParameters)
 void vTaskMortorToHost(void *pvParameters)
 {
     uint8_t buf[8] = {0};
-    uint8_t readLen = 0;
+    uint16_t readLen = 0;
     uint16_t iCRC = 0;
     uint8_t crcBuf[2] = {0};
     while (1)
@@ -582,8 +595,7 @@ void vTaskReader(void *pvParameters)
 
 void vTaskQR(void *pvParameters)
 { 
-    uint8_t recv_buf[245] = {0};
-    uint8_t dat[256] = {0};
+    uint8_t recv_buf[256] = {0};
     uint16_t len = 0;  
     
     uint32_t FunState = 0;
@@ -598,13 +610,10 @@ void vTaskQR(void *pvParameters)
        if(FunState != 0x00)
        {
            memset(recv_buf,0x00,sizeof(recv_buf));  
-           memset(dat,0x00,sizeof(dat));  
            len = comRecvBuff(COM3,recv_buf,sizeof(recv_buf));           
 
            if(len > 0  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
            {
-                //asc2bcd(dat, recv_buf, len, 0);                
-                //send_to_host(QRREADER,dat,ceil(len/2));
                 SendAsciiCodeToHost(QRREADER,NO_ERR,recv_buf);
            }
        }

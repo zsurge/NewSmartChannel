@@ -143,7 +143,7 @@ void bsp_InitUart(void);
 void comSendBuf(COM_PORT_E _ucPort, uint8_t *_ucaBuf, uint16_t _usLen);
 void comSendChar(COM_PORT_E _ucPort, uint8_t _ucByte);
 uint8_t comGetChar(COM_PORT_E _ucPort, uint8_t *_pByte);
-uint8_t comRecvBuff(COM_PORT_E _ucPort,uint8_t *buf, uint8_t len);
+uint16_t comRecvBuff(COM_PORT_E _ucPort,uint8_t *buf, uint16_t len);
 
 //uint16_t comGetBuff(COM_PORT_E _ucPort,uint8_t *Buff, uint16_t RecvSize);
 uint16_t comGetBuff(COM_PORT_E _ucPort,uint8_t *Buff, uint16_t RecvSize,uint16_t timeout_MilliSeconds);

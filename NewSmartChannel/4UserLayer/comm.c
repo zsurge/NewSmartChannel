@@ -46,16 +46,12 @@
 
 
 SemaphoreHandle_t  gxMutex = NULL;
-
-
 RECVHOST_T gRecvHost;
-
-
 static uint16_t crc_value = 0;
 
 
 static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx); //私有函数
-static uint8_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
+static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
 static uint16_t  packetDeviceInfo(uint8_t *command_data);
 
 static void displayTask(void);
@@ -69,8 +65,6 @@ static void displayTask(void);
     
 void init_serial_boot(void)
 {
-//    comClearRxFifo(COM1);
-//    comClearRxFifo(COM1);
     crc_value = 0;    
     memset(&gRecvHost,0x00,sizeof(gRecvHost));
 }
@@ -101,7 +95,8 @@ void deal_Serial_Parse(void)
     while(1)
     {  
 //        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
-//        if(comGetChar(COM1, &ch) != 1)  //读取串口数据
+//        if(comGetChar(COM1, &ch) != 1)    //读取串口数据
+
         if(BSP_UartRead(SCOM1,&ch,1)!=1)
         {
             delay_ms(10);
@@ -260,8 +255,8 @@ void deal_rx_data(void)
 
 SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
 {
-    uint8_t i = 0;
-    uint8_t json_len = 0;
+    uint16_t i = 0;
+    uint16_t json_len = 0;
     uint8_t TxdBuf[MAX_TXD_BUF_LEN]={0};
     uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
     uint16_t iCRC = 0;
@@ -321,12 +316,11 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     SYSERRORCODE_E result = NO_ERR;
     
     uint8_t bcd_cmd[2] = {0};
-    uint8_t bcd_dat[16] = {0};
+    uint8_t bcd_dat[MAX_CMD_BUF_LEN] = {0};
+    uint8_t asc_dat[MAX_RXD_BUF_LEN] = {0};
     uint8_t *tmpCmd = NULL;
     uint8_t *tmpdat = NULL;
-    uint8_t asc_len = 0;  
-
-    //{"cmd":"sensor","value":{"sensor":"A1"}}   
+    uint16_t asc_len = 0;  
     
     root = cJSON_Parse((const char*)text);
 
@@ -360,14 +354,13 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
         return CJSON_GETITEM_ERR;
     }      
 
-
-    asc2bcd(bcd_cmd, tmpCmd, strlen((const char*)tmpCmd), 0);
+    strcpy((char *)asc_dat,(char *)tmpCmd);
+    
+    asc2bcd(bcd_cmd, asc_dat, strlen((const char*)asc_dat), 0);
 
     //目前指令只有1byte 所以直接赋值
     cmd_rx->cmd = bcd_cmd[0];
 
-
-    memset(tmpdat,0x00,sizeof(tmpdat));
     tmpdat = (uint8_t *)cJSON_GetObjectItem(root,"data")->valuestring;  
 
     asc_len = strlen((const char*)tmpdat);
@@ -396,16 +389,16 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
 
 
 
-static uint8_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
+static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
 {
     char *TxdBuf;
     cJSON *root; // cJSON指针
-    uint8_t len = 0;//返回json的长度
+    uint16_t len = 0;//返回json的长度
 
     uint8_t tmp_code = cmd_tx->code;
-    uint8_t tmp_data[64] = {0}; 
+    uint8_t tmpCmddata[MAX_CMD_BUF_LEN] = {0}; 
     
-    memset(tmp_data,0x00,sizeof(tmp_data));
+    memset(tmpCmddata,0x00,sizeof(tmpCmddata));
     root=cJSON_CreateObject(); // 创建root对象，返回值为cJSON指针
 
     if (root == NULL)                 // 如果转化错误，则报错退出
@@ -414,15 +407,14 @@ static uint8_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
     }
 
     //这里若是不中转则，JSON打包的数据会变，原因未知  2019.07.12 surge
-    memcpy(tmp_data,cmd_tx->data,strlen((const char*)cmd_tx->data));
+    memcpy(tmpCmddata,cmd_tx->data,strlen((const char*)cmd_tx->data));
     
     sprintf(TxdBuf,"%02x",cmd_tx->cmd);
     
     cJSON_AddStringToObject(root,"cmd",TxdBuf);
     cJSON_AddNumberToObject(root,"code",tmp_code);
-    cJSON_AddStringToObject(root,"data",(const char*)tmp_data);
-    
-    memset(TxdBuf,0x00,sizeof(TxdBuf));
+    cJSON_AddStringToObject(root,"data",(const char*)tmpCmddata);   
+
     TxdBuf = cJSON_PrintUnformatted(root); 
 
     if(TxdBuf == NULL)
@@ -446,7 +438,7 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
     char *TxdBuf;
     cJSON *root,*dataobj; // cJSON指针
 
-    uint8_t len = 0;//返回json的长度
+    uint16_t len = 0;//返回json的长度
 
     root=cJSON_CreateObject(); // 创建root对象，返回值为cJSON指针
     dataobj=cJSON_CreateObject(); // 创建dataobj对象，返回值为cJSON指针
@@ -465,9 +457,8 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
     cJSON_AddStringToObject(dataobj,"BulidTime",(const char *)gDevinfo.BulidDate);
     cJSON_AddStringToObject(dataobj,"Model",(const char *)gDevinfo.Model);
     cJSON_AddStringToObject(dataobj,"ProductBatch",(const char *)gDevinfo.ProductBatch);
-    cJSON_AddStringToObject(dataobj,"SN",(const char *)gDevinfo.GetSn());
-    
-    memset(TxdBuf,0x00,sizeof(TxdBuf));
+    cJSON_AddStringToObject(dataobj,"SN",(const char *)gDevinfo.GetSn());   
+
     
     TxdBuf = cJSON_PrintUnformatted(root); 
 
@@ -510,11 +501,9 @@ static void displayTask(void)
 
 void send_to_device(CMD_RX_T *cmd_rx)
 {
-    uint8_t i = 0;
-//    uint8_t TxdBuf[MAX_TXD_BUF_LEN]={0};
-//    uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
-    uint8_t TxdBuf[255]={0};
-    uint8_t tmpBuf[255] = {0};    
+    uint16_t i = 0;
+    uint8_t TxdBuf[JSON_PACK_MAX]={0};
+    uint8_t tmpBuf[JSON_PACK_MAX] = {0};  
     uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
     
@@ -652,9 +641,9 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
 {
     SYSERRORCODE_E result = NO_ERR;
 
-    uint8_t i = 0;
-    uint8_t json_len = 0;
-    uint8_t TxdBuf[MAX_TXD_BUF_LEN]={0};
+    uint16_t i = 0;
+    uint16_t json_len = 0;
+    uint8_t TxdBuf[JSON_PACK_MAX]={0};
     uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
     uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
@@ -670,6 +659,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     strcpy((char *)cmd_tx.data,(char *)buf);    
 
     json_len = packetJSON(&cmd_tx,tmpBuf);  
+
     if(json_len == 0)
     {        
         return CJSON_PACKET_ERR;
@@ -689,7 +679,6 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     TxdBuf[i++] = iCRC >> 8;
     TxdBuf[i++] = iCRC & 0xff;  
 
-//    dbh("send_to_host",(char *)TxdBuf,i);
 
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))

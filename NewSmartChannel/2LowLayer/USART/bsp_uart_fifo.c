@@ -359,9 +359,9 @@ uint8_t comGetChar(COM_PORT_E _ucPort, uint8_t *_pByte)
 	return UartGetChar(pUart, _pByte);
 }
 
-uint8_t comRecvBuff(COM_PORT_E _ucPort,uint8_t *buf, uint8_t len)
+uint16_t comRecvBuff(COM_PORT_E _ucPort,uint8_t *buf, uint16_t len)
 {
-    uint8_t i = 0;
+    uint16_t i = 0;
 
     UART_T *pUart;
 	pUart = ComToUart(_ucPort);

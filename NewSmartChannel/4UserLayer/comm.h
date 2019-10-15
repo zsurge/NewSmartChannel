@@ -78,45 +78,36 @@
 
 
 
-#define JSON_PACK_MAX                   512
+#define JSON_PACK_MAX                   600
 
-#define MAX_RXD_BUF_LEN        			128
-#define MAX_TXD_BUF_LEN					128      
-        
+#define MAX_RXD_BUF_LEN        			512
+#define MAX_TXD_BUF_LEN					512   
+#define MAX_CMD_BUF_LEN					256  
 
-
-typedef enum
-{
-    NoCMD = 0xA0,
-    GetSensor = 0xA1,
-    SetLed,
-    GetDeviceStatus,
-    GetVersion,
-    UpGradeApp    
-}CommandType;
-
-//typedef enum {
-//    COMM_SUCCESS = 0,                                       /**< success */
-//    COMM_ERR_PACKET = 1,                                    /**< cJSON packet error*/
-//    COMM_ERR_PARSE = 2,                                     /**< cJSON parse error*/
-//    COMM_ERR_GETITEM = 3                                    /**< get cJSON item error*/ 
-//}COMM_ERR;  
-    
+//typedef enum
+//{
+//    NoCMD = 0xA0,
+//    GetSensor = 0xA1,
+//    SetLed,
+//    GetDeviceStatus,
+//    GetVersion,
+//    UpGradeApp    
+//}CommandType;    
 
 typedef struct
 {
     uint8_t cmd;     //指令字
     uint8_t *cmd_desc;//指令描述    
-    uint8_t cmd_data[64];//指令内容(若有)
+    uint8_t cmd_data[MAX_CMD_BUF_LEN];//指令内容(若有)
 }CMD_RX_T;
 
-static CMD_RX_T gcmd_rx;
+//static CMD_RX_T gcmd_rx;
 
 typedef struct
 {
     uint8_t cmd;         //指令字
     uint8_t code;        //执行状态   
-    uint8_t data[64];       //指令返回内容(若有)
+    uint8_t data[MAX_CMD_BUF_LEN];       //指令返回内容(若有)
 }CMD_TX_T;
 
 typedef struct
@@ -125,15 +116,15 @@ typedef struct
     uint8_t RxCRCHi;                   //校验值高8位
     uint8_t RxCRCLo;                   //校验值低8位
     uint8_t RxdFrameStatus;            //接收包状态
-    uint8_t NowLen;                    //接收字节指针
-    uint8_t RxdTotalLen;               //接收包数据长度
+    uint16_t NowLen;                    //接收字节数
+    uint16_t RxdTotalLen;               //接收包数据长度
     volatile uint8_t RxdBuf[MAX_RXD_BUF_LEN];   //接收包数据缓存
 }RECVHOST_T;
 
 
 static RECVHOST_T gRecvHost;
 
-static CMD_TX_T gcmd_tx;
+//static CMD_TX_T gcmd_tx;
 
 
 extern SemaphoreHandle_t  gxMutex;

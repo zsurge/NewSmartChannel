@@ -316,7 +316,9 @@ int32_t Ymodem_Receive ( uint8_t* buf, uint32_t appaddr )
 					{
 						Send_Byte ( CA );
 						Send_Byte ( CA );
-						return 0;   //传输过程发生过多错误
+                        
+                        NVIC_SystemReset();//surge modify for 2019.10.16,修正断电后数据错误的BUG
+//						return 0;   //传输过程发生过多错误
 					}
 					Send_Byte ( CRC16 );
 					break;

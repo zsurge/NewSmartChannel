@@ -614,6 +614,7 @@ void vTaskQR(void *pvParameters)
 
            if(len > 0  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
            {
+                DBG("QR = %s\r\n",recv_buf);
                 SendAsciiCodeToHost(QRREADER,NO_ERR,recv_buf);
            }
        }

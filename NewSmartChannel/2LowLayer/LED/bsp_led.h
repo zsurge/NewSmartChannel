@@ -51,7 +51,7 @@ void bsp_LED_Init(void);//初始化
 void bsp_Ex_LED_Init(void); //扩展FLASH初始化
 void bsp_Ex_SetLed(uint8_t *dat);
 
-//void bsp_test_Init(void);
+void bsp_speaker_init(void);
 
 
 

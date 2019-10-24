@@ -46,7 +46,7 @@
 #define MOTOR_STK_SIZE 		(1024) 
 #define CMD_STK_SIZE 		(1024*2)
 #define INFRARED_STK_SIZE 	(1024)
-#define RS485_STK_SIZE 		(1024*1)
+#define RS485_STK_SIZE 		(1024)
 #define START_STK_SIZE 	    (1024)
 #define QR_STK_SIZE 		(1024)
 #define READER_STK_SIZE     (1024)

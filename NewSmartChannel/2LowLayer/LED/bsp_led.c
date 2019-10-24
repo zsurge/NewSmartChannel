@@ -103,36 +103,21 @@ void bsp_Ex_SetLed(uint8_t *dat)
 }
 
 
-//void bsp_test_Init(void)
-//{
-//    GPIO_InitTypeDef  GPIO_InitStructure;
-//    
-//    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);//使能GPIOD时钟 
-//    
-//    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);//使能GPIOA时钟
+void bsp_speaker_init(void)
+{
+    GPIO_InitTypeDef  GPIO_InitStructure; 
+
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);//使能GPIOA时钟
 
 
-//      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3 ;   
-//      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;           //普通输出模式
-//      GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;          //推挽输出
-//      GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;      //100MHz
-//      GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;        //上拉
-//      GPIO_Init(GPIOD, &GPIO_InitStructure);         //初始化GPIO
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 ;   
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;           //普通输出模式
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;          //推挽输出
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;      //100MHz
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;        //上拉
+    GPIO_Init(GPIOA, &GPIO_InitStructure);         //初始化GPIO
 
-//      
-
-//      GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 ;   
-//      GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;           //普通输出模式
-//      GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;          //推挽输出
-//      GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;      //100MHz
-//      GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;        //上拉
-//      GPIO_Init(GPIOA, &GPIO_InitStructure);         //初始化GPIO
-
-
-//      GPIO_ResetBits(GPIOA,GPIO_Pin_1); 
-//      GPIO_ResetBits(GPIOD,GPIO_Pin_3);
-
-//      
-//}
+    GPIO_SetBits(GPIOA,GPIO_Pin_1);       
+}
 
 

@@ -56,6 +56,7 @@
 
 	
 	bsp_LED_Init();		        //初始化LED端口	    
+	bsp_speaker_init();         //USB供电 add 2019.10.17	
 	bsp_Ex_LED_Init();          //初始化外部LED灯/灯带
     bsp_key_Init();             //全高门按键初始化
     bsp_WiegandInit();          //韦根读卡器初始化    

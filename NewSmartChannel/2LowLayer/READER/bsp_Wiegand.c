@@ -87,32 +87,57 @@ void bsp_WiegandInit ( void )
 	EXTI_Init ( &EXTI_InitStructure );
 
 	/* 配置PD10 11为中断源 */
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI15_10_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI4_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init ( &NVIC_InitStructure );
+
+	/* 配置PD10 11为中断源 */
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init ( &NVIC_InitStructure );    
 }
 
 
-void EXTI15_10_IRQHandler ( void )
+//void EXTI15_10_IRQHandler ( void )
+//{
+
+//	if ( EXTI_GetITStatus ( WG1_IN_D0_EXTI ) != RESET ) //D0
+//	{
+//		//韦根取D0管脚数据
+//        delay_us(30);//消抖
+//        if(WG_IN_D0==0)     
+//        {                
+//            WeigenInD0();
+//        }
+
+//		/* Clear the EXTI line 0 pending bit */
+//		EXTI_ClearITPendingBit ( WG1_IN_D0_EXTI );
+//	}
+
+
+
+//	if ( EXTI_GetITStatus ( WG1_IN_D1_EXTI ) != RESET ) //D1
+//	{
+//		//韦根取D1管脚数据		
+//        delay_us(30);//消抖
+//        
+//        if(WG_IN_D1==0)     
+//        {                
+//            WeigenInD1();
+//        }
+
+//		/* Clear the EXTI line 1 pending bit */
+//		EXTI_ClearITPendingBit ( WG1_IN_D1_EXTI );
+//	}
+
+//}
+
+void EXTI4_IRQHandler(void)
 {
-
-	if ( EXTI_GetITStatus ( WG1_IN_D0_EXTI ) != RESET ) //D0
-	{
-		//韦根取D0管脚数据
-        delay_us(30);//消抖
-        if(WG_IN_D0==0)     
-        {                
-            WeigenInD0();
-        }
-
-		/* Clear the EXTI line 0 pending bit */
-		EXTI_ClearITPendingBit ( WG1_IN_D0_EXTI );
-	}
-
-
-
 	if ( EXTI_GetITStatus ( WG1_IN_D1_EXTI ) != RESET ) //D1
 	{
 		//韦根取D1管脚数据		
@@ -128,6 +153,24 @@ void EXTI15_10_IRQHandler ( void )
 	}
 
 }
+
+void EXTI9_5_IRQHandler(void)
+{
+	if ( EXTI_GetITStatus ( WG1_IN_D0_EXTI ) != RESET ) //D0
+	{
+		//韦根取D0管脚数据
+        delay_us(30);//消抖
+        if(WG_IN_D0==0)     
+        {                
+            WeigenInD0();
+        }
+
+		/* Clear the EXTI line 0 pending bit */
+		EXTI_ClearITPendingBit ( WG1_IN_D0_EXTI );
+	}
+
+}
+
 
 
 

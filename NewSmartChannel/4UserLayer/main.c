@@ -194,6 +194,13 @@ static void AppTaskCreate (void)
                 (UBaseType_t    )HANDSHAKE_TASK_PRIO,    
                 (TaskHandle_t*  )&xHandleTaskHandShake);  
 
+    //创建LED任务
+    xTaskCreate((TaskFunction_t )vTaskLed,         
+                (const char*    )"vTaskLed",       
+                (uint16_t       )LED_STK_SIZE, 
+                (void*          )NULL,              
+                (UBaseType_t    )LED_TASK_PRIO,    
+                (TaskHandle_t*  )&xHandleTaskLed);                   
 
     //查询电机状态
     xTaskCreate((TaskFunction_t )vTaskQueryMotor,
@@ -201,16 +208,8 @@ static void AppTaskCreate (void)
                 (uint16_t       )QUERYMOTOR_STK_SIZE, 
                 (void*          )NULL,              
                 (UBaseType_t    )QUERYMOTOR_TASK_PRIO,    
-                (TaskHandle_t*  )&xHandleTaskQueryMotor);                  
-
-    //创建LED任务
-    xTaskCreate((TaskFunction_t )vTaskLed,         
-                (const char*    )"vTaskLed",       
-                (uint16_t       )LED_STK_SIZE, 
-                (void*          )NULL,              
-                (UBaseType_t    )LED_TASK_PRIO,    
-                (TaskHandle_t*  )&xHandleTaskLed);   
-
+                (TaskHandle_t*  )&xHandleTaskQueryMotor);  
+    
     //创建电机信息返回任务
     xTaskCreate((TaskFunction_t )vTaskMortorToHost,     
                 (const char*    )"vTMTHost",   
@@ -610,7 +609,7 @@ void vTaskReader(void *pvParameters)
     while(1)
     {
 
-        if(FunState != 0x00)
+        //if(FunState != 0x00)
         {
             CardID = bsp_WeiGenScanf();
 
@@ -652,10 +651,10 @@ void vTaskQR(void *pvParameters)
     
     while(1)
     {
-       if(FunState != 0x00)
+//       if(FunState != 0x00)
        {
            memset(recv_buf,0x00,sizeof(recv_buf));
-           len = comRecvBuff(COM3,recv_buf,sizeof(recv_buf));
+           len = comRecvBuff(COM2,recv_buf,sizeof(recv_buf));
 
            if(len > 0  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
            {

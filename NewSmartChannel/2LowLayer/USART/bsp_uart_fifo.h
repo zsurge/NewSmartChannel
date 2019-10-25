@@ -51,7 +51,7 @@
 #define	UART2_RS485_EN	0
 #define	UART3_RS485_EN	0
 #define	UART4_RS485_EN	0
-#define	UART5_RS485_EN	1
+#define	UART5_RS485_EN	0
 #define	UART6_RS485_EN	0
 
 
@@ -89,13 +89,13 @@ typedef enum
 #endif
 
 #if UART2_FIFO_EN == 1
-	#define UART2_BAUD			38400
+	#define UART2_BAUD			115200
 	#define UART2_TX_BUF_SIZE	1*512
 	#define UART2_RX_BUF_SIZE	1*512
 #endif
 
 #if UART3_FIFO_EN == 1
-	#define UART3_BAUD			115200
+	#define UART3_BAUD			38400
 	#define UART3_TX_BUF_SIZE	1*256
 	#define UART3_RX_BUF_SIZE	1*256
 #endif

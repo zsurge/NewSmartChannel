@@ -660,6 +660,8 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
 
     json_len = packetJSON(&cmd_tx,tmpBuf);  
 
+    DBG("json packet = %s,len = %d\r\n",tmpBuf,json_len);
+
     if(json_len == 0)
     {        
         return CJSON_PACKET_ERR;

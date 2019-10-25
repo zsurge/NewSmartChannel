@@ -83,6 +83,9 @@
 //#define TASK_BIT_7	 (1 << 7)
 //#define TASK_BIT_8	 (1 << 8)
 
+//读取电机状态最大次数
+#define READ_MOTOR_STATUS_TIMES 20
+
 
 
 //#define TASK_BIT_ALL (TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 | TASK_BIT_3|TASK_BIT_4 | TASK_BIT_5 | TASK_BIT_6 )
@@ -157,14 +160,16 @@ int main(void)
     //硬件初始化
     bsp_Init();  
 
+	/* 创建任务通信机制 */
+	AppObjCreate();
+
 	//电机初始化(关门)
     MotorInit();
 
 	/* 创建任务 */
 	AppTaskCreate();
 
-	/* 创建任务通信机制 */
-	AppObjCreate();
+
     
     /* 启动调度，开始执行任务 */
     vTaskStartScheduler();
@@ -733,6 +738,8 @@ static void MotorInit(void)
 //    uint8_t OpenDoor_L[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x02,0xCA,0x68 };
 //    uint8_t OpenDoor_R[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x03,0x0B,0xA8 };
     uint8_t QuestStatus[8] =  { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
+    uint8_t MotorReset[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x07,0x0A,0x6B };
+
 
     uint8_t buf[8] = {0};
     uint8_t readLen = 0;
@@ -740,12 +747,12 @@ static void MotorInit(void)
     uint8_t crcBuf[2] = {0};
     uint8_t flag = 100;
 
-    
+    uint8_t cnt = 1;  
 
     do
     {   
         comSendBuf(COM4, QuestStatus,8);
-        vTaskDelay(100);
+        delay_ms(20);
         readLen = comRecvBuff(COM4,buf,8);  
         
         if(readLen >= 6 )
@@ -756,34 +763,45 @@ static void MotorInit(void)
 
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
             {    
-                 if(buf[3] >= 1  && buf[3] <= 5)
-                 {
-                    readLen = 0;
-                 }
-                 else if(buf[3] == 6 ||  buf[3] == 7 ||  buf[3] == 8)
+                 if(buf[3] == 6 ||  buf[3] == 7 ||  buf[3] == 8)
                  {
                     flag = buf[3];
                     readLen = 7;
-                 }                
+                 }
+                 else
+                 {
+                    readLen = 0;
+                 }      
             }  
             else
             {
                 readLen = 0;//持续查询
+            }            
+        }
+        else //进行复位
+        {
+            if(cnt % 10 == 0)
+            {
+               comSendBuf(COM4, MotorReset,8);
+               delay_ms(2000);
             }
-
-            
         }
 
+        cnt++;
         dbh("buf", (char * )buf, readLen);
     }
-    while (readLen != 7);
+    while (readLen != 7 && cnt != READ_MOTOR_STATUS_TIMES);
+
+    if(readLen !=7 && cnt == READ_MOTOR_STATUS_TIMES)
+    {
+        SendAsciiCodeToHost(ERRORINFO,MOTOR_RESET_ERR,(uint8_t *)"motor initial error");
+        return;
+    }
 
     if(flag == 6 || flag == 7)
     {
         comSendBuf(COM4, CloseDoor,8);
     } 
-
-
 }
 
 

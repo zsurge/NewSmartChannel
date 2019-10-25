@@ -36,7 +36,7 @@
 #define KEY_TASK_PRIO	    ( tskIDLE_PRIORITY + 2)
 #define INFRARED_TASK_PRIO	( tskIDLE_PRIORITY + 2)
 #define MOTOR_TASK_PRIO		( tskIDLE_PRIORITY + 3)
-#define RS485_TASK_PRIO	    ( tskIDLE_PRIORITY + 3)
+//#define RS485_TASK_PRIO	    ( tskIDLE_PRIORITY + 3)
 #define CMD_TASK_PRIO		( tskIDLE_PRIORITY + 4)
 #define START_TASK_PRIO		( tskIDLE_PRIORITY + 5)
 
@@ -46,7 +46,7 @@
 #define MOTOR_STK_SIZE 		(1024) 
 #define CMD_STK_SIZE 		(1024*2)
 #define INFRARED_STK_SIZE 	(1024)
-#define RS485_STK_SIZE 		(1024)
+//#define RS485_STK_SIZE 		(1024)
 #define START_STK_SIZE 	    (1024)
 #define QR_STK_SIZE 		(1024)
 #define READER_STK_SIZE     (1024)
@@ -80,13 +80,13 @@
 #define TASK_BIT_4	 (1 << 4)
 #define TASK_BIT_5	 (1 << 5)
 #define TASK_BIT_6	 (1 << 6)
-#define TASK_BIT_7	 (1 << 7)
-#define TASK_BIT_8	 (1 << 8)
+//#define TASK_BIT_7	 (1 << 7)
+//#define TASK_BIT_8	 (1 << 8)
 
 
 
 //#define TASK_BIT_ALL (TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 | TASK_BIT_3|TASK_BIT_4 | TASK_BIT_5 | TASK_BIT_6 )
-#define TASK_BIT_ALL ( TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 |TASK_BIT_3|TASK_BIT_4|TASK_BIT_5|TASK_BIT_6|TASK_BIT_7|TASK_BIT_8)
+#define TASK_BIT_ALL ( TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 |TASK_BIT_3|TASK_BIT_4|TASK_BIT_5|TASK_BIT_6)
 
 /*----------------------------------------------*
  * 模块级变量                                   *
@@ -98,10 +98,10 @@ static TaskHandle_t xHandleTaskCmd = NULL;      //android通讯
 static TaskHandle_t xHandleTaskInfrared = NULL; //红外感映
 static TaskHandle_t xHandleTaskReader = NULL;   //韦根读卡器
 static TaskHandle_t xHandleTaskQr = NULL;       //二维码读头
-static TaskHandle_t xHandleTaskRs485 = NULL;    //B门电机
+//static TaskHandle_t xHandleTaskRs485 = NULL;    //B门电机
 static TaskHandle_t xHandleTaskStart = NULL;    //看门狗
 static TaskHandle_t xHandleTaskHandShake = NULL;    // 握手
-static TaskHandle_t xHandleTaskKey = NULL;      //B门按键
+//static TaskHandle_t xHandleTaskKey = NULL;      //B门按键
 static TaskHandle_t xHandleTaskQueryMotor = NULL;      //电机状态查询
 
 static EventGroupHandle_t xCreatedEventGroup = NULL;
@@ -115,10 +115,10 @@ static EventGroupHandle_t xCreatedEventGroup = NULL;
 //任务函数
 static void vTaskLed(void *pvParameters);
 static void vTaskMortorToHost(void *pvParameters);
-static void vTaskKey(void *pvParameters);
+//static void vTaskKey(void *pvParameters);
 static void vTaskMsgPro(void *pvParameters);
 static void vTaskInfrared(void *pvParameters);
-static void vTaskRs485(void *pvParameters);
+//static void vTaskRs485(void *pvParameters);
 static void vTaskReader(void *pvParameters);
 static void vTaskQR(void *pvParameters);
 static void vTaskStart(void *pvParameters);
@@ -133,6 +133,8 @@ static void AppTaskCreate(void);
 static void AppObjCreate (void);
 static void App_Printf(char *format, ...);
 
+static void MotorInit(void);
+
 //static void AppEventCreate (void);
 
 //static void DisplayDevInfo (void);
@@ -140,7 +142,7 @@ static void App_Printf(char *format, ...);
 //static void DisplayDevInfo(void)
 //{
 //	printf("Softversion :%s\r\n",gDevinfo.SoftwareVersion);
-//  printf("HardwareVersion :%s\r\n", gDevinfo.HardwareVersion);
+//    printf("HardwareVersion :%s\r\n", gDevinfo.HardwareVersion);
 //	printf("Model :%s\r\n", gDevinfo.Model);
 //	printf("ProductBatch :%s\r\n", gDevinfo.ProductBatch);	    
 //	printf("BulidDate :%s\r\n", gDevinfo.BulidDate);
@@ -148,19 +150,21 @@ static void App_Printf(char *format, ...);
 //}
 
 
+
+
 int main(void)
 {   
     //硬件初始化
     bsp_Init();  
 
-    //DisplayDevInfo();
-                    
+	//电机初始化(关门)
+    MotorInit();
+
 	/* 创建任务 */
 	AppTaskCreate();
 
 	/* 创建任务通信机制 */
 	AppObjCreate();
-
     
     /* 启动调度，开始执行任务 */
     vTaskStartScheduler();
@@ -228,12 +232,12 @@ static void AppTaskCreate (void)
 
 
     //全高门电机状态返回
-    xTaskCreate((TaskFunction_t )vTaskRs485,     
-                (const char*    )"vRs485",   
-                (uint16_t       )RS485_STK_SIZE, 
-                (void*          )NULL,
-                (UBaseType_t    )RS485_TASK_PRIO,
-                (TaskHandle_t*  )&xHandleTaskRs485);  
+//    xTaskCreate((TaskFunction_t )vTaskRs485,     
+//                (const char*    )"vRs485",   
+//                (uint16_t       )RS485_STK_SIZE, 
+//                (void*          )NULL,
+//                (UBaseType_t    )RS485_TASK_PRIO,
+//                (TaskHandle_t*  )&xHandleTaskRs485);  
 
     //韦根读卡器
     xTaskCreate((TaskFunction_t )vTaskReader,     
@@ -252,12 +256,12 @@ static void AppTaskCreate (void)
                 (TaskHandle_t*  )&xHandleTaskQr);      
 
     //B门按键
-    xTaskCreate((TaskFunction_t )vTaskKey,         
-                (const char*    )"vTaskKey",       
-                (uint16_t       )KEY_STK_SIZE, 
-                (void*          )NULL,              
-                (UBaseType_t    )KEY_TASK_PRIO,    
-                (TaskHandle_t*  )&xHandleTaskKey);                   
+//    xTaskCreate((TaskFunction_t )vTaskKey,         
+//                (const char*    )"vTaskKey",       
+//                (uint16_t       )KEY_STK_SIZE, 
+//                (void*          )NULL,              
+//                (UBaseType_t    )KEY_TASK_PRIO,    
+//                (TaskHandle_t*  )&xHandleTaskKey);                   
 
     //看门狗
 	xTaskCreate((TaskFunction_t )vTaskStart,     		/* 任务函数  */
@@ -344,6 +348,42 @@ static void vTaskStart(void *pvParameters)
 		{
 			/* 基本是每xTicksToWait进来一次 */
 			/* 通过变量uxBits简单的可以在此处检测那个任务长期没有发来运行标志 */
+
+            if((uxBits & TASK_BIT_0) != 0x01)
+            {
+                DBG("vTaskLed error = %d\r\n",(uxBits & TASK_BIT_0));
+            }
+
+            if((uxBits & TASK_BIT_1) != 0x02)
+            {
+                DBG("vTaskMortorToHost error = %d\r\n",(uxBits & TASK_BIT_1));
+            }
+
+            if((uxBits & TASK_BIT_2) != 0x04)
+            {
+                DBG("vTaskMsgPro error = %d\r\n",(uxBits & TASK_BIT_2));
+            }
+            
+            if((uxBits & TASK_BIT_3) != 0x08)
+            {
+                DBG("vTaskInfrared error = %d\r\n",(uxBits & TASK_BIT_3));
+            }
+
+            if((uxBits & TASK_BIT_4) != 0x10)
+            {
+                DBG("vTaskReader error = %d\r\n",(uxBits & TASK_BIT_4));
+            }
+
+            if((uxBits & TASK_BIT_5) != 0x20)
+            {
+                DBG("vTaskQR error = %d\r\n",(uxBits & TASK_BIT_5));
+            }       
+
+            if((uxBits & TASK_BIT_6) != 0x00)
+            {
+                DBG("vTaskQueryMotor error = %d\r\n",(uxBits & TASK_BIT_6));
+            }         
+           
 		}
     }
 }
@@ -356,10 +396,10 @@ void vTaskQueryMotor(void *pvParameters)
     while(1)
     {
         comSendBuf(COM4, ReadStatus,8);//查询A电机状态
-        RS485_SendBuf(COM5,ReadStatus,8);//查询B电机状态
+//        RS485_SendBuf(COM5,ReadStatus,8);//查询B电机状态
      
 		/* 发送事件标志，表示任务正常运行 */        
-		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_8);  
+		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_6);  
         vTaskDelay(300);     
     }
 
@@ -441,39 +481,39 @@ void vTaskMortorToHost(void *pvParameters)
 
 }
 
-void vTaskKey(void *pvParameters)
-{
-    
-	uint8_t ucKeyCode;
-    
-    while(1)
-    {
-		ucKeyCode = bsp_key_Scan(0);      
-		
-		if (ucKeyCode != KEY_NONE)
-		{                
-			switch (ucKeyCode)
-			{
-				/* 开门键按下执行向上位机发送开门请求 */
-				case KEY_DOOR_B_PRES:	 
-                    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
-					break;			
-			
-				/* 其他的键值不处理 */
-				default:   
-				App_Printf("KEY_default\r\n");
-					break;
-			}
-		}	
+//void vTaskKey(void *pvParameters)
+//{
+//    
+//	uint8_t ucKeyCode;
+//    
+//    while(1)
+//    {
+//		ucKeyCode = bsp_key_Scan(0);      
+//		
+//		if (ucKeyCode != KEY_NONE)
+//		{                
+//			switch (ucKeyCode)
+//			{
+//				/* 开门键按下执行向上位机发送开门请求 */
+//				case KEY_DOOR_B_PRES:	 
+//                    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+//					break;			
+//			
+//				/* 其他的键值不处理 */
+//				default:   
+//				App_Printf("KEY_default\r\n");
+//					break;
+//			}
+//		}	
 
-		/* 发送事件标志，表示任务正常运行 */        
-		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_7);  
+//		/* 发送事件标志，表示任务正常运行 */        
+//		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_7);  
 
-        
-		vTaskDelay(50);
-	}  
+//        
+//		vTaskDelay(50);
+//	}  
 
-}
+//}
 
 
 void vTaskMsgPro(void *pvParameters)
@@ -517,37 +557,37 @@ void vTaskInfrared(void *pvParameters)
     }
 }
 
-void vTaskRs485(void *pvParameters)
-{
-    uint8_t buf[8] = {0};
-    uint8_t readLen = 0;
-    uint16_t iCRC = 0;
-    uint8_t crcBuf[2] = {0};
-    while (1)
-    {
-        readLen = RS485_Recv(COM5,buf,8);       
+//void vTaskRs485(void *pvParameters)
+//{
+//    uint8_t buf[8] = {0};
+//    uint8_t readLen = 0;
+//    uint16_t iCRC = 0;
+//    uint8_t crcBuf[2] = {0};
+//    while (1)
+//    {
+//        readLen = RS485_Recv(COM5,buf,8);       
 
-        if(readLen == 7 || readLen == 8)
-        {            
-            iCRC = CRC16_Modbus(buf, readLen-2);  
+//        if(readLen == 7 || readLen == 8)
+//        {            
+//            iCRC = CRC16_Modbus(buf, readLen-2);  
 
-            crcBuf[0] = iCRC >> 8;
-            crcBuf[1] = iCRC & 0xff;  
+//            crcBuf[0] = iCRC >> 8;
+//            crcBuf[1] = iCRC & 0xff;  
 
-            if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
-            {                   
-                send_to_host(DOOR_B,buf,readLen);
-                Motro_B = 0;
-            }            
-        }
-        
-		/* 发送事件标志，表示任务正常运行 */        
-		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_6);
-        
-        vTaskDelay(100);
-    }
+//            if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
+//            {                   
+//                send_to_host(DOOR_B,buf,readLen);
+//                Motro_B = 0;
+//            }            
+//        }
+//        
+//		/* 发送事件标志，表示任务正常运行 */        
+//		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_6);
+//        
+//        vTaskDelay(100);
+//    }
 
-}
+//}
 
 
 void vTaskReader(void *pvParameters)
@@ -631,7 +671,7 @@ void vTaskHandShake(void *pvParameters)
     uint32_t i_boot_times = NULL;
     char *c_old_boot_times, c_new_boot_times[12] = {0};
     uint8_t bcdbuf[6] = {0};
-
+    
     /* get the boot count number from Env */
     c_old_boot_times = ef_get_env("boot_times");
     assert_param(c_old_boot_times);
@@ -652,45 +692,6 @@ void vTaskHandShake(void *pvParameters)
     
     vTaskDelete( NULL ); //删除自己
 
-
-//    uint32_t i_boot_times = NULL;
-//    char *c_old_boot_times, c_new_boot_times[12] = {0};
-//    
-
-//    g1msCount = 1000*10;
-
-//    c_old_boot_times = ef_get_env("boot_times");
-
-//    DBG("1.c_old_boot_times = %s\r\n",c_old_boot_times);
-
-//    while(1)
-//    {
-//        if(g1msCount == 0)
-//        {
-//            break;
-//        }
-//        /* get the boot count number from Env */
-//        c_old_boot_times = ef_get_env("boot_times");
-//        assert_param(c_old_boot_times);
-//        i_boot_times = atol(c_old_boot_times);
-//        
-//        /* boot count +1 */
-//        i_boot_times ++;
-
-//        /* interger to string */
-//        sprintf(c_new_boot_times,"%012ld", i_boot_times);
-
-//        /* set and store the boot count number to Env */
-//        ef_set_env("boot_times", c_new_boot_times);   
-
-
-//    }
-
-//    c_old_boot_times = ef_get_env("boot_times");
-
-//    DBG("2.c_old_boot_times = %s\r\n",c_old_boot_times);    
-
-//    vTaskDelete( NULL ); //删除自己
 }
 
 
@@ -726,5 +727,63 @@ static void  App_Printf(char *format, ...)
 }
 
 
+static void MotorInit(void)
+{
+    uint8_t CloseDoor[8] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
+//    uint8_t OpenDoor_L[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x02,0xCA,0x68 };
+//    uint8_t OpenDoor_R[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x03,0x0B,0xA8 };
+    uint8_t QuestStatus[8] =  { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
+
+    uint8_t buf[8] = {0};
+    uint8_t readLen = 0;
+    uint16_t iCRC = 0;
+    uint8_t crcBuf[2] = {0};
+    uint8_t flag = 100;
+
+    
+
+    do
+    {   
+        comSendBuf(COM4, QuestStatus,8);
+        vTaskDelay(100);
+        readLen = comRecvBuff(COM4,buf,8);  
+        
+        if(readLen >= 6 )
+        {
+            iCRC = CRC16_Modbus(buf, readLen-2);
+            crcBuf[0] = iCRC >> 8;
+            crcBuf[1] = iCRC & 0xff;  
+
+            if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
+            {    
+                 if(buf[3] >= 1  && buf[3] <= 5)
+                 {
+                    readLen = 0;
+                 }
+                 else if(buf[3] == 6 ||  buf[3] == 7 ||  buf[3] == 8)
+                 {
+                    flag = buf[3];
+                    readLen = 7;
+                 }                
+            }  
+            else
+            {
+                readLen = 0;//持续查询
+            }
+
+            
+        }
+
+        dbh("buf", (char * )buf, readLen);
+    }
+    while (readLen != 7);
+
+    if(flag == 6 || flag == 7)
+    {
+        comSendBuf(COM4, CloseDoor,8);
+    } 
+
+
+}
 
 

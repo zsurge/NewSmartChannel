@@ -126,8 +126,14 @@ static RECVHOST_T gRecvHost;
 
 //static CMD_TX_T gcmd_tx;
 
-
+////声明互斥信号量
 extern SemaphoreHandle_t  gxMutex;
+
+//声明二值信号量
+//extern SemaphoreHandle_t gBinarySem_Handle;
+
+extern TaskHandle_t xHandleTaskQueryMotor;      //电机状态查询
+
 
 
 /*----------------------------------------------*

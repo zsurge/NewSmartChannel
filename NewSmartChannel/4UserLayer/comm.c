@@ -45,7 +45,11 @@
  *----------------------------------------------*/
 
 
-SemaphoreHandle_t  gxMutex = NULL;
+SemaphoreHandle_t gxMutex = NULL;
+//SemaphoreHandle_t gBinarySem_Handle = NULL;
+TaskHandle_t xHandleTaskQueryMotor = NULL;      //电机状态查询
+
+
 RECVHOST_T gRecvHost;
 static uint16_t crc_value = 0;
 
@@ -214,7 +218,7 @@ void deal_rx_data(void)
             {
 				//转存JSON数据包
                 memcpy(json_buf,(const char*)gRecvHost.RxdBuf+1,gRecvHost.RxdTotalLen-4);
-//                DBG("recv json data = : %s\r\n",json_buf);
+                DBG("recv json data = : %s\r\n",json_buf);
 
                 //解析JSON数据包              
                 if(parseJSON(json_buf,&cmd_rx) == NO_ERR)
@@ -508,6 +512,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
     CMD_TX_T cmd_tx;
     
     memset(&cmd_tx,0x00,sizeof(cmd_tx));
+    memset(TxdBuf,0x00,sizeof(TxdBuf));
     
     switch (cmd_rx->cmd)
     {
@@ -613,12 +618,15 @@ void send_to_device(CMD_RX_T *cmd_rx)
 
         case CONTROLMOTOR:       
              //向电机发送控制指令
-            comSendBuf(COM4, cmd_rx->cmd_data,8);
+            vTaskSuspend(xHandleTaskQueryMotor); //若是操作电机，则关掉电机查询
+//            xSemaphoreGive( gBinarySem_Handle );    //释放二值信号量
+            comSendBuf(COM4, cmd_rx->cmd_data,8);            
             return;//这里不需要向上位机上送，在另外一个任务中才上送
         case DOOR_B:
             //发给B门
-            RS485_SendBuf(COM5,cmd_rx->cmd_data,8);
-            
+            vTaskSuspend(xHandleTaskQueryMotor);//若是操作电机，则关掉电机查询
+//            xSemaphoreGive( gBinarySem_Handle );    //释放二值信号量
+            RS485_SendBuf(COM5,cmd_rx->cmd_data,8);            
             return;//这里不需要向上位机上送，在另外一个任务中才上送
 
         default:

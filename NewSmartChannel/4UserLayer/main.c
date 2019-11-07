@@ -102,7 +102,7 @@ static TaskHandle_t xHandleTaskRs485 = NULL;    //B门电机
 static TaskHandle_t xHandleTaskStart = NULL;    //看门狗
 static TaskHandle_t xHandleTaskHandShake = NULL;    // 握手
 static TaskHandle_t xHandleTaskKey = NULL;      //B门按键
-static TaskHandle_t xHandleTaskQueryMotor = NULL;      //电机状态查询
+//static TaskHandle_t xHandleTaskQueryMotor = NULL;      //电机状态查询
 
 static EventGroupHandle_t xCreatedEventGroup = NULL;
 
@@ -298,6 +298,13 @@ static void AppObjCreate (void)
         App_Printf("创建互斥信号量失败\r\n");
     }    
 
+    //创建二值信号量
+//    gBinarySem_Handle = xSemaphoreCreateBinary();
+
+//    if(gBinarySem_Handle == NULL)
+//    {
+//        App_Printf("创建二值信号量失败\r\n");
+//    }
 }
 
 /*
@@ -352,11 +359,17 @@ static void vTaskStart(void *pvParameters)
 void vTaskQueryMotor(void *pvParameters)
 {
     uint8_t ReadStatus[8] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
+//    BaseType_t xReturn = pdPASS;
     
     while(1)
     {
-        comSendBuf(COM4, ReadStatus,8);//查询A电机状态
-        RS485_SendBuf(COM5,ReadStatus,8);//查询B电机状态
+//        xReturn = xSemaphoreTake(gBinarySem_Handle,portMAX_DELAY); 
+
+//        if(xReturn == pdFALSE)
+//        {
+            comSendBuf(COM4, ReadStatus,8);//查询A电机状态
+            RS485_SendBuf(COM5,ReadStatus,8);//查询B电机状态
+//        }
      
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_8);  
@@ -428,6 +441,7 @@ void vTaskMortorToHost(void *pvParameters)
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
             {    
                 send_to_host(CONTROLMOTOR,buf,readLen);
+                vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
                 Motro_A = 0;
             }            
         }           
@@ -537,6 +551,7 @@ void vTaskRs485(void *pvParameters)
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
             {                   
                 send_to_host(DOOR_B,buf,readLen);
+                vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
                 Motro_B = 0;
             }            
         }
@@ -565,7 +580,7 @@ void vTaskReader(void *pvParameters)
     while(1)
     {
 
-        if(FunState != 0x00)
+//        if(FunState != 0x00)
         {
             CardID = bsp_WeiGenScanf();
 
@@ -607,7 +622,7 @@ void vTaskQR(void *pvParameters)
     
     while(1)
     {
-       if(FunState != 0x00)
+//       if(FunState != 0x00)
        {
            memset(recv_buf,0x00,sizeof(recv_buf));
            len = comRecvBuff(COM3,recv_buf,sizeof(recv_buf));

@@ -129,6 +129,7 @@ static RECVHOST_T gRecvHost;
 
 extern SemaphoreHandle_t  gxMutex;
 
+extern TaskHandle_t xHandleTaskQueryMotor;      //电机状态查询
 
 /*----------------------------------------------*
  * 内部函数原型说明                             *

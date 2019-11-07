@@ -105,7 +105,7 @@ static TaskHandle_t xHandleTaskQr = NULL;       //二维码读头
 static TaskHandle_t xHandleTaskStart = NULL;    //看门狗
 static TaskHandle_t xHandleTaskHandShake = NULL;    // 握手
 //static TaskHandle_t xHandleTaskKey = NULL;      //B门按键
-static TaskHandle_t xHandleTaskQueryMotor = NULL;      //电机状态查询
+//static TaskHandle_t xHandleTaskQueryMotor = NULL;      //电机状态查询
 
 static EventGroupHandle_t xCreatedEventGroup = NULL;
 
@@ -472,6 +472,7 @@ void vTaskMortorToHost(void *pvParameters)
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
             {    
                 send_to_host(CONTROLMOTOR,buf,readLen);
+                vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
                 Motro_A = 0;
             }            
         }           

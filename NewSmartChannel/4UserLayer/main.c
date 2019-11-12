@@ -369,11 +369,12 @@ void vTaskQueryMotor(void *pvParameters)
 //        {
             comSendBuf(COM4, ReadStatus,8);//查询A电机状态
             RS485_SendBuf(COM5,ReadStatus,8);//查询B电机状态
+           
 //        }
      
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_8);  
-        vTaskDelay(300);     
+        vTaskDelay(500);     
     }
 
 } 
@@ -441,6 +442,9 @@ void vTaskMortorToHost(void *pvParameters)
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
             {    
                 send_to_host(CONTROLMOTOR,buf,readLen);
+
+                dbh("to host",buf,readLen);
+                
                 vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
                 Motro_A = 0;
             }            

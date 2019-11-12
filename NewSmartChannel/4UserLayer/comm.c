@@ -620,7 +620,8 @@ void send_to_device(CMD_RX_T *cmd_rx)
              //向电机发送控制指令
             vTaskSuspend(xHandleTaskQueryMotor); //若是操作电机，则关掉电机查询
 //            xSemaphoreGive( gBinarySem_Handle );    //释放二值信号量
-            comSendBuf(COM4, cmd_rx->cmd_data,8);            
+            comSendBuf(COM4, cmd_rx->cmd_data,8);    
+            dbh("SEND A",cmd_rx->cmd_data,8);
             return;//这里不需要向上位机上送，在另外一个任务中才上送
         case DOOR_B:
             //发给B门

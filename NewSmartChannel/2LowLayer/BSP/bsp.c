@@ -44,7 +44,7 @@
 
 	bsp_TIM6_Init();            //定时器6初始化
 //	
-    BSP_UartOpen(SCOM1,  38400, 8, 1, 0);
+    BSP_UartOpen(SCOM1,  9600, 8, 1, 0);
     bsp_InitUart();             //modify 2019.8.5
     
 //    bsp_Usart1_Init(38400);   

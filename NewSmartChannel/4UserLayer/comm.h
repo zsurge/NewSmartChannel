@@ -129,6 +129,9 @@ static RECVHOST_T gRecvHost;
 
 extern SemaphoreHandle_t  gxMutex;
 
+extern SemaphoreHandle_t  gMutex_Motor;
+
+
 extern TaskHandle_t xHandleTaskQueryMotor;      //µç»ú×´Ì¬²éÑ¯
 
 /*----------------------------------------------*

@@ -105,7 +105,6 @@ static TaskHandle_t xHandleTaskQr = NULL;       //二维码读头
 static TaskHandle_t xHandleTaskStart = NULL;    //看门狗
 static TaskHandle_t xHandleTaskHandShake = NULL;    // 握手
 //static TaskHandle_t xHandleTaskKey = NULL;      //B门按键
-//static TaskHandle_t xHandleTaskQueryMotor = NULL;      //电机状态查询
 
 static EventGroupHandle_t xCreatedEventGroup = NULL;
 
@@ -304,7 +303,17 @@ static void AppObjCreate (void)
     {
         /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
         App_Printf("创建互斥信号量失败\r\n");
-    }    
+    }   
+    
+    
+	/* 创建互斥信号量 */
+    gMutex_Motor = xSemaphoreCreateMutex();
+	
+	if(gMutex_Motor == NULL)
+    {
+        /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
+        App_Printf("创建互斥信号量失败\r\n");
+    }      
 
 }
 
@@ -399,12 +408,16 @@ void vTaskQueryMotor(void *pvParameters)
     
     while(1)
     {
-        comSendBuf(COM4, ReadStatus,8);//查询A电机状态
-//        RS485_SendBuf(COM5,ReadStatus,8);//查询B电机状态
+//             if(xSemaphoreTake(gMutex_Motor, portMAX_DELAY))
+//             {     
+                comSendBuf(COM4, ReadStatus,8);//查询A电机状态
+//                //RS485_SendBuf(COM5,ReadStatus,8);//查询B电机状态
+//             }             
+//             xSemaphoreGive(gMutex_Motor);                 
      
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_6);  
-        vTaskDelay(300);     
+        vTaskDelay(500);     
     }
 
 } 

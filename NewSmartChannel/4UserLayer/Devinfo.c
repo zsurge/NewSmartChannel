@@ -76,3 +76,19 @@ static uint8_t * GetDevSn(void)
 
 const DEVICEINFO_T gDevinfo = {Softversion, Hardversion,SoftBulidDate,DevModel,DevBatch,GetDevSn};
 
+
+
+
+//static void DisplayDevInfo (void);
+
+//static void DisplayDevInfo(void)
+//{
+//	printf("Softversion :%s\r\n",gDevinfo.SoftwareVersion);
+//    printf("HardwareVersion :%s\r\n", gDevinfo.HardwareVersion);
+//	printf("Model :%s\r\n", gDevinfo.Model);
+//	printf("ProductBatch :%s\r\n", gDevinfo.ProductBatch);	    
+//	printf("BulidDate :%s\r\n", gDevinfo.BulidDate);
+//	printf("DevSn :%s\r\n", gDevinfo.GetSn());
+//}
+
+

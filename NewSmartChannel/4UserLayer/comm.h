@@ -84,6 +84,11 @@
 #define MAX_TXD_BUF_LEN					512   
 #define MAX_CMD_BUF_LEN					256  
 
+
+#define  QUEUE_LEN    20     /* 队列的长度，最大可包含多少个消息 */
+
+#define QUEUE_BUF_LEN 8 //每个队列buff的长度
+
 //typedef enum
 //{
 //    NoCMD = 0xA0,
@@ -122,15 +127,23 @@ typedef struct
 }RECVHOST_T;
 
 
+typedef struct
+{
+    uint8_t cmd;                         //指令字
+    uint8_t data[QUEUE_BUF_LEN];         //需要发送给android板的数据
+}QUEUE_TO_HOST_T;
+
+
+
 static RECVHOST_T gRecvHost;
 
 //static CMD_TX_T gcmd_tx;
 
+extern SemaphoreHandle_t  gxMutex;  //串口互斥量
 
-extern SemaphoreHandle_t  gxMutex;
+extern SemaphoreHandle_t  gMutex_Motor; //电机查询互斥量，暂未启用
 
-extern SemaphoreHandle_t  gMutex_Motor;
-
+extern QUEUE_TO_HOST_T gQueueToHost;    //定义一个结构体用于消息队列，跟andorid通信
 
 extern TaskHandle_t xHandleTaskQueryMotor;      //电机状态查询
 

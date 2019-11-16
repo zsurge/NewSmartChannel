@@ -119,6 +119,13 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
+          <Key>DLGUARM</Key>
+          <Name>鬺G
+鬺G
+/鴹c</Name>
+        </SetRegEntry>
+        <SetRegEntry>
+          <Number>0</Number>
           <Key>DLGDARM</Key>
           <Name>(1010=-1,-1,-1,-1,0)(1007=-1,-1,-1,-1,0)(1008=-1,-1,-1,-1,0)(1009=-1,-1,-1,-1,0)(1012=-1,-1,-1,-1,0)</Name>
         </SetRegEntry>
@@ -152,7 +159,7 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>794</LineNumber>
+          <LineNumber>167</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -170,7 +177,7 @@
           <Type>0</Type>
           <LineNumber>796</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134298922</Address>
+          <Address>134298984</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -184,25 +191,9 @@
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>167</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134312698</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\4UserLayer\main.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\SmartChannelApp\../4UserLayer/main.c\167</Expression>
-        </Bp>
-        <Bp>
-          <Number>3</Number>
-          <Type>0</Type>
           <LineNumber>642</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134301206</Address>
+          <Address>134320482</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>

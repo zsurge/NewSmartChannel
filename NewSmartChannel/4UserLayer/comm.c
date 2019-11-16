@@ -44,6 +44,7 @@
  * 模块级变量                                   *
  *----------------------------------------------*/
 
+QUEUE_TO_HOST_T gQueueToHost;    //定义一个结构体用于消息队列，跟andorid通信
 
 SemaphoreHandle_t gxMutex = NULL;
 SemaphoreHandle_t  gMutex_Motor = NULL;

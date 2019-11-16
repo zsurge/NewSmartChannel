@@ -1,7 +1,7 @@
 #include "bsp_led.h" 
 #include "string.h"
 #include "tool.h"
- 
+#include "bsp_beep.h" 
 
 //初始化PF9和PF10为输出口.并使能这两个口的时钟		    
 //LED IO初始化
@@ -85,6 +85,17 @@ void bsp_Ex_SetLed(uint8_t *dat)
         DBG("param error!\r\n");
         return;
     }
+//    左 红 灭 绿 亮
+//    4C 6C 01 67 00
+//    中 红 亮 绿 亮
+//    4D 6C 00 67 00
+//    左 红 灭 绿 亮
+//    52 6C 01 67 00
+
+
+//   4C 6C 00 67 01
+//   4D 6C 00 67 00
+//   52 6C 00 67 01
     
     memcpy(buf,dat,15);    
 
@@ -96,6 +107,11 @@ void bsp_Ex_SetLed(uint8_t *dat)
         LED_M_G = buf[9];
         LED_R_R = buf[12];
         LED_R_G = buf[14];
+
+        BEEP = 0;
+        vTaskDelay(100);
+        BEEP = 1;
+    
 
         DBG("2,4,7,9,12,14 = %d,%d,%d,%d,%d,%d\r\n",buf[2],buf[4],buf[7],buf[9],buf[12],buf[14]);
     }    

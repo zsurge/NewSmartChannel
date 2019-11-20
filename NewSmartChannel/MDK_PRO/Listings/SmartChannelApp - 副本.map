@@ -623,7 +623,7 @@ Section Cross References
     malloc.o(.data) refers to malloc.o(.ARM.__AT_0x68000000) for mem2base
     malloc.o(.data) refers to malloc.o(.ARM.__AT_0x10000000) for mem3base
     malloc.o(.data) refers to malloc.o(.bss) for mem1mapbase
-    malloc.o(.data) refers to malloc.o(.ARM.__AT_0x68000400) for mem2mapbase
+    malloc.o(.data) refers to malloc.o(.ARM.__AT_0x6800C800) for mem2mapbase
     malloc.o(.data) refers to malloc.o(.ARM.__AT_0x1000C800) for mem3mapbase
     bsp_beep.o(i.Sound) refers to delay.o(i.delay_us) for delay_us
     bsp_beep.o(i.Sound2) refers to delay.o(i.delay_ms) for delay_ms
@@ -3993,60 +3993,60 @@ Image Symbol Table
     id1                                      0x200003e6   Data          10  devinfo.o(.bss)
     id2                                      0x200003f0   Data          10  devinfo.o(.bss)
     id3                                      0x200003fa   Data          10  devinfo.o(.bss)
-    .bss                                     0x20000420   Section    51200  malloc.o(.bss)
-    .bss                                     0x2000cc20   Section     3200  malloc.o(.bss)
-    .bss                                     0x2000d8a0   Section       56  bsp_infrared.o(.bss)
-    .bss                                     0x2000d8d8   Section       16  bsp_wiegand.o(.bss)
-    .bss                                     0x2000d8e8   Section     4768  bsp_uart_fifo.o(.bss)
-    g_tUart2                                 0x2000d8e8   Data          40  bsp_uart_fifo.o(.bss)
-    g_TxBuf2                                 0x2000d910   Data         512  bsp_uart_fifo.o(.bss)
-    g_RxBuf2                                 0x2000db10   Data         512  bsp_uart_fifo.o(.bss)
-    g_tUart3                                 0x2000dd10   Data          40  bsp_uart_fifo.o(.bss)
-    g_TxBuf3                                 0x2000dd38   Data         256  bsp_uart_fifo.o(.bss)
-    g_RxBuf3                                 0x2000de38   Data         256  bsp_uart_fifo.o(.bss)
-    g_tUart4                                 0x2000df38   Data          40  bsp_uart_fifo.o(.bss)
-    g_TxBuf4                                 0x2000df60   Data        1024  bsp_uart_fifo.o(.bss)
-    g_RxBuf4                                 0x2000e360   Data        1024  bsp_uart_fifo.o(.bss)
-    g_tUart5                                 0x2000e760   Data          40  bsp_uart_fifo.o(.bss)
-    g_TxBuf5                                 0x2000e788   Data         512  bsp_uart_fifo.o(.bss)
-    g_RxBuf5                                 0x2000e988   Data         512  bsp_uart_fifo.o(.bss)
-    .bss                                     0x2000eb88   Section     1536  bsp_uart.o(.bss)
-    COM1_TX_BUFF                             0x2000eb88   Data        1536  bsp_uart.o(.bss)
-    .bss                                     0x2000f188   Section     1536  bsp_uart.o(.bss)
-    COM1_RX_BUFF                             0x2000f188   Data        1536  bsp_uart.o(.bss)
-    .bss                                     0x2000f788   Section       16  bsp_uart.o(.bss)
-    COM1_RX_QUEUE                            0x2000f788   Data          16  bsp_uart.o(.bss)
-    .bss                                     0x2000f798   Section       64  queue.o(.bss)
-    .bss                                     0x2000f7d8   Section      300  tasks.o(.bss)
-    pxReadyTasksLists                        0x2000f7d8   Data         200  tasks.o(.bss)
-    xDelayedTaskList1                        0x2000f8a0   Data          20  tasks.o(.bss)
-    xDelayedTaskList2                        0x2000f8b4   Data          20  tasks.o(.bss)
-    xPendingReadyList                        0x2000f8c8   Data          20  tasks.o(.bss)
-    xTasksWaitingTermination                 0x2000f8dc   Data          20  tasks.o(.bss)
-    xSuspendedTaskList                       0x2000f8f0   Data          20  tasks.o(.bss)
-    .bss                                     0x2000f904   Section       40  timers.o(.bss)
-    xActiveTimerList1                        0x2000f904   Data          20  timers.o(.bss)
-    xActiveTimerList2                        0x2000f918   Data          20  timers.o(.bss)
-    .bss                                     0x2000f92c   Section    61440  heap_4.o(.bss)
-    ucHeap                                   0x2000f92c   Data       61440  heap_4.o(.bss)
-    .bss                                     0x2001e92c   Section      261  sfud.o(.bss)
-    cmd_data                                 0x2001e92c   Data         261  sfud.o(.bss)
-    .bss                                     0x2001ea31   Section      256  sfud_port.o(.bss)
-    log_buf                                  0x2001ea31   Data         256  sfud_port.o(.bss)
-    .bss                                     0x2001eb31   Section      128  ef_port.o(.bss)
-    log_buf                                  0x2001eb31   Data         128  ef_port.o(.bss)
-    .bss                                     0x2001ebb4   Section      208  ef_env.o(.bss)
-    value                                    0x2001ebb4   Data         129  ef_env.o(.bss)
-    env                                      0x2001ec38   Data          52  ef_env.o(.bss)
-    sector                                   0x2001ec6c   Data          24  ef_env.o(.bss)
-    .bss                                     0x2001ec84   Section       96  libspace.o(.bss)
-    HEAP                                     0x2001ece8   Section      512  startup_stm32f40_41xxx.o(HEAP)
-    Heap_Mem                                 0x2001ece8   Data         512  startup_stm32f40_41xxx.o(HEAP)
-    STACK                                    0x2001eee8   Section     1024  startup_stm32f40_41xxx.o(STACK)
-    Stack_Mem                                0x2001eee8   Data        1024  startup_stm32f40_41xxx.o(STACK)
-    __initial_sp                             0x2001f2e8   Data           0  startup_stm32f40_41xxx.o(STACK)
-    .ARM.__AT_0x68000000                     0x68000000   Section     1024  malloc.o(.ARM.__AT_0x68000000)
-    .ARM.__AT_0x68000400                     0x68000400   Section       64  malloc.o(.ARM.__AT_0x68000400)
+    .bss                                     0x20000404   Section    51200  malloc.o(.bss)
+    .bss                                     0x2000cc04   Section     3200  malloc.o(.bss)
+    .bss                                     0x2000d884   Section       56  bsp_infrared.o(.bss)
+    .bss                                     0x2000d8bc   Section       16  bsp_wiegand.o(.bss)
+    .bss                                     0x2000d8cc   Section     4768  bsp_uart_fifo.o(.bss)
+    g_tUart2                                 0x2000d8cc   Data          40  bsp_uart_fifo.o(.bss)
+    g_TxBuf2                                 0x2000d8f4   Data         512  bsp_uart_fifo.o(.bss)
+    g_RxBuf2                                 0x2000daf4   Data         512  bsp_uart_fifo.o(.bss)
+    g_tUart3                                 0x2000dcf4   Data          40  bsp_uart_fifo.o(.bss)
+    g_TxBuf3                                 0x2000dd1c   Data         256  bsp_uart_fifo.o(.bss)
+    g_RxBuf3                                 0x2000de1c   Data         256  bsp_uart_fifo.o(.bss)
+    g_tUart4                                 0x2000df1c   Data          40  bsp_uart_fifo.o(.bss)
+    g_TxBuf4                                 0x2000df44   Data        1024  bsp_uart_fifo.o(.bss)
+    g_RxBuf4                                 0x2000e344   Data        1024  bsp_uart_fifo.o(.bss)
+    g_tUart5                                 0x2000e744   Data          40  bsp_uart_fifo.o(.bss)
+    g_TxBuf5                                 0x2000e76c   Data         512  bsp_uart_fifo.o(.bss)
+    g_RxBuf5                                 0x2000e96c   Data         512  bsp_uart_fifo.o(.bss)
+    .bss                                     0x2000eb6c   Section     1536  bsp_uart.o(.bss)
+    COM1_TX_BUFF                             0x2000eb6c   Data        1536  bsp_uart.o(.bss)
+    .bss                                     0x2000f16c   Section     1536  bsp_uart.o(.bss)
+    COM1_RX_BUFF                             0x2000f16c   Data        1536  bsp_uart.o(.bss)
+    .bss                                     0x2000f76c   Section       16  bsp_uart.o(.bss)
+    COM1_RX_QUEUE                            0x2000f76c   Data          16  bsp_uart.o(.bss)
+    .bss                                     0x2000f77c   Section       64  queue.o(.bss)
+    .bss                                     0x2000f7bc   Section      300  tasks.o(.bss)
+    pxReadyTasksLists                        0x2000f7bc   Data         200  tasks.o(.bss)
+    xDelayedTaskList1                        0x2000f884   Data          20  tasks.o(.bss)
+    xDelayedTaskList2                        0x2000f898   Data          20  tasks.o(.bss)
+    xPendingReadyList                        0x2000f8ac   Data          20  tasks.o(.bss)
+    xTasksWaitingTermination                 0x2000f8c0   Data          20  tasks.o(.bss)
+    xSuspendedTaskList                       0x2000f8d4   Data          20  tasks.o(.bss)
+    .bss                                     0x2000f8e8   Section       40  timers.o(.bss)
+    xActiveTimerList1                        0x2000f8e8   Data          20  timers.o(.bss)
+    xActiveTimerList2                        0x2000f8fc   Data          20  timers.o(.bss)
+    .bss                                     0x2000f910   Section    51200  heap_4.o(.bss)
+    ucHeap                                   0x2000f910   Data       51200  heap_4.o(.bss)
+    .bss                                     0x2001c110   Section      261  sfud.o(.bss)
+    cmd_data                                 0x2001c110   Data         261  sfud.o(.bss)
+    .bss                                     0x2001c215   Section      256  sfud_port.o(.bss)
+    log_buf                                  0x2001c215   Data         256  sfud_port.o(.bss)
+    .bss                                     0x2001c315   Section      128  ef_port.o(.bss)
+    log_buf                                  0x2001c315   Data         128  ef_port.o(.bss)
+    .bss                                     0x2001c398   Section      208  ef_env.o(.bss)
+    value                                    0x2001c398   Data         129  ef_env.o(.bss)
+    env                                      0x2001c41c   Data          52  ef_env.o(.bss)
+    sector                                   0x2001c450   Data          24  ef_env.o(.bss)
+    .bss                                     0x2001c468   Section       96  libspace.o(.bss)
+    HEAP                                     0x2001c4c8   Section      512  startup_stm32f40_41xxx.o(HEAP)
+    Heap_Mem                                 0x2001c4c8   Data         512  startup_stm32f40_41xxx.o(HEAP)
+    STACK                                    0x2001c6c8   Section     1024  startup_stm32f40_41xxx.o(STACK)
+    Stack_Mem                                0x2001c6c8   Data        1024  startup_stm32f40_41xxx.o(STACK)
+    __initial_sp                             0x2001cac8   Data           0  startup_stm32f40_41xxx.o(STACK)
+    .ARM.__AT_0x68000000                     0x68000000   Section    51200  malloc.o(.ARM.__AT_0x68000000)
+    .ARM.__AT_0x6800C800                     0x6800c800   Section     3200  malloc.o(.ARM.__AT_0x6800C800)
 
     Global Symbols
 
@@ -4690,15 +4690,15 @@ Image Symbol Table
     __stdout                                 0x200000c0   Data           4  bsp_uart_fifo.o(.data)
     pxCurrentTCB                             0x200000d4   Data           4  tasks.o(.data)
     gRecvHost                                0x200001b4   Data         520  comm.o(.bss)
-    mem1base                                 0x20000420   Data       51200  malloc.o(.bss)
-    mem1mapbase                              0x2000cc20   Data        3200  malloc.o(.bss)
-    SR_INF                                   0x2000d8a0   Data          56  bsp_infrared.o(.bss)
-    WG_Rx_Str                                0x2000d8d8   Data          16  bsp_wiegand.o(.bss)
-    xQueueRegistry                           0x2000f798   Data          64  queue.o(.bss)
-    __libspace_start                         0x2001ec84   Data          96  libspace.o(.bss)
-    __temporary_stack_top$libspace           0x2001ece4   Data           0  libspace.o(.bss)
-    mem2base                                 0x68000000   Data        1024  malloc.o(.ARM.__AT_0x68000000)
-    mem2mapbase                              0x68000400   Data          64  malloc.o(.ARM.__AT_0x68000400)
+    mem1base                                 0x20000404   Data       51200  malloc.o(.bss)
+    mem1mapbase                              0x2000cc04   Data        3200  malloc.o(.bss)
+    SR_INF                                   0x2000d884   Data          56  bsp_infrared.o(.bss)
+    WG_Rx_Str                                0x2000d8bc   Data          16  bsp_wiegand.o(.bss)
+    xQueueRegistry                           0x2000f77c   Data          64  queue.o(.bss)
+    __libspace_start                         0x2001c468   Data          96  libspace.o(.bss)
+    __temporary_stack_top$libspace           0x2001c4c8   Data           0  libspace.o(.bss)
+    mem2base                                 0x68000000   Data       51200  malloc.o(.ARM.__AT_0x68000000)
+    mem2mapbase                              0x6800c800   Data        3200  malloc.o(.ARM.__AT_0x6800C800)
 
 
 
@@ -5329,7 +5329,7 @@ Memory Map of the image
     0x0801c9cc   0x0801c9cc   0x0000001c   Data   RO         6761    locale$$data        c_w.l(lc_numeric_c.o)
 
 
-    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x0801c9e8, Size: 0x0001f2e8, Max: 0x00020000, ABSOLUTE, COMPRESSED[0x00000060])
+    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x0801c9e8, Size: 0x0001cac8, Max: 0x00020000, ABSOLUTE, COMPRESSED[0x00000060])
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
@@ -5359,28 +5359,26 @@ Memory Map of the image
     0x200001b0   COMPRESSED   0x00000004   Data   RW         6399    .data               ef_iap.o
     0x200001b4        -       0x00000208   Zero   RW          632    .bss                comm.o
     0x200003bc        -       0x00000048   Zero   RW          810    .bss                devinfo.o
-    0x20000404   COMPRESSED   0x0000001c   PAD
-    0x20000420        -       0x0000c800   Zero   RW         1686    .bss                malloc.o
-    0x2000cc20        -       0x00000c80   Zero   RW         1687    .bss                malloc.o
-    0x2000d8a0        -       0x00000038   Zero   RW         1918    .bss                bsp_infrared.o
-    0x2000d8d8        -       0x00000010   Zero   RW         2124    .bss                bsp_wiegand.o
-    0x2000d8e8        -       0x000012a0   Zero   RW         2207    .bss                bsp_uart_fifo.o
-    0x2000eb88        -       0x00000600   Zero   RW         2402    .bss                bsp_uart.o
-    0x2000f188        -       0x00000600   Zero   RW         2403    .bss                bsp_uart.o
-    0x2000f788        -       0x00000010   Zero   RW         2404    .bss                bsp_uart.o
-    0x2000f798        -       0x00000040   Zero   RW         4906    .bss                queue.o
-    0x2000f7d8        -       0x0000012c   Zero   RW         5280    .bss                tasks.o
-    0x2000f904        -       0x00000028   Zero   RW         5600    .bss                timers.o
-    0x2000f92c        -       0x0000f000   Zero   RW         5801    .bss                heap_4.o
-    0x2001e92c        -       0x00000105   Zero   RW         5865    .bss                sfud.o
-    0x2001ea31        -       0x00000100   Zero   RW         5996    .bss                sfud_port.o
-    0x2001eb31        -       0x00000080   Zero   RW         6086    .bss                ef_port.o
-    0x2001ebb1   COMPRESSED   0x00000003   PAD
-    0x2001ebb4        -       0x000000d0   Zero   RW         6199    .bss                ef_env.o
-    0x2001ec84        -       0x00000060   Zero   RW         6681    .bss                c_w.l(libspace.o)
-    0x2001ece4   COMPRESSED   0x00000004   PAD
-    0x2001ece8        -       0x00000200   Zero   RW         4731    HEAP                startup_stm32f40_41xxx.o
-    0x2001eee8        -       0x00000400   Zero   RW         4730    STACK               startup_stm32f40_41xxx.o
+    0x20000404        -       0x0000c800   Zero   RW         1686    .bss                malloc.o
+    0x2000cc04        -       0x00000c80   Zero   RW         1687    .bss                malloc.o
+    0x2000d884        -       0x00000038   Zero   RW         1918    .bss                bsp_infrared.o
+    0x2000d8bc        -       0x00000010   Zero   RW         2124    .bss                bsp_wiegand.o
+    0x2000d8cc        -       0x000012a0   Zero   RW         2207    .bss                bsp_uart_fifo.o
+    0x2000eb6c        -       0x00000600   Zero   RW         2402    .bss                bsp_uart.o
+    0x2000f16c        -       0x00000600   Zero   RW         2403    .bss                bsp_uart.o
+    0x2000f76c        -       0x00000010   Zero   RW         2404    .bss                bsp_uart.o
+    0x2000f77c        -       0x00000040   Zero   RW         4906    .bss                queue.o
+    0x2000f7bc        -       0x0000012c   Zero   RW         5280    .bss                tasks.o
+    0x2000f8e8        -       0x00000028   Zero   RW         5600    .bss                timers.o
+    0x2000f910        -       0x0000c800   Zero   RW         5801    .bss                heap_4.o
+    0x2001c110        -       0x00000105   Zero   RW         5865    .bss                sfud.o
+    0x2001c215        -       0x00000100   Zero   RW         5996    .bss                sfud_port.o
+    0x2001c315        -       0x00000080   Zero   RW         6086    .bss                ef_port.o
+    0x2001c395   COMPRESSED   0x00000003   PAD
+    0x2001c398        -       0x000000d0   Zero   RW         6199    .bss                ef_env.o
+    0x2001c468        -       0x00000060   Zero   RW         6681    .bss                c_w.l(libspace.o)
+    0x2001c4c8        -       0x00000200   Zero   RW         4731    HEAP                startup_stm32f40_41xxx.o
+    0x2001c6c8        -       0x00000400   Zero   RW         4730    STACK               startup_stm32f40_41xxx.o
 
 
 
@@ -5404,23 +5402,23 @@ Memory Map of the image
 
 
 
-  Load Region LR$$.ARM.__AT_0x68000000 (Base: 0x68000000, Size: 0x00000000, Max: 0x00000400, ABSOLUTE)
+  Load Region LR$$.ARM.__AT_0x68000000 (Base: 0x68000000, Size: 0x00000000, Max: 0x0000c800, ABSOLUTE)
 
-    Execution Region ER$$.ARM.__AT_0x68000000 (Exec base: 0x68000000, Load base: 0x68000000, Size: 0x00000400, Max: 0x00000400, ABSOLUTE, UNINIT)
-
-    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
-
-    0x68000000        -       0x00000400   Zero   RW         1684    .ARM.__AT_0x68000000  malloc.o
-
-
-
-  Load Region LR$$.ARM.__AT_0x68000400 (Base: 0x68000400, Size: 0x00000000, Max: 0x00000040, ABSOLUTE)
-
-    Execution Region ER$$.ARM.__AT_0x68000400 (Exec base: 0x68000400, Load base: 0x68000400, Size: 0x00000040, Max: 0x00000040, ABSOLUTE, UNINIT)
+    Execution Region ER$$.ARM.__AT_0x68000000 (Exec base: 0x68000000, Load base: 0x68000000, Size: 0x0000c800, Max: 0x0000c800, ABSOLUTE, UNINIT)
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
-    0x68000400        -       0x00000040   Zero   RW         1685    .ARM.__AT_0x68000400  malloc.o
+    0x68000000        -       0x0000c800   Zero   RW         1684    .ARM.__AT_0x68000000  malloc.o
+
+
+
+  Load Region LR$$.ARM.__AT_0x6800C800 (Base: 0x6800c800, Size: 0x00000000, Max: 0x00000c80, ABSOLUTE)
+
+    Execution Region ER$$.ARM.__AT_0x6800C800 (Exec base: 0x6800c800, Load base: 0x6800c800, Size: 0x00000c80, Max: 0x00000c80, ABSOLUTE, UNINIT)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x6800c800        -       0x00000c80   Zero   RW         1685    .ARM.__AT_0x6800C800  malloc.o
 
 
 ==============================================================================
@@ -5450,12 +5448,12 @@ Image component sizes
        234         34        219          0        128       8235   ef_port.o
         36          4       1024          0          0       1248   ef_utils.o
        450          6          0          0          0      13623   event_groups.o
-       460         24          0         24      61440       4479   heap_4.o
+       460         24          0         24      51200       4479   heap_4.o
          0          0          0          0          0       4612   iap.o
       1204        640          0         16          0       6741   ini.o
        138          0          0          0          0       3198   list.o
       1736        514          0         44          0     333023   main.o
-       518         44         36         36     109888       9840   malloc.o
+       518         44         36         36     163200       9844   malloc.o
        144         14          0          0          0       2381   misc.o
        786         80          0         12          0      11349   port.o
       1868         22          0          0         64      18080   queue.o
@@ -5482,9 +5480,9 @@ Image component sizes
        222          0          0          0          0       3348   uartqueue.o
 
     ----------------------------------------------------------------------
-     33528       4892       3402        436     182672     717254   Object Totals
+     33528       4892       3402        436     225716     717258   Object Totals
          0          0         32          0          0          0   (incl. Generated)
-        72          4          8          3         31          0   (incl. Padding)
+        72          4          8          3          3          0   (incl. Padding)
 
     ----------------------------------------------------------------------
 
@@ -5626,8 +5624,8 @@ Image component sizes
         40         10          0          0          0        128   strtod.o
 
     ----------------------------------------------------------------------
-     14186        484        572          0        100      10812   Library Totals
-        18          2          5          0          4          0   (incl. Padding)
+     14186        484        572          0         96      10812   Library Totals
+        18          2          5          0          0          0   (incl. Padding)
 
     ----------------------------------------------------------------------
 
@@ -5638,7 +5636,7 @@ Image component sizes
        786         72          0          0          0       1248   m_wm.l
 
     ----------------------------------------------------------------------
-     14186        484        572          0        100      10812   Library Totals
+     14186        484        572          0         96      10812   Library Totals
 
     ----------------------------------------------------------------------
 
@@ -5647,14 +5645,14 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     47714       5376       3974        436     182772     686414   Grand Totals
-     47714       5376       3974         96     182772     686414   ELF Image Totals (compressed)
+     47714       5376       3974        436     225812     686418   Grand Totals
+     47714       5376       3974         96     225812     686418   ELF Image Totals (compressed)
      47714       5376       3974         96          0          0   ROM Totals
 
 ==============================================================================
 
     Total RO  Size (Code + RO Data)                51688 (  50.48kB)
-    Total RW  Size (RW Data + ZI Data)            183208 ( 178.91kB)
+    Total RW  Size (RW Data + ZI Data)            226248 ( 220.95kB)
     Total ROM Size (Code + RO Data + RW Data)      51784 (  50.57kB)
 
 ==============================================================================

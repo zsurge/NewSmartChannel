@@ -145,6 +145,11 @@ to exclude the API function. */
 #define configUSE_STATS_FORMATTING_FUNCTIONS 1
 
 
+//FreeRTOS 任务通知，默认值为1
+//#define configUSE_TASK_NOTIFICATIONS            1
+
+
+
 
 
 /* Cortex-M specific definitions. */

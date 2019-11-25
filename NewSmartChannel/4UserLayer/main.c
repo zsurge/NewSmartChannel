@@ -43,36 +43,30 @@
 
 
 //任务堆栈大小   
+//#define LED_STK_SIZE 		(1024)
+//#define MOTOR_STK_SIZE 		(1024) 
+//#define CMD_STK_SIZE 		(1024*2)
+//#define INFRARED_STK_SIZE 	(1024)
+//#define RS485_STK_SIZE 		(1024)
+//#define START_STK_SIZE 	    (256)
+//#define QR_STK_SIZE 		(1024)
+//#define READER_STK_SIZE     (1024)
+//#define HANDSHAKE_STK_SIZE  (1024)
+//#define KEY_STK_SIZE        (512)
+//#define QUERYMOTOR_STK_SIZE      (512)
+
+
 #define LED_STK_SIZE 		(1024)
 #define MOTOR_STK_SIZE 		(1024) 
-#define CMD_STK_SIZE 		(1024*2)
+#define CMD_STK_SIZE 		(1024*1)
 #define INFRARED_STK_SIZE 	(1024)
 #define RS485_STK_SIZE 		(1024)
-#define START_STK_SIZE 	    (256)
+#define START_STK_SIZE 	    (512)
 #define QR_STK_SIZE 		(1024)
 #define READER_STK_SIZE     (1024)
 #define HANDSHAKE_STK_SIZE  (1024)
-#define KEY_STK_SIZE        (512)
+#define KEY_STK_SIZE        (1024)
 #define QUERYMOTOR_STK_SIZE      (512)
-
-
-//#define LED_STK_SIZE 		128
-//#define MOTOR_STK_SIZE 		512 
-//#define CMD_STK_SIZE 		1024*2
-//#define INFRARED_STK_SIZE 	512
-//#define RS485_STK_SIZE 		1024*1
-//#define START_STK_SIZE 	    256
-//#define QR_STK_SIZE 		512
-//#define READER_STK_SIZE     256
-//#define HANDSHAKE_STK_SIZE  256
-//#define KEY_STK_SIZE        128
-//#define QUERYMOTOR_STK_SIZE      256
-
-
-
-
-
-
 
 //事件标志
 #define TASK_BIT_0	 (1 << 0)

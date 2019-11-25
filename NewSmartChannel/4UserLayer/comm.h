@@ -89,7 +89,7 @@
 #define MAX_TXD_BUF_LEN					512   
 #define MAX_CMD_BUF_LEN					256  
 
-#define USEQUEUE
+//#define USEQUEUE
 
 #ifdef USEQUEUE
 #define  QUEUE_LEN    20     /* 队列的长度，最大可包含多少个消息 */

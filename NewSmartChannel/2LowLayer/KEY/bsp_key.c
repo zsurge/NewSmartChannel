@@ -27,11 +27,19 @@ void bsp_key_Init ( void )
 
 	RCC_AHB1PeriphClockCmd ( RCC_ALL_KEY, ENABLE ); //使能GPIOE
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_KEY_DOOR_B; //对应引脚
+	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_KEY_DOOR_B|GPIO_PIN_FIREFIGHTING; //对应引脚
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//普通输入模式
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100M
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//
 	GPIO_Init ( GPIO_PORT_KEY, &GPIO_InitStructure ); //初始化GPIOE9
+
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_OPEN_DOOR_A|GPIO_PIN_OPEN_DOOR_B; //对应引脚
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//普通输入模式
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100M
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//
+	GPIO_Init ( GPIO_PORT_OPEN_DOOR, &GPIO_InitStructure ); //初始化GPIOE9
+	
 }
 
 //按键处理函数
@@ -47,19 +55,31 @@ u8 bsp_key_Scan ( u8 mode )
 	{
 		key_up=1;    //支持连按
 	}
-	if ( key_up&& ( KEY_DOOR_B==0 ) )
+	if ( key_up&& (KEY_FIREFIGHTING==0 || KEY_DOOR_B==0 || KEY_OPEN_DOOR_A==0 || KEY_OPEN_DOOR_B==0 ) )
 	{
 		delay_ms ( 10 ); //去抖动
 		
 		key_up=0;
         
-		if ( KEY_DOOR_B == 0 )
+		if ( KEY_FIREFIGHTING == 0 )
 		{
-			return KEY_DOOR_B_PRES;
+			return KEY_FIREFIGHTING_PRES;
 		}
+        else if(KEY_DOOR_B==0)
+        {
+            return KEY_DOOR_B_PRES;
+        }
+        else if(KEY_OPEN_DOOR_A==0)
+        {
+            return KEY_OPEN_DOOR_A_PRES;
+        }
+        else if(KEY_OPEN_DOOR_B==0)
+        {
+            return KEY_OPEN_DOOR_B_PRES;
+        }        
 
 	}
-	else if ( KEY_DOOR_B == 1 )
+	else if (KEY_FIREFIGHTING==1 && KEY_DOOR_B==1 && KEY_OPEN_DOOR_A==1 && KEY_OPEN_DOOR_B==1 )
 	{
 		key_up=1;
 	}

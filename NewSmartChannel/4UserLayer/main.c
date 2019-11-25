@@ -41,18 +41,20 @@
 #define START_TASK_PRIO		( tskIDLE_PRIORITY + 5)
 
 
+
 //任务堆栈大小   
-#define LED_STK_SIZE 		(256)
+#define LED_STK_SIZE 		(1024)
 #define MOTOR_STK_SIZE 		(1024) 
 #define CMD_STK_SIZE 		(1024*2)
 #define INFRARED_STK_SIZE 	(1024)
 #define RS485_STK_SIZE 		(1024)
-#define START_STK_SIZE 	    (1024)
+#define START_STK_SIZE 	    (256)
 #define QR_STK_SIZE 		(1024)
 #define READER_STK_SIZE     (1024)
 #define HANDSHAKE_STK_SIZE  (1024)
-#define KEY_STK_SIZE        (1024)
-#define QUERYMOTOR_STK_SIZE      (1024)
+#define KEY_STK_SIZE        (512)
+#define QUERYMOTOR_STK_SIZE      (512)
+
 
 //#define LED_STK_SIZE 		128
 //#define MOTOR_STK_SIZE 		512 
@@ -83,6 +85,8 @@
 #define TASK_BIT_7	 (1 << 7)
 #define TASK_BIT_8	 (1 << 8)
 
+//读取电机状态最大次数
+#define READ_MOTOR_STATUS_TIMES 20
 
 
 //#define TASK_BIT_ALL (TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 | TASK_BIT_3|TASK_BIT_4 | TASK_BIT_5 | TASK_BIT_6 )
@@ -102,9 +106,22 @@ static TaskHandle_t xHandleTaskRs485 = NULL;    //B门电机
 static TaskHandle_t xHandleTaskStart = NULL;    //看门狗
 static TaskHandle_t xHandleTaskHandShake = NULL;    // 握手
 static TaskHandle_t xHandleTaskKey = NULL;      //B门按键
-//static TaskHandle_t xHandleTaskQueryMotor = NULL;      //电机状态查询
 
+//事件句柄
 static EventGroupHandle_t xCreatedEventGroup = NULL;
+
+
+//可以做为脱机模式情况下，红外，读卡器，二维码来开门
+//脱机模式，判定读卡器的编码范围，以及二维码的计算规则
+#ifdef USEQUEUE
+#define MONITOR_TASK_PRIO	( tskIDLE_PRIORITY + 4)
+#define MONITOR_STK_SIZE   (1024)
+static TaskHandle_t xHandleTaskMonitor = NULL;    //监控任务
+static void vTaskMonitor(void *pvParameters);
+static QueueHandle_t xTransQueue = NULL;
+#endif
+
+
 
 
 
@@ -122,16 +139,15 @@ static void vTaskRs485(void *pvParameters);
 static void vTaskReader(void *pvParameters);
 static void vTaskQR(void *pvParameters);
 static void vTaskStart(void *pvParameters);
-
+static void vTaskQueryMotor(void *pvParameters);
 //上送开机次数
 static void vTaskHandShake(void *pvParameters);
-static void vTaskQueryMotor(void *pvParameters);
-
 
 
 static void AppTaskCreate(void);
 static void AppObjCreate (void);
 static void App_Printf(char *format, ...);
+
 
 //static void AppEventCreate (void);
 
@@ -153,14 +169,11 @@ int main(void)
     //硬件初始化
     bsp_Init();  
 
-    //DisplayDevInfo();
-                    
-	/* 创建任务 */
-	AppTaskCreate();
-
 	/* 创建任务通信机制 */
 	AppObjCreate();
 
+	/* 创建任务 */
+	AppTaskCreate();
     
     /* 启动调度，开始执行任务 */
     vTaskStartScheduler();
@@ -185,6 +198,13 @@ static void AppTaskCreate (void)
                 (UBaseType_t    )HANDSHAKE_TASK_PRIO,    
                 (TaskHandle_t*  )&xHandleTaskHandShake);  
 
+    //创建LED任务
+    xTaskCreate((TaskFunction_t )vTaskLed,         
+                (const char*    )"vTaskLed",       
+                (uint16_t       )LED_STK_SIZE, 
+                (void*          )NULL,              
+                (UBaseType_t    )LED_TASK_PRIO,    
+                (TaskHandle_t*  )&xHandleTaskLed);                   
 
     //查询电机状态
     xTaskCreate((TaskFunction_t )vTaskQueryMotor,
@@ -192,16 +212,8 @@ static void AppTaskCreate (void)
                 (uint16_t       )QUERYMOTOR_STK_SIZE, 
                 (void*          )NULL,              
                 (UBaseType_t    )QUERYMOTOR_TASK_PRIO,    
-                (TaskHandle_t*  )&xHandleTaskQueryMotor);                  
-
-    //创建LED任务
-    xTaskCreate((TaskFunction_t )vTaskLed,         
-                (const char*    )"vTaskLed",       
-                (uint16_t       )LED_STK_SIZE, 
-                (void*          )NULL,              
-                (UBaseType_t    )LED_TASK_PRIO,    
-                (TaskHandle_t*  )&xHandleTaskLed);   
-
+                (TaskHandle_t*  )&xHandleTaskQueryMotor);  
+    
     //创建电机信息返回任务
     xTaskCreate((TaskFunction_t )vTaskMortorToHost,     
                 (const char*    )"vTMTHost",   
@@ -257,7 +269,17 @@ static void AppTaskCreate (void)
                 (uint16_t       )KEY_STK_SIZE, 
                 (void*          )NULL,              
                 (UBaseType_t    )KEY_TASK_PRIO,    
-                (TaskHandle_t*  )&xHandleTaskKey);                   
+                (TaskHandle_t*  )&xHandleTaskKey);   
+
+    #ifdef USEQUEUE
+    //监控线程
+    xTaskCreate((TaskFunction_t )vTaskMonitor,     
+                (const char*    )"vTaskMonitor",   
+                (uint16_t       )MONITOR_STK_SIZE, 
+                (void*          )NULL,
+                (UBaseType_t    )MONITOR_TASK_PRIO,
+                (TaskHandle_t*  )&xHandleTaskMonitor);
+    #endif
 
     //看门狗
 	xTaskCreate((TaskFunction_t )vTaskStart,     		/* 任务函数  */
@@ -305,7 +327,20 @@ static void AppObjCreate (void)
 //    {
 //        App_Printf("创建二值信号量失败\r\n");
 //    }
+
+    #ifdef USEQUEUE
+    /* 创建消息队列 */
+    xTransQueue = xQueueCreate((UBaseType_t ) QUEUE_LEN,/* 消息队列的长度 */
+                              (UBaseType_t ) sizeof(QUEUE_TO_HOST_T *));/* 消息的大小 */
+    if(xTransQueue == NULL)
+    {
+        App_Printf("创建xTransQueue消息队列失败!\r\n");
+    }	
+    #endif
+
 }
+
+
 
 /*
 *********************************************************************************************************
@@ -344,16 +379,71 @@ static void vTaskStart(void *pvParameters)
 							         xTicksToWait); 	 /* 等待延迟时间 */
 		
 		if((uxBits & TASK_BIT_ALL) == TASK_BIT_ALL)
-		{            
+		{  
 		    IWDG_Feed(); //喂狗			
 		}
 	    else
 		{
 			/* 基本是每xTicksToWait进来一次 */
 			/* 通过变量uxBits简单的可以在此处检测那个任务长期没有发来运行标志 */
+
+            //时序原因，值不太准确，需要更精准的方法
+
+//            if((uxBits & TASK_BIT_0) != 0x01)
+//            {
+//                DBG("BIT_0 vTaskLed error = %02x,%02x   %02x \r\n",(uxBits & TASK_BIT_0),uxBits,TASK_BIT_0);
+//            }
+
+//            if((uxBits & TASK_BIT_1) != 0x02)
+//            {
+//                DBG("BIT_1 vTaskMotorToHost error = %02x, %02x   %02x \r\n",(uxBits & TASK_BIT_1),uxBits,TASK_BIT_1);
+//            }
+
+//            if((uxBits & TASK_BIT_2) != 0x04)
+//            {
+//                DBG("BIT_2 vTaskMsgPro error = %02x, %02x   %02x \r\n",(uxBits & TASK_BIT_2),uxBits,TASK_BIT_2);
+//            }
+//            
+//            if((uxBits & TASK_BIT_3) != 0x08)
+//            {
+//                DBG("BIT_3 vTaskInfrared error = %02x, %02x   %02x \r\n",(uxBits & TASK_BIT_3),uxBits,TASK_BIT_3);
+//            }
+
+//            if((uxBits & TASK_BIT_4) != 0x10)
+//            {
+//                DBG("BIT_4 vTaskReader error = %02x,%02x   ,%02x \r\n",(uxBits & TASK_BIT_4),uxBits,TASK_BIT_4);
+//            }
+
+//            if((uxBits & TASK_BIT_5) != 0x20)
+//            {
+//                DBG("BIT_5 vTaskQR error = %02x,%02x   ,%02x \r\n",(uxBits & TASK_BIT_5),uxBits,TASK_BIT_5);
+//            }       
+
+//            if((uxBits & TASK_BIT_6) != 0x40)
+//            {
+//                DBG("BIT_6 vTaskRs485 error = %02x,%02x   ,%02x \r\n",(uxBits & TASK_BIT_6),uxBits,TASK_BIT_6);
+//            }  
+
+//            if((uxBits & TASK_BIT_7) != 0x80)
+//            {
+//                DBG("BIT_7 vTaskKey error = %02x,%02x   ,%02x \r\n",(uxBits & TASK_BIT_7),uxBits,TASK_BIT_7);
+//            } 
+
+//            if((uxBits & (TASK_BIT_8>>8)) != 0x01)
+//            {
+//                DBG("BIT_8 vTaskQueryMotor error = %04x,%02x   ,%02x \r\n",(uxBits & (TASK_BIT_8>>8)),uxBits,TASK_BIT_8);
+//            } 
+
+            
 		}
     }
 }
+
+
+
+
+
+
 
 //查询电机状态
 void vTaskQueryMotor(void *pvParameters)
@@ -382,13 +472,29 @@ void vTaskQueryMotor(void *pvParameters)
 //LED任务函数 
 void vTaskLed(void *pvParameters)
 {   
+    uint8_t pcWriteBuffer[512];
+    
     uint8_t i = 0;
     BEEP = 0;
     vTaskDelay(300);
     BEEP = 1;
     
     while(1)
-    {    
+    {  
+        if(g500usCount == 0)
+        {
+            g500usCount = 1*60*1000;//30ms
+
+            App_Printf("\r\n=================================================\r\n");
+            App_Printf("任务名      任务状态 优先级   剩余栈 任务序号\r\n");
+            vTaskList((char *)&pcWriteBuffer);
+            App_Printf("%s\r\n", pcWriteBuffer);
+
+            App_Printf("\r\n任务名       运行计数         使用率\r\n");
+            vTaskGetRunTimeStats((char *)&pcWriteBuffer);
+            App_Printf("%s\r\n", pcWriteBuffer);      
+        }
+        
         if(Motro_A== 1)
         {
           LED3=!LED3;   
@@ -423,11 +529,17 @@ void vTaskLed(void *pvParameters)
 
 //motor to host 任务函数
 void vTaskMortorToHost(void *pvParameters)
-{
+{     
     uint8_t buf[8] = {0};
     uint16_t readLen = 0;
     uint16_t iCRC = 0;
     uint8_t crcBuf[2] = {0};
+
+    #ifdef USEQUEUE
+    QUEUE_TO_HOST_T *ptMotorToHost;  
+    ptMotorToHost = &gQueueToHost;
+    #endif
+    
     while (1)
     {   
         readLen = comRecvBuff(COM4,buf,8);       
@@ -440,11 +552,27 @@ void vTaskMortorToHost(void *pvParameters)
             crcBuf[1] = iCRC & 0xff;  
 
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
-            {    
-                send_to_host(CONTROLMOTOR,buf,readLen);
+            { 
 
-                dbh("to host",buf,readLen);
-                
+                #ifdef USEQUEUE
+                ptMotorToHost->cmd = CONTROLMOTOR;
+                memcpy(ptMotorToHost->data,buf,readLen);
+
+    			/* 使用消息队列实现指针变量的传递 */
+    			if(xQueueSend(xTransQueue,              /* 消息队列句柄 */
+    						 (void *) &ptMotorToHost,   /* 发送结构体指针变量ptQueueToHost的地址 */
+    						 (TickType_t)10) != pdPASS )
+    			{
+                    DBG("向xTransQueue发送数据失败，即使等待了10个时钟节拍\r\n");                
+                } 
+                else
+                {
+//                    DBG("向xTransQueue发送数据成功\r\n");
+                      dbh("CONTROLMOTOR",(char *)buf,readLen);
+                }    
+                #endif
+								 
+                send_to_host(CONTROLMOTOR,buf,readLen);
                 vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
                 Motro_A = 0;
             }            
@@ -461,7 +589,13 @@ void vTaskMortorToHost(void *pvParameters)
 
 void vTaskKey(void *pvParameters)
 {
-    
+
+
+//    uint8_t CloseDoor[8] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
+    uint8_t OpenDoor[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x02,0xCA,0x68 };
+//    uint8_t OpenDoor_R[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x03,0x0B,0xA8 };
+//    uint8_t QuestStatus[8] =  { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
+//    uint8_t MotorReset[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x07,0x0A,0x6B };    
 	uint8_t ucKeyCode;
     
     while(1)
@@ -475,8 +609,24 @@ void vTaskKey(void *pvParameters)
 				/* 开门键按下执行向上位机发送开门请求 */
 				case KEY_DOOR_B_PRES:	 
                     SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
-					break;			
-			
+					break;	
+                case KEY_FIREFIGHTING_PRES:
+                    //开门
+                    comSendBuf(COM4, OpenDoor,8);//打开A门
+                    RS485_SendBuf(COM5,OpenDoor,8);//打开B门                    
+                    //向android发送消防联动的消息
+                    SendAsciiCodeToHost(FIREFIGHTINGLINKAGE,NO_ERR,"Fire fighting linkage");                    
+                    break;
+                case KEY_OPEN_DOOR_A_PRES:
+                    //Open door a manually
+                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually");                      
+                    comSendBuf(COM4, OpenDoor,8);//打开A门
+                    break;
+                case KEY_OPEN_DOOR_B_PRES:
+                    //Open door b manually
+                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");  
+                    RS485_SendBuf(COM5,OpenDoor,8);//打开B门
+                    break;			
 				/* 其他的键值不处理 */
 				default:   
 				App_Printf("KEY_default\r\n");
@@ -513,6 +663,11 @@ void vTaskInfrared(void *pvParameters)
     uint32_t code = 0;
     uint8_t dat[3] = {0};
     
+    #ifdef USEQUEUE
+    QUEUE_TO_HOST_T *ptInfraredToHost; 
+    ptInfraredToHost = &gQueueToHost;
+    #endif
+    
     while(1)
     {  
         code = bsp_infrared_scan();       
@@ -525,6 +680,25 @@ void vTaskInfrared(void *pvParameters)
             dat[1] = code>>8;
             dat[2] = code&0xff;
             code = 0;
+
+            #ifdef USEQUEUE
+            ptInfraredToHost->cmd = GETSENSOR;
+            memcpy(ptInfraredToHost->data,dat,3);
+            
+			/* 使用消息队列实现指针变量的传递 */
+			if(xQueueSend(xTransQueue,              /* 消息队列句柄 */
+						 (void *) &ptInfraredToHost,   /* 发送结构体指针变量ptQueueToHost的地址 */
+						 (TickType_t)10) != pdPASS )
+			{
+                DBG("向xTransQueue发送数据失败，即使等待了10个时钟节拍\r\n");                
+            } 
+            else
+            {
+                //DBG("向xTransQueue发送数据成功\r\n");   
+				dbh("GETSENSOR",(char *)dat,3);
+            }
+            #endif
+                
             send_to_host(GETSENSOR,dat,3);
         }
 
@@ -541,6 +715,12 @@ void vTaskRs485(void *pvParameters)
     uint8_t readLen = 0;
     uint16_t iCRC = 0;
     uint8_t crcBuf[2] = {0};
+
+    #ifdef USEQUEUE
+    QUEUE_TO_HOST_T *ptInfraredToHost; 
+    ptInfraredToHost = &gQueueToHost;
+    #endif
+    
     while (1)
     {
         readLen = RS485_Recv(COM5,buf,8);       
@@ -553,7 +733,24 @@ void vTaskRs485(void *pvParameters)
             crcBuf[1] = iCRC & 0xff;  
 
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
-            {                   
+            { 
+                #ifdef USEQUEUE
+                ptInfraredToHost->cmd = DOOR_B;
+                memcpy(ptInfraredToHost->data,buf,readLen);
+            
+    			/* 使用消息队列实现指针变量的传递 */
+    			if(xQueueSend(xTransQueue,              /* 消息队列句柄 */
+    						 (void *) &ptInfraredToHost,   /* 发送结构体指针变量ptQueueToHost的地址 */
+    						 (TickType_t)10) != pdPASS )
+    			{
+                    DBG("向xTransQueue发送数据失败，即使等待了10个时钟节拍\r\n");                
+                } 
+                else
+                {                 
+    				dbh("DOOR_B",(char *)buf,readLen);
+                }   
+                #endif
+            
                 send_to_host(DOOR_B,buf,readLen);
                 vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
                 Motro_B = 0;
@@ -574,12 +771,15 @@ void vTaskReader(void *pvParameters)
     uint32_t CardID = 0;
     uint8_t dat[4] = {0};
     
-    uint32_t FunState = 0;
-    char *IcReaderState;
-
-    IcReaderState = ef_get_env("ICSTATE");
-    assert_param(IcReaderState);
-    FunState = atol(IcReaderState);
+//    uint32_t FunState = 0;
+//    char *IcReaderState;
+    #ifdef USEQUEUE
+    QUEUE_TO_HOST_T *ptReaderToHost; 
+    ptReaderToHost = &gQueueToHost;
+    #endif
+//    IcReaderState = ef_get_env("ICSTATE");
+//    assert_param(IcReaderState);
+//    FunState = atol(IcReaderState);
     
     while(1)
     {
@@ -596,6 +796,23 @@ void vTaskReader(void *pvParameters)
     			dat[1] = CardID>>16;
     			dat[2] = CardID>>8;
     			dat[3] = CardID&0XFF;    
+
+                #ifdef USEQUEUE
+                ptReaderToHost->cmd = WGREADER;
+                memcpy(ptReaderToHost->data,dat,4);
+
+    			/* 使用消息队列实现指针变量的传递 */
+    			if(xQueueSend(xTransQueue,              /* 消息队列句柄 */
+    						 (void *) &ptReaderToHost,   /* 发送结构体指针变量ptQueueToHost的地址 */
+    						 (TickType_t)10) != pdPASS )
+    			{
+                    DBG("向xTransQueue发送数据失败，即使等待了10个时钟节拍\r\n");                
+                } 
+                else
+                {
+                    dbh("WGREADER",(char *)dat,4);
+                }
+                #endif
                 
                 send_to_host(WGREADER,dat,4);
             }  
@@ -617,12 +834,12 @@ void vTaskQR(void *pvParameters)
     uint8_t recv_buf[256] = {0};
     uint16_t len = 0;  
     
-    uint32_t FunState = 0;
-    char *QrCodeState;
+//    uint32_t FunState = 0;
+//    char *QrCodeState;
 
-    QrCodeState = ef_get_env("QRSTATE");
-    assert_param(QrCodeState);
-    FunState = atol(QrCodeState);
+//    QrCodeState = ef_get_env("QRSTATE");
+//    assert_param(QrCodeState);
+//    FunState = atol(QrCodeState);
     
     while(1)
     {
@@ -676,7 +893,7 @@ void vTaskHandShake(void *pvParameters)
 //    char *c_old_boot_times, c_new_boot_times[12] = {0};
 //    
 
-//    g1msCount = 1000*10;
+//    g500usCount = 1000*10;
 
 //    c_old_boot_times = ef_get_env("boot_times");
 
@@ -684,7 +901,7 @@ void vTaskHandShake(void *pvParameters)
 
 //    while(1)
 //    {
-//        if(g1msCount == 0)
+//        if(g500usCount == 0)
 //        {
 //            break;
 //        }
@@ -725,7 +942,7 @@ void vTaskHandShake(void *pvParameters)
 */
 static void  App_Printf(char *format, ...)
 {
-    char  buf_str[200 + 1];
+    char  buf_str[512 + 1];
     va_list   v_args;
 
 
@@ -745,5 +962,44 @@ static void  App_Printf(char *format, ...)
 }
 
 
+
+#ifdef USEQUEUE
+static void vTaskMonitor(void *pvParameters)
+{
+  BaseType_t xReturn = pdTRUE;/* 定义一个创建信息返回值，默认为pdTRUE */
+  QUEUE_TO_HOST_T *ptMsg;
+  const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为200ms */  
+
+  while (1)
+  {
+    xReturn = xQueueReceive( xTransQueue,    /* 消息队列的句柄 */
+                             (void *)&ptMsg,  /*这里获取的是结构体的地址 */
+                             xMaxBlockTime); /* 设置阻塞时间 */
+    if(pdPASS == xReturn)
+    {
+//        DBG("ptMsg->cmd = %02x\r\n", ptMsg->cmd);
+//        dbh("ptMsg->data ", (char *)ptMsg->data,QUEUE_BUF_LEN);
+
+        switch (ptMsg->cmd)
+        {
+            case GETSENSOR:
+                 DBG("红外数据\r\n");
+                break;
+             case CONTROLMOTOR:
+                 DBG("A门电机数据\r\n");
+                break;
+            case DOOR_B:
+                 DBG("B门电机数据\r\n");
+                break;
+            case WGREADER:
+                 DBG("读卡器数据\r\n");
+                break;            
+            
+        }
+    }    
+
+  }    
+}
+#endif
 
 

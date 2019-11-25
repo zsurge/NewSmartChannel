@@ -22,18 +22,35 @@
 #include "sys.h" 
 #include "delay.h"
 
+#define KEY_DOOR_B          PEin(9) 
+#define KEY_FIREFIGHTING    PEin(2)
+
+#define KEY_OPEN_DOOR_A     PDin(7)
+#define KEY_OPEN_DOOR_B     PDin(4)
+
 
 /* 按键口对应的RCC时钟 */
-#define RCC_ALL_KEY             (RCC_AHB1Periph_GPIOE)
+#define RCC_ALL_KEY             (RCC_AHB1Periph_GPIOD|RCC_AHB1Periph_GPIOE)
+
 #define GPIO_PORT_KEY           GPIOE
 #define GPIO_PIN_KEY_DOOR_B     GPIO_Pin_9
-
-#define KEY_DOOR_B  PEin(9)   	
-
+#define GPIO_PIN_FIREFIGHTING    GPIO_Pin_2
 
 
-#define KEY_NONE            0   //无按键
-#define KEY_DOOR_B_PRES 	1	//B门开门键按下
+#define GPIO_PORT_OPEN_DOOR    GPIOD
+#define GPIO_PIN_OPEN_DOOR_A     GPIO_Pin_7
+#define GPIO_PIN_OPEN_DOOR_B     GPIO_Pin_4
+  	
+
+
+
+#define KEY_NONE                0   //无按键
+#define KEY_DOOR_B_PRES 	    1	//B门开门键按下
+#define KEY_FIREFIGHTING_PRES 	2	//消防联动键按下
+#define KEY_OPEN_DOOR_A_PRES 	3	//A门开门键按下
+#define KEY_OPEN_DOOR_B_PRES 	4	//B门开门键按下
+
+
 
 
 

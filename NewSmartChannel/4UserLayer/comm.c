@@ -44,6 +44,9 @@
  * 模块级变量                                   *
  *----------------------------------------------*/
 
+#ifdef USEQUEUE
+QUEUE_TO_HOST_T gQueueToHost;    //定义一个结构体用于消息队列，用于同步处理相应数据
+#endif
 
 SemaphoreHandle_t gxMutex = NULL;
 //SemaphoreHandle_t gBinarySem_Handle = NULL;
@@ -621,7 +624,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
             vTaskSuspend(xHandleTaskQueryMotor); //若是操作电机，则关掉电机查询
 //            xSemaphoreGive( gBinarySem_Handle );    //释放二值信号量
             comSendBuf(COM4, cmd_rx->cmd_data,8);    
-            dbh("SEND A",cmd_rx->cmd_data,8);
+            dbh("SEND A",(char *)cmd_rx->cmd_data,8);
             return;//这里不需要向上位机上送，在另外一个任务中才上送
         case DOOR_B:
             //发给B门

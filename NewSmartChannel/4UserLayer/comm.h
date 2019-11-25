@@ -71,6 +71,11 @@
 
 #define HANDSHAKE                       0XB1
 
+#define FIREFIGHTINGLINKAGE             0xB2
+#define MANUALLY_OPEN_DOOR_A            0xB3
+#define MANUALLY_OPEN_DOOR_B            0xB4
+
+
 
 #define DEV_MOTOR                       0x01
 #define DEV_SENSOR                      0x02
@@ -83,6 +88,22 @@
 #define MAX_RXD_BUF_LEN        			512
 #define MAX_TXD_BUF_LEN					512   
 #define MAX_CMD_BUF_LEN					256  
+
+#define USEQUEUE
+
+#ifdef USEQUEUE
+#define  QUEUE_LEN    20     /* 队列的长度，最大可包含多少个消息 */
+#define QUEUE_BUF_LEN 8 //每个队列buff的长度
+typedef struct
+{
+    uint8_t cmd;                         //指令字
+    uint8_t data[QUEUE_BUF_LEN];         //需要发送给android板的数据
+}QUEUE_TO_HOST_T;
+
+extern QUEUE_TO_HOST_T gQueueToHost;    //定义一个结构体用于消息队列，跟andorid通信
+#endif
+
+
 
 //typedef enum
 //{
@@ -122,6 +143,10 @@ typedef struct
 }RECVHOST_T;
 
 
+
+
+
+
 static RECVHOST_T gRecvHost;
 
 //static CMD_TX_T gcmd_tx;
@@ -131,6 +156,8 @@ extern SemaphoreHandle_t  gxMutex;
 
 //声明二值信号量
 //extern SemaphoreHandle_t gBinarySem_Handle;
+
+
 
 extern TaskHandle_t xHandleTaskQueryMotor;      //电机状态查询
 

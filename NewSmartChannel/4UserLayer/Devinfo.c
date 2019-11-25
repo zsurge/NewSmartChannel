@@ -46,7 +46,7 @@ const uint8_t Softversion[] = "1.0.2";
 const uint8_t Hardversion[] = "1.0.3";
 const uint8_t SoftBulidDate[] = __DATE__ " " __TIME__;
 const uint8_t DevModel[] = "SmartChannel";
-const uint8_t DevBatch[] = "20190822001";
+const uint8_t DevBatch[] = "20191121001";
 
 
 static uint8_t * GetDevSn(void)

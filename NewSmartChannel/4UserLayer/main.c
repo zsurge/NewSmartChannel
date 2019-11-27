@@ -451,7 +451,8 @@ void vTaskQueryMotor(void *pvParameters)
 
 //        if(xReturn == pdFALSE)
 //        {
-            comSendBuf(COM4, ReadStatus,8);//查询A电机状态
+//            comSendBuf(COM4, ReadStatus,8);//查询A电机状态
+            RS485_SendBuf(COM4,ReadStatus,8);
             RS485_SendBuf(COM5,ReadStatus,8);//查询B电机状态
            
 //        }
@@ -536,7 +537,7 @@ void vTaskMortorToHost(void *pvParameters)
     
     while (1)
     {   
-        readLen = comRecvBuff(COM4,buf,8);       
+        readLen = RS485_Recv(COM4,buf,8); 
 
         if(readLen == 7 || readLen == 8)
         {            
@@ -547,7 +548,6 @@ void vTaskMortorToHost(void *pvParameters)
 
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
             { 
-
                 #ifdef USEQUEUE
                 ptMotorToHost->cmd = CONTROLMOTOR;
                 memcpy(ptMotorToHost->data,buf,readLen);
@@ -565,7 +565,8 @@ void vTaskMortorToHost(void *pvParameters)
                       dbh("CONTROLMOTOR",(char *)buf,readLen);
                 }    
                 #endif
-								 
+
+                dbh("RECV A",(char *)buf,readLen);
                 send_to_host(CONTROLMOTOR,buf,readLen);
                 vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
                 Motro_A = 0;
@@ -581,6 +582,7 @@ void vTaskMortorToHost(void *pvParameters)
 
 }
 
+#if 0
 void vTaskKey(void *pvParameters)
 {
 
@@ -606,7 +608,7 @@ void vTaskKey(void *pvParameters)
 					break;	
                 case KEY_FIREFIGHTING_PRES:
                     //开门
-                    comSendBuf(COM4, OpenDoor,8);//打开A门
+                    RS485_SendBuf(COM4,OpenDoor,8);//打开A门 
                     RS485_SendBuf(COM5,OpenDoor,8);//打开B门                    
                     //向android发送消防联动的消息
                     SendAsciiCodeToHost(FIREFIGHTINGLINKAGE,NO_ERR,"Fire fighting linkage");                    
@@ -614,7 +616,7 @@ void vTaskKey(void *pvParameters)
                 case KEY_OPEN_DOOR_A_PRES:
                     //Open door a manually
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually");                      
-                    comSendBuf(COM4, OpenDoor,8);//打开A门
+                    RS485_SendBuf(COM4,OpenDoor,8);//打开A门 
                     break;
                 case KEY_OPEN_DOOR_B_PRES:
                     //Open door b manually
@@ -636,7 +638,43 @@ void vTaskKey(void *pvParameters)
 	}  
 
 }
+#else
 
+void vTaskKey(void *pvParameters)
+{
+    
+	uint8_t ucKeyCode;
+    
+    while(1)
+    {
+		ucKeyCode = bsp_key_Scan(0);      
+		
+		if (ucKeyCode != KEY_NONE)
+		{                
+			switch (ucKeyCode)
+			{
+				/* 开门键按下执行向上位机发送开门请求 */
+				case KEY_DOOR_B_PRES:	 
+                    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+					break;			
+			
+				/* 其他的键值不处理 */
+				default:   
+				App_Printf("KEY_default\r\n");
+					break;
+			}
+		}	
+
+		/* 发送事件标志，表示任务正常运行 */        
+		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_7);  
+
+        
+		vTaskDelay(50);
+	}  
+
+}
+
+#endif
 
 void vTaskMsgPro(void *pvParameters)
 {

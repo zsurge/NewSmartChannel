@@ -803,9 +803,9 @@ static void UartVarInit(void)
 	g_tUart4.usRxRead = 0;						/* 接收FIFO读索引 */
 	g_tUart4.usRxCount = 0;						/* 接收到的新数据个数 */
 	g_tUart4.usTxCount = 0;						/* 待发送的数据个数 */
-	g_tUart4.SendBefor = 0;						/* 发送数据前的回调函数 */
-	g_tUart4.SendOver = 0;						/* 发送完毕后的回调函数 */
-	g_tUart4.ReciveNew = 0;						/* 接收到新数据后的回调函数 */
+	g_tUart4.SendBefor = RS485_SendBefor;		/* 发送数据前的回调函数 */
+	g_tUart4.SendOver = RS485_SendOver;			/* 发送完毕后的回调函数 */
+	g_tUart4.ReciveNew = RS485_ReciveNew;		/* 接收到新数据后的回调函数 */
 #endif
 
 #if UART5_FIFO_EN == 1

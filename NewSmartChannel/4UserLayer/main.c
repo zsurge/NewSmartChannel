@@ -800,7 +800,7 @@ void vTaskQR(void *pvParameters)
 //       if(FunState != 0x00)
        {
            memset(recv_buf,0x00,sizeof(recv_buf));
-           len = comRecvBuff(COM2,recv_buf,sizeof(recv_buf));
+           len = comRecvBuff(COM3,recv_buf,sizeof(recv_buf));
 
            if(len > 0  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
            {

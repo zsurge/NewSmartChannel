@@ -626,11 +626,11 @@ void send_to_device(CMD_RX_T *cmd_rx)
 
 //             if(xSemaphoreTake(gMutex_Motor, portMAX_DELAY))
 //             {     
-                comSendBuf(COM4, cmd_rx->cmd_data,8); 
+            RS485_SendBuf(COM4,cmd_rx->cmd_data,8);
 //             }
 //             
 //             xSemaphoreGive(gMutex_Motor);
-
+            dbh("SEND A",(char *)cmd_rx->cmd_data,8);
                        
             return;//这里不需要向上位机上送，在另外一个任务中才上送
         case DOOR_B:

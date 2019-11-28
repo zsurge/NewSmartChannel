@@ -278,7 +278,7 @@ void dbh(char *title,char *buf,int len)
 {
     #ifdef DEBUG_PRINT
     int i = 0;
-    printf("%s :< ",title);
+    printf("<%s,len=%d>:<",title,len);
     for(i=0;i<len;i++)
     {
         printf("%02x ",buf[i]);

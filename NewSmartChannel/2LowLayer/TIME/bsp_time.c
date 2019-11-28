@@ -32,12 +32,12 @@ volatile uint32_t g1msTimerUART2 = 0;
 volatile uint32_t g1msTimerUART3 = 0;
 volatile uint32_t g1msTimerUART4 = 0;
 volatile uint32_t g1msTimerUART5 = 0;
-volatile uint32_t g1msCount = 0;
+volatile uint32_t g500usCount = 0;
 
 
 void bsp_TimeSysTickHandler (void)
 {
-    if (g1msCount > 0) g1msCount--;
+    if (g500usCount > 0) g500usCount--;
 	if (g1msTimerUART1 > 0) g1msTimerUART1--;
     if (g1msTimerUART2 > 0) g1msTimerUART2--;
     if (g1msTimerUART3 > 0) g1msTimerUART3--;

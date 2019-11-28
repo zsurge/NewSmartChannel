@@ -45,9 +45,9 @@
 
 
 //任务堆栈大小   
-#define LED_STK_SIZE 		(256)
+#define LED_STK_SIZE 		(1024)
 #define MOTOR_STK_SIZE 		(1024) 
-#define CMD_STK_SIZE 		(1024*2)
+#define CMD_STK_SIZE 		(1024*1)
 #define INFRARED_STK_SIZE 	(1024)
 //#define RS485_STK_SIZE 		(1024)
 #define START_STK_SIZE 	    (1024)
@@ -162,7 +162,7 @@ int main(void)
 	AppObjCreate();
 
 	//电机初始化(关门)
-//    MotorInit();
+    MotorInit();
 
 	/* 创建任务 */
 	AppTaskCreate();
@@ -428,7 +428,7 @@ void vTaskQueryMotor(void *pvParameters)
     {
 //             if(xSemaphoreTake(gMutex_Motor, portMAX_DELAY))
 //             {     
-                comSendBuf(COM4, ReadStatus,8);//查询A电机状态
+            RS485_SendBuf(COM4,ReadStatus,8);
 //                //RS485_SendBuf(COM5,ReadStatus,8);//查询B电机状态
 //             }             
 //             xSemaphoreGive(gMutex_Motor);                 
@@ -444,13 +444,28 @@ void vTaskQueryMotor(void *pvParameters)
 //LED任务函数 
 void vTaskLed(void *pvParameters)
 {   
+	uint8_t pcWriteBuffer[500] = {0};
     uint8_t i = 0;
     BEEP = 0;
     vTaskDelay(300);
     BEEP = 1;
     
     while(1)
-    {    
+    {  
+        if(g500usCount == 0)
+        {
+            g500usCount = 1*60*1000;//30ms
+
+            App_Printf("\r\n=================================================\r\n");
+            App_Printf("任务名      任务状态 优先级   剩余栈 任务序号\r\n");
+            vTaskList((char *)&pcWriteBuffer);
+            App_Printf("%s\r\n", pcWriteBuffer);
+
+            App_Printf("\r\n任务名       运行计数         使用率\r\n");
+            vTaskGetRunTimeStats((char *)&pcWriteBuffer);
+            App_Printf("%s\r\n", pcWriteBuffer);      
+        }
+        
         if(Motro_A== 1)
         {
           LED3=!LED3;   
@@ -535,7 +550,7 @@ void vTaskMotorToHost(void *pvParameters)
     
     while (1)
     {   
-        readLen = comRecvBuff(COM4,buf,8);       
+        readLen = RS485_Recv(COM4,buf,8); 
 
         if(readLen == 7 || readLen == 8)
         {            
@@ -561,6 +576,7 @@ void vTaskMotorToHost(void *pvParameters)
                     DBG("向xTransQueue发送数据成功\r\n");   
                 }                    
 								 
+                dbh("RECV A",(char *)buf,readLen);
                 send_to_host(CONTROLMOTOR,buf,readLen);
                 vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
                 Motro_A = 0;
@@ -659,7 +675,7 @@ void vTaskInfrared(void *pvParameters)
             else
             {
                 //DBG("向xTransQueue发送数据成功\r\n");   
-				dbh("sensor",dat,3);
+				dbh("sensor",(char *)dat,3);
             }     
                 
             send_to_host(GETSENSOR,dat,3);
@@ -710,16 +726,16 @@ void vTaskReader(void *pvParameters)
     uint32_t CardID = 0;
     uint8_t dat[4] = {0};
     
-    uint32_t FunState = 0;
-    char *IcReaderState;
+//    uint32_t FunState = 0;
+//    char *IcReaderState;
 
     QUEUE_TO_HOST_T *ptReaderToHost; 
     ptReaderToHost = &gQueueToHost;
     
 
-    IcReaderState = ef_get_env("ICSTATE");
-    assert_param(IcReaderState);
-    FunState = atol(IcReaderState);
+//    IcReaderState = ef_get_env("ICSTATE");
+//    assert_param(IcReaderState);
+//    FunState = atol(IcReaderState);
     
     while(1)
     {
@@ -772,12 +788,12 @@ void vTaskQR(void *pvParameters)
     uint8_t recv_buf[256] = {0};
     uint16_t len = 0;  
     
-    uint32_t FunState = 0;
-    char *QrCodeState;
+//    uint32_t FunState = 0;
+//    char *QrCodeState;
 
-    QrCodeState = ef_get_env("QRSTATE");
-    assert_param(QrCodeState);
-    FunState = atol(QrCodeState);
+//    QrCodeState = ef_get_env("QRSTATE");
+//    assert_param(QrCodeState);
+//    FunState = atol(QrCodeState);
     
     while(1)
     {
@@ -841,7 +857,7 @@ void vTaskHandShake(void *pvParameters)
 */
 static void  App_Printf(char *format, ...)
 {
-    char  buf_str[200 + 1];
+    char  buf_str[512 + 1];
     va_list   v_args;
 
 
@@ -880,9 +896,9 @@ static void MotorInit(void)
 
     do
     {   
-        comSendBuf(COM4, QuestStatus,8);
+        RS485_SendBuf(COM4, QuestStatus,8);
         delay_ms(20);
-        readLen = comRecvBuff(COM4,buf,8);  
+        readLen = RS485_Recv(COM4,buf,8);  
         
         if(readLen >= 6 )
         {
@@ -911,7 +927,7 @@ static void MotorInit(void)
         {
             if(cnt % 10 == 0)
             {
-               comSendBuf(COM4, MotorReset,8);
+               RS485_SendBuf(COM4, MotorReset,8);
                delay_ms(2000);
             }
         }
@@ -929,7 +945,7 @@ static void MotorInit(void)
 
     if(flag == 6 || flag == 7)
     {
-        comSendBuf(COM4, CloseDoor,8);
+        RS485_SendBuf(COM4, CloseDoor,8);
     } 
 }
 
@@ -947,7 +963,7 @@ static void vTaskMonitor(void *pvParameters)
     if(pdPASS == xReturn)
     {
         DBG("ptMsg->cmd = %02x\r\n", ptMsg->cmd);
-        dbh("ptMsg->data ", ptMsg->data,QUEUE_BUF_LEN);
+        dbh("ptMsg->data ", (char *)ptMsg->data,QUEUE_BUF_LEN);
     }    
 
   }    

@@ -79,12 +79,19 @@ void bsp_Ex_LED_Init(void)
 void bsp_Ex_SetLed(uint8_t *dat)
 {
     uint8_t buf[64] = {0};
-
+    
     if(!dat)
     {
         DBG("param error!\r\n");
         return;
     }
+
+    if(Nonzero(dat,15) == 0)
+    {
+        DBG("bsp_Ex_SetLed param error!\r\n");
+    }
+
+
 //    ×ó ºì Ãð ÂÌ ÁÁ
 //    4C 6C 01 67 00
 //    ÖÐ ºì ÁÁ ÂÌ ÁÁ
@@ -106,14 +113,9 @@ void bsp_Ex_SetLed(uint8_t *dat)
         LED_M_R = buf[7];
         LED_M_G = buf[9];
         LED_R_R = buf[12];
-        LED_R_G = buf[14];
+        LED_R_G = buf[14];    
 
-        BEEP = 0;
-        vTaskDelay(100);
-        BEEP = 1;
-    
-
-        DBG("2,4,7,9,12,14 = %d,%d,%d,%d,%d,%d\r\n",buf[2],buf[4],buf[7],buf[9],buf[12],buf[14]);
+//        DBG("2,4,7,9,12,14 = %d,%d,%d,%d,%d,%d\r\n",buf[2],buf[4],buf[7],buf[9],buf[12],buf[14]);
     }    
     
 }

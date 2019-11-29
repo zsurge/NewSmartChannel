@@ -364,5 +364,21 @@ int32_t str2int(const char* str)
 }
 
 
+uint8_t Nonzero(uint8_t *buf,uint8_t len)
+{
+    uint8_t i =0;
+
+    for(i=0; i<len; i++)
+    {
+        if(buf[i] != 0x00)
+        {
+            return 1;
+        }
+            
+    }
+
+    return 0;
+}
+
 
 

@@ -36,6 +36,7 @@ typedef enum {
     CJSON_GETITEM_ERR,  //cjson 获取员素失败    
     COMM_PARSE_ERR,     //指令解析失败
     COMM_CRC_ERR,      //解析指令，CRC校验失败
+    COMM_SEND_ERR,
     FLASH_W_ERR,        //写FLASH失败
     CJSON_CREATE_ERR = 64,   //创建cjson对象失败
     //韦根读卡错误代码

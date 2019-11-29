@@ -62,6 +62,7 @@ void bcd2asc(unsigned char *ascii_buf,unsigned char * bcd_buf, int conv_len, uns
 
 void dbg(const char *file, const long line, const char *format, ...);
 
+uint8_t Nonzero(uint8_t *buf,uint8_t len);
 
 void dbh(char *title,char *buf,int len);
 

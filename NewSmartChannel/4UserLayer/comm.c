@@ -43,12 +43,13 @@
 /*----------------------------------------------*
  * 模块级变量                                   *
  *----------------------------------------------*/
+TaskHandle_t xHandleTaskLed = NULL;      //LED灯
 
-QUEUE_TO_HOST_T gQueueToHost;    //定义一个结构体用于消息队列，跟andorid通信
+#ifdef USEQUEUE
+QUEUE_TO_HOST_T gQueueToHost;    //定义一个结构体用于消息队列，用于同步处理相应数据
+#endif
 
 SemaphoreHandle_t gxMutex = NULL;
-SemaphoreHandle_t  gMutex_Motor = NULL;
-
 //SemaphoreHandle_t gBinarySem_Handle = NULL;
 TaskHandle_t xHandleTaskQueryMotor = NULL;      //电机状态查询
 
@@ -508,6 +509,7 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
 
 void send_to_device(CMD_RX_T *cmd_rx)
 {
+    BaseType_t xReturn = pdPASS;//定义一个创建信息返回值，默认为pdPASS
     uint16_t i = 0;
     uint8_t TxdBuf[JSON_PACK_MAX]={0};
     uint8_t tmpBuf[JSON_PACK_MAX] = {0};  
@@ -539,23 +541,38 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[i++] = iCRC & 0xff;            
             break;
         case SETLED: //设置LED灯
-            i = 3;
-            TxdBuf[0] = STX;
-            cmd_tx.cmd = SETLED;
-            cmd_tx.code = 0x00;
-//            DBG("cmd_rx->cmd_data = %s,len = %d\r\n",cmd_rx->cmd_data,strlen((const char*)cmd_rx->cmd_data));
-            bsp_Ex_SetLed(cmd_rx->cmd_data); 
-            strcpy((char *)cmd_tx.data,"00");            
-            i += packetJSON(&cmd_tx,tmpBuf);            
-            memcpy(TxdBuf+3,tmpBuf,i-3); 
-            TxdBuf[i++] = ETX;     
+//            i = 3;
+//            TxdBuf[0] = STX;
+//            cmd_tx.cmd = SETLED;
+//            cmd_tx.code = 0x00;
+//            bsp_Ex_SetLed(cmd_rx->cmd_data); 
+//            strcpy((char *)cmd_tx.data,"00");            
+//            i += packetJSON(&cmd_tx,tmpBuf);            
+//            memcpy(TxdBuf+3,tmpBuf,i-3); 
+//            TxdBuf[i++] = ETX;     
 
-            TxdBuf[1] = i>>8; //high
-            TxdBuf[2] = i&0xFF; //low
+//            TxdBuf[1] = i>>8; //high
+//            TxdBuf[2] = i&0xFF; //low
+//            
+//            iCRC = CRC16_Modbus(TxdBuf, i);  
+//            TxdBuf[i++] = iCRC >> 8;
+//            TxdBuf[i++] = iCRC & 0xff; 
+          xReturn = xTaskNotify( xHandleTaskLed, /*任务句柄*/
+                                 (uint32_t)&cmd_rx->cmd_data,
+                                 eSetValueWithOverwrite );/*覆盖当前通知*/
+          
+          if( xReturn == pdPASS )
+          {
+//            dbh("Set LED Send", (char *)cmd_rx->cmd_data, MAX_EXLED_LEN);
+          }
+          else
+          {
+            SendAsciiCodeToHost(ERRORINFO,COMM_SEND_ERR,"set led error,try again");
+            DBG("Set LED Send Error!\r\n");
+            dbh("Set LED Send Error", (char *)cmd_rx->cmd_data, MAX_EXLED_LEN);                
+          }
+
             
-            iCRC = CRC16_Modbus(TxdBuf, i);  
-            TxdBuf[i++] = iCRC >> 8;
-            TxdBuf[i++] = iCRC & 0xff;   
             break;                        
         case GETDEVICEINFO://获取设备信息
             i = 3;
@@ -622,21 +639,14 @@ void send_to_device(CMD_RX_T *cmd_rx)
         case CONTROLMOTOR:       
              //向电机发送控制指令
             vTaskSuspend(xHandleTaskQueryMotor); //若是操作电机，则关掉电机查询
-//            xSemaphoreGive( gBinarySem_Handle );    //释放二值信号量
-
-//             if(xSemaphoreTake(gMutex_Motor, portMAX_DELAY))
-//             {     
             RS485_SendBuf(COM4,cmd_rx->cmd_data,8);
-//             }
-//             
-//             xSemaphoreGive(gMutex_Motor);
             dbh("SEND A",(char *)cmd_rx->cmd_data,8);
                        
             return;//这里不需要向上位机上送，在另外一个任务中才上送
         case DOOR_B:
             //发给B门
-            RS485_SendBuf(COM5,cmd_rx->cmd_data,8);
-            
+//            vTaskSuspend(xHandleTaskQueryMotor);//若是操作电机，则关掉电机查询
+//            RS485_SendBuf(COM5,cmd_rx->cmd_data,8);            
             return;//这里不需要向上位机上送，在另外一个任务中才上送
 
         default:

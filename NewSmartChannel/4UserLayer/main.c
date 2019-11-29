@@ -82,7 +82,7 @@
 #define TASK_BIT_3	 (1 << 3)
 #define TASK_BIT_4	 (1 << 4)
 #define TASK_BIT_5	 (1 << 5)
-#define TASK_BIT_6	 (1 << 6)
+//#define TASK_BIT_6	 (1 << 6)
 //#define TASK_BIT_7	 (1 << 7)
 //#define TASK_BIT_8	 (1 << 8)
 
@@ -92,13 +92,13 @@
 
 
 //#define TASK_BIT_ALL (TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 | TASK_BIT_3|TASK_BIT_4 | TASK_BIT_5 | TASK_BIT_6 )
-#define TASK_BIT_ALL ( TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 |TASK_BIT_3|TASK_BIT_4|TASK_BIT_5|TASK_BIT_6)
+#define TASK_BIT_ALL ( TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 |TASK_BIT_3|TASK_BIT_4|TASK_BIT_5)
 
 /*----------------------------------------------*
  * 模块级变量                                   *
  *----------------------------------------------*/
 //任务句柄
-static TaskHandle_t xHandleTaskMotor = NULL;    //电机控制
+//static TaskHandle_t xHandleTaskMotor = NULL;    //电机控制
 static TaskHandle_t xHandleTaskCmd = NULL;      //android通讯
 static TaskHandle_t xHandleTaskInfrared = NULL; //红外感映
 static TaskHandle_t xHandleTaskReader = NULL;   //韦根读卡器
@@ -145,7 +145,7 @@ static void vTaskStart(void *pvParameters);
 
 //上送开机次数
 static void vTaskHandShake(void *pvParameters);
-static void vTaskQueryMotor(void *pvParameters);
+//static void vTaskQueryMotor(void *pvParameters);
 
 
 
@@ -205,12 +205,12 @@ static void AppTaskCreate (void)
                 (TaskHandle_t*  )&xHandleTaskLed);                   
 
     //查询电机状态
-    xTaskCreate((TaskFunction_t )vTaskQueryMotor,
-                (const char*    )"vQueryMotor",       
-                (uint16_t       )QUERYMOTOR_STK_SIZE, 
-                (void*          )NULL,              
-                (UBaseType_t    )QUERYMOTOR_TASK_PRIO,    
-                (TaskHandle_t*  )&xHandleTaskQueryMotor);  
+//    xTaskCreate((TaskFunction_t )vTaskQueryMotor,
+//                (const char*    )"vQueryMotor",       
+//                (uint16_t       )QUERYMOTOR_STK_SIZE, 
+//                (void*          )NULL,              
+//                (UBaseType_t    )QUERYMOTOR_TASK_PRIO,    
+//                (TaskHandle_t*  )&xHandleTaskQueryMotor);  
     
     //创建电机信息返回任务
     xTaskCreate((TaskFunction_t )vTaskMortorToHost,     
@@ -425,26 +425,25 @@ static void vTaskStart(void *pvParameters)
 }
 
 //查询电机状态
-void vTaskQueryMotor(void *pvParameters)
-{
-    uint8_t ReadStatus[8] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
-    
-    while(1)
-    {
-            RS485_SendBuf(COM4,ReadStatus,8);
-     
-		//发送事件标志，表示任务正常运行       
-		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_6);  
-        vTaskDelay(500);     
-    }
-
-}
+//void vTaskQueryMotor(void *pvParameters)
+//{
+//    uint8_t ReadStatus[8] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };    
+//    while(1)
+//    {
+//        comSendBuf(COM4, ReadStatus,8);//查询A电机状态
+//        RS485_SendBuf(COM5,ReadStatus,8);//查询B电机状态
+//     
+//		/* 发送事件标志，表示任务正常运行 */        
+//		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_8);  
+//        vTaskDelay(500);     
+//    }
+//} 
 
 
 //LED任务函数 
 void vTaskLed(void *pvParameters)
 {   
-    uint8_t pcWriteBuffer[512];
+    //uint8_t pcWriteBuffer[512];
     uint8_t tmp[15] = {0x00};
     BaseType_t xReturn = pdTRUE;/* 定义一个创建信息返回值，默认为pdPASS */
     const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为100ms */  
@@ -566,6 +565,9 @@ void vTaskMotorToHost(void *pvParameters)
 
 */
 
+
+
+#if 0
 //motor to host 任务函数
 void vTaskMortorToHost(void *pvParameters)
 {     
@@ -625,7 +627,90 @@ void vTaskMortorToHost(void *pvParameters)
     }
 
 }
+#endif
 
+
+void vTaskMortorToHost(void *pvParameters)
+{  
+    BaseType_t xReturn = pdTRUE;/* 定义一个创建信息返回值，默认为pdPASS */
+    char *recvbuff;
+    uint32_t i = 0;
+    uint8_t buf[8] = {0};
+    uint16_t readLen = 0;
+    uint16_t iCRC = 0;
+    uint8_t crcBuf[2] = {0};
+    uint8_t tmp[8] = {0x00};
+
+    uint8_t ReadStatus[MAX_MOTOR_CMD_LEN] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
+    
+    while (1)
+    {   
+
+        //获取任务通知，等待1000个时间节拍，获取到，则执行上位机指令，获取不到，则执行状态查询
+		xReturn=xTaskNotifyWait(0x0,			//进入函数的时候不清除任务bit
+                            ULONG_MAX,	        //退出函数的时候清除所有的bit
+                            (uint32_t *)&recvbuff,//保存任务通知值                    
+                            (TickType_t)1000);	//阻塞时间
+                            
+        if( pdTRUE == xReturn )
+        {
+            dbh("A Recv：",recvbuff, MAX_MOTOR_CMD_LEN);
+            memcpy(tmp,recvbuff,MAX_MOTOR_CMD_LEN); 
+            
+            if(Nonzero(tmp,MAX_MOTOR_CMD_LEN))
+            {
+                RS485_SendBuf(COM4, tmp,MAX_MOTOR_CMD_LEN);//操作A电机
+            }
+            else
+            {
+                SendAsciiCodeToHost(ERRORINFO,MOTOR_A_ERR,"motor error,try again");
+            }
+            
+        }
+    	else
+        {
+            RS485_SendBuf(COM4, ReadStatus,MAX_MOTOR_CMD_LEN);//查询A电机状态
+        }   
+
+        vTaskDelay(100);
+        
+        readLen = RS485_Recv(COM4,buf,8);       
+
+        if(readLen == 7 || readLen == 8)
+        {            
+            iCRC = CRC16_Modbus(buf, readLen-2);  
+
+            crcBuf[0] = iCRC >> 8;
+            crcBuf[1] = iCRC & 0xff;  
+
+            if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
+            { 	
+                dbh("A send to host",buf, readLen);
+                send_to_host(CONTROLMOTOR,buf,readLen);              
+                Motro_A = 0;
+            }
+            else
+            {
+                dbh("door a check data error", (char *)buf, readLen);
+            }
+        } 
+        else
+        {
+            if(i++ == READ_MOTOR_STATUS_TIMES)
+            {
+                i = 0;
+                App_Printf("door a connect error!\r\n"); 
+                SendAsciiCodeToHost(ERRORINFO,MOTOR_A_ERR,"Motor A fault");
+            }
+            
+        }
+        
+        /* 发送事件标志，表示任务正常运行 */        
+        xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_1);
+      
+    }
+
+}
 
 //void vTaskKey(void *pvParameters)
 //{
@@ -816,7 +901,7 @@ void vTaskReader(void *pvParameters)
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_4);        
         
-        vTaskDelay(50);
+        vTaskDelay(100);
         
     }
 
@@ -851,7 +936,7 @@ void vTaskQR(void *pvParameters)
 
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_5);  
-        vTaskDelay(50);        
+        vTaskDelay(100);        
     }
 }   
 

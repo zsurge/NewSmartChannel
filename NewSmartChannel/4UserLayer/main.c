@@ -854,7 +854,7 @@ void vTaskReader(void *pvParameters)
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_4);        
         
-        vTaskDelay(50);
+        vTaskDelay(100);
         
     }
 
@@ -889,7 +889,7 @@ void vTaskQR(void *pvParameters)
 
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_5);  
-        vTaskDelay(50);        
+        vTaskDelay(500);        
     }
 }   
 

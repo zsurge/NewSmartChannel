@@ -476,19 +476,19 @@ void vTaskLed(void *pvParameters)
     
     while(1)
     {  
-        if(g500usCount == 0)
-        {
-            g500usCount = 1*60*1000;//30ms
+//        if(g500usCount == 0)
+//        {
+//            g500usCount = 1*60*1000;//30ms
 
-            App_Printf("\r\n=================================================\r\n");
-            App_Printf("任务名      任务状态 优先级   剩余栈 任务序号\r\n");
-            vTaskList((char *)&pcWriteBuffer);
-            App_Printf("%s\r\n", pcWriteBuffer);
+//            App_Printf("\r\n=================================================\r\n");
+//            App_Printf("任务名      任务状态 优先级   剩余栈 任务序号\r\n");
+//            vTaskList((char *)&pcWriteBuffer);
+//            App_Printf("%s\r\n", pcWriteBuffer);
 
-            App_Printf("\r\n任务名       运行计数         使用率\r\n");
-            vTaskGetRunTimeStats((char *)&pcWriteBuffer);
-            App_Printf("%s\r\n", pcWriteBuffer);      
-        }
+//            App_Printf("\r\n任务名       运行计数         使用率\r\n");
+//            vTaskGetRunTimeStats((char *)&pcWriteBuffer);
+//            App_Printf("%s\r\n", pcWriteBuffer);      
+//        }
         
         if(Motro_A== 1)
         {

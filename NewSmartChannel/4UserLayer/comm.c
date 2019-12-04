@@ -52,7 +52,6 @@ QUEUE_TO_HOST_T gQueueToHost;    //¶¨ÒåÒ»¸ö½á¹¹ÌåÓÃÓÚÏûÏ¢¶ÓÁĞ£¬ÓÃÓÚÍ¬²½´¦ÀíÏàÓ¦Ê
 SemaphoreHandle_t gxMutex = NULL;
 //SemaphoreHandle_t gBinarySem_Handle = NULL;
 TaskHandle_t xHandleTaskQueryMotor = NULL;      //µç»ú×´Ì¬²éÑ¯
-TaskHandle_t xHandleTaskMotor = NULL;    //µç»ú¿ØÖÆ
 
 
 RECVHOST_T gRecvHost;
@@ -638,26 +637,25 @@ void send_to_device(CMD_RX_T *cmd_rx)
             break;   
 
         case CONTROLMOTOR:
-              xReturn = xTaskNotify( xHandleTaskMotor, /*ÈÎÎñ¾ä±ú*/
-                                     (uint32_t)&cmd_rx->cmd_data,
-                                     eSetValueWithOverwrite );/*¸²¸Çµ±Ç°Í¨Öª*/
-              
-              if( xReturn == pdPASS )
-              {
-//                DBG("AÃÅÈÎÎñÍ¨ÖªÏûÏ¢·¢ËÍ³É¹¦!\r\n");
-                dbh("A Send", (char *)cmd_rx->cmd_data, MAX_MOTOR_CMD_LEN);
-              }
-              else
-              {
-                //´íÎóÌáÊ¾£¬ÔİÊ±Î´×ö
-                DBG("AÃÅÈÎÎñÍ¨ÖªÏûÏ¢·¢ËÍÊ§°Ü!\r\n");
-                dbh("DOOR A", (char *)cmd_rx->cmd_data, MAX_MOTOR_CMD_LEN);                
-              }
+//              xReturn = xTaskNotify( xHandleTaskMotor, /*ÈÎÎñ¾ä±ú*/
+//                                     (uint32_t)&cmd_rx->cmd_data,
+//                                     eSetValueWithOverwrite );/*¸²¸Çµ±Ç°Í¨Öª*/
+//              
+//              if( xReturn == pdPASS )
+//              {
+//                dbh("A Send", (char *)cmd_rx->cmd_data, MAX_MOTOR_CMD_LEN);
+//              }
+//              else
+//              {
+//                //´íÎóÌáÊ¾£¬ÔİÊ±Î´×ö
+//                DBG("AÃÅÈÎÎñÍ¨ÖªÏûÏ¢·¢ËÍÊ§°Ü!\r\n");
+//                dbh("DOOR A", (char *)cmd_rx->cmd_data, MAX_MOTOR_CMD_LEN);                
+//              }
 
-              return;
+//              return;
 
 
-            #if 0
+            #if 1
              //Ïòµç»ú·¢ËÍ¿ØÖÆÖ¸Áî
             vTaskSuspend(xHandleTaskQueryMotor); //ÈôÊÇ²Ù×÷µç»ú£¬Ôò¹Øµôµç»ú²éÑ¯
 //            xSemaphoreGive( gBinarySem_Handle );    //ÊÍ·Å¶şÖµĞÅºÅÁ¿

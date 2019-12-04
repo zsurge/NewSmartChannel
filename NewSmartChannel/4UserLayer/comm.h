@@ -87,7 +87,6 @@
 #define MAX_EXLED_LEN                   0x0F
 
 
-#define MAX_MOTOR_CMD_LEN               0x08
 
 #ifdef USEQUEUE
 #define  QUEUE_LEN    20     /* 队列的长度，最大可包含多少个消息 */
@@ -154,7 +153,8 @@ extern TaskHandle_t xHandleTaskLed;      //LED灯
 
 
 extern TaskHandle_t xHandleTaskQueryMotor;      //电机状态查询
-extern TaskHandle_t xHandleTaskMotor ;    //电机控制
+
+
 
 /*----------------------------------------------*
  * 内部函数原型说明                             *

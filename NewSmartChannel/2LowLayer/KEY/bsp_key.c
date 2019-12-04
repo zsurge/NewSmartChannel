@@ -19,7 +19,7 @@
 
 #include "bsp_key.h"
 
-#if 0
+#if 1
 //按键初始化函数
 void bsp_key_Init ( void )
 {
@@ -57,7 +57,7 @@ u8 bsp_key_Scan ( u8 mode )
 	}
 	if ( key_up&& (KEY_FIREFIGHTING==0 || KEY_DOOR_B==0 || KEY_OPEN_DOOR_A==0 || KEY_OPEN_DOOR_B==0 ) )
 	{
-		delay_ms ( 20 ); //去抖动
+		delay_ms ( 10 ); //去抖动
 		
 		key_up=0;
         

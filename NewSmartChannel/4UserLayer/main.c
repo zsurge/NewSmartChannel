@@ -467,7 +467,7 @@ void vTaskQueryMotor(void *pvParameters)
 //LED任务函数 
 void vTaskLed(void *pvParameters)
 {   
-    uint8_t pcWriteBuffer[512];
+    //uint8_t pcWriteBuffer[512];
     
     uint8_t i = 0;
     BEEP = 0;
@@ -582,11 +582,9 @@ void vTaskMortorToHost(void *pvParameters)
 
 }
 
-#if 0
+#if 1
 void vTaskKey(void *pvParameters)
 {
-
-
 //    uint8_t CloseDoor[8] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
     uint8_t OpenDoor[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x02,0xCA,0x68 };
 //    uint8_t OpenDoor_R[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x03,0x0B,0xA8 };
@@ -615,13 +613,14 @@ void vTaskKey(void *pvParameters)
                     break;
                 case KEY_OPEN_DOOR_A_PRES:
                     //Open door a manually
-                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually");                      
                     RS485_SendBuf(COM4,OpenDoor,8);//打开A门 
+                    
+                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
                     break;
                 case KEY_OPEN_DOOR_B_PRES:
                     //Open door b manually
-                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");  
                     RS485_SendBuf(COM5,OpenDoor,8);//打开B门
+                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
                     break;			
 				/* 其他的键值不处理 */
 				default:   

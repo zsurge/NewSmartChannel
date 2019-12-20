@@ -62,7 +62,7 @@
 #define INFRARED_STK_SIZE 	(1024)
 #define RS485_STK_SIZE 		(1024)
 #define START_STK_SIZE 	    (512)
-#define QR_STK_SIZE 		(1024)
+#define QR_STK_SIZE 		(1280)
 #define READER_STK_SIZE     (1024)
 #define HANDSHAKE_STK_SIZE  (1024)
 #define KEY_STK_SIZE        (1024)
@@ -601,10 +601,11 @@ void vTaskKey(void *pvParameters)
 			switch (ucKeyCode)
 			{
 				/* 开门键按下执行向上位机发送开门请求 */
-				case KEY_DOOR_B_PRES:	 
+				case KEY_DOOR_B_PRES:
                     SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
 					break;	
                 case KEY_FIREFIGHTING_PRES:
+                    vTaskSuspend(xHandleTaskQueryMotor); //若是操作电机，则关掉电机查询
                     //开门
                     RS485_SendBuf(COM4,OpenDoor,8);//打开A门 
                     RS485_SendBuf(COM5,OpenDoor,8);//打开B门                    
@@ -612,12 +613,14 @@ void vTaskKey(void *pvParameters)
                     SendAsciiCodeToHost(FIREFIGHTINGLINKAGE,NO_ERR,"Fire fighting linkage");                    
                     break;
                 case KEY_OPEN_DOOR_A_PRES:
+                    vTaskSuspend(xHandleTaskQueryMotor); //若是操作电机，则关掉电机查询
                     //Open door a manually
                     RS485_SendBuf(COM4,OpenDoor,8);//打开A门 
                     
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
                     break;
                 case KEY_OPEN_DOOR_B_PRES:
+                    vTaskSuspend(xHandleTaskQueryMotor); //若是操作电机，则关掉电机查询
                     //Open door b manually
                     RS485_SendBuf(COM5,OpenDoor,8);//打开B门
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");

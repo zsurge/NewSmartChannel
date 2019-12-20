@@ -49,7 +49,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>..\6Bin\</OutputDirectory>
-          <OutputName>SmartChannelApp</OutputName>
+          <OutputName>SwingDoor</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -83,7 +83,7 @@
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
             <UserProg1Name>fromelf --bin -o "$L@L.bin" "$L@L.axf"</UserProg1Name>
-            <UserProg2Name>AutoRenameByVersion.exe $L@L.bin ..\4UserLayer\Version.c ..\Log\ModifyRecords.txt SmartChannelApp_</UserProg2Name>
+            <UserProg2Name>AutoRenameByVersion.exe ..\6Bin\SwingDoor.bin ..\4UserLayer\Version.c ..\Log\ModifyRecords.txt  SwingDoor</UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>1</UserProg2Dos16Mode>
             <nStopA1X>0</nStopA1X>
@@ -379,6 +379,16 @@
         </TargetArmAds>
       </TargetOption>
       <Groups>
+        <Group>
+          <GroupName>Log</GroupName>
+          <Files>
+            <File>
+              <FileName>ModifyRecords.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Log\ModifyRecords.txt</FilePath>
+            </File>
+          </Files>
+        </Group>
         <Group>
           <GroupName>UserLayer</GroupName>
           <Files>

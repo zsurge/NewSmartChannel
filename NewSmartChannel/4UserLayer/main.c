@@ -442,7 +442,18 @@ static void vTaskStart(void *pvParameters)
 //查询电机状态
 void vTaskQueryMotor(void *pvParameters)
 {
+    #if MOTOR_MODE == JIAYU_MOTOR        
     uint8_t ReadStatus[8] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
+    uint8_t len = 8;
+    #elif MOTOR_MODE == CBG_MOTOR 
+    uint8_t ReadStatus[5] = { 0xA6,0x01,0x01,0x3C,0x3C };    
+    uint8_t len = 5;
+    #else
+    uint8_t len = 8;
+    uint8_t ReadStatus[8] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
+    #endif
+    
+    
 //    BaseType_t xReturn = pdPASS;
     
     while(1)
@@ -452,8 +463,8 @@ void vTaskQueryMotor(void *pvParameters)
 //        if(xReturn == pdFALSE)
 //        {
 //            comSendBuf(COM4, ReadStatus,8);//查询A电机状态
-            RS485_SendBuf(COM4,ReadStatus,8);
-            RS485_SendBuf(COM5,ReadStatus,8);//查询B电机状态
+            RS485_SendBuf(COM4,ReadStatus,len);
+            RS485_SendBuf(COM5,ReadStatus,len);//查询B电机状态
            
 //        }
      
@@ -530,11 +541,7 @@ void vTaskMortorToHost(void *pvParameters)
     uint16_t iCRC = 0;
     uint8_t crcBuf[2] = {0};
 
-    #ifdef USEQUEUE
-    QUEUE_TO_HOST_T *ptMotorToHost;  
-    ptMotorToHost = &gQueueToHost;
-    #endif
-    
+    #if MOTOR_MODE == JIAYU_MOTOR  
     while (1)
     {   
         readLen = RS485_Recv(COM4,buf,8); 
@@ -548,24 +555,6 @@ void vTaskMortorToHost(void *pvParameters)
 
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
             { 
-                #ifdef USEQUEUE
-                ptMotorToHost->cmd = CONTROLMOTOR;
-                memcpy(ptMotorToHost->data,buf,readLen);
-
-    			/* 使用消息队列实现指针变量的传递 */
-    			if(xQueueSend(xTransQueue,              /* 消息队列句柄 */
-    						 (void *) &ptMotorToHost,   /* 发送结构体指针变量ptQueueToHost的地址 */
-    						 (TickType_t)10) != pdPASS )
-    			{
-                    DBG("向xTransQueue发送数据失败，即使等待了10个时钟节拍\r\n");                
-                } 
-                else
-                {
-//                    DBG("向xTransQueue发送数据成功\r\n");
-                      dbh("CONTROLMOTOR",(char *)buf,readLen);
-                }    
-                #endif
-
                 dbh("RECV A",(char *)buf,readLen);
                 send_to_host(CONTROLMOTOR,buf,readLen);
                 vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
@@ -579,6 +568,31 @@ void vTaskMortorToHost(void *pvParameters)
         
         vTaskDelay(100);
     }
+    #elif MOTOR_MODE == CBG_MOTOR 
+    while (1)
+    {   
+        readLen = RS485_Recv(COM4,buf,8); 
+
+        if(readLen == 8)
+        {            
+            iCRC = xorCRC(buf, readLen-1);  
+            
+            if(iCRC == buf[readLen-1])
+            { 
+                dbh("RECV A",(char *)buf,readLen);
+                send_to_host(CONTROLMOTOR,buf,readLen);
+                vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
+                Motro_A = 0;
+            }            
+        }           
+
+        
+        /* 发送事件标志，表示任务正常运行 */        
+        xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_1);
+        
+        vTaskDelay(100);
+    }
+    #endif
 
 }
 
@@ -750,11 +764,7 @@ void vTaskRs485(void *pvParameters)
     uint16_t iCRC = 0;
     uint8_t crcBuf[2] = {0};
 
-    #ifdef USEQUEUE
-    QUEUE_TO_HOST_T *ptInfraredToHost; 
-    ptInfraredToHost = &gQueueToHost;
-    #endif
-    
+    #if MOTOR_MODE == JIAYU_MOTOR
     while (1)
     {
         readLen = RS485_Recv(COM5,buf,8);       
@@ -767,24 +777,7 @@ void vTaskRs485(void *pvParameters)
             crcBuf[1] = iCRC & 0xff;  
 
             if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
-            { 
-                #ifdef USEQUEUE
-                ptInfraredToHost->cmd = DOOR_B;
-                memcpy(ptInfraredToHost->data,buf,readLen);
-            
-    			/* 使用消息队列实现指针变量的传递 */
-    			if(xQueueSend(xTransQueue,              /* 消息队列句柄 */
-    						 (void *) &ptInfraredToHost,   /* 发送结构体指针变量ptQueueToHost的地址 */
-    						 (TickType_t)10) != pdPASS )
-    			{
-                    DBG("向xTransQueue发送数据失败，即使等待了10个时钟节拍\r\n");                
-                } 
-                else
-                {                 
-    				dbh("DOOR_B",(char *)buf,readLen);
-                }   
-                #endif
-            
+            {             
                 send_to_host(DOOR_B,buf,readLen);
                 vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
                 Motro_B = 0;
@@ -796,6 +789,31 @@ void vTaskRs485(void *pvParameters)
         
         vTaskDelay(100);
     }
+
+    #elif MOTOR_MODE == CBG_MOTOR 
+    while (1)
+    {
+        readLen = RS485_Recv(COM5,buf,8);       
+
+        if(readLen == 8)
+        {            
+            iCRC = xorCRC(buf, readLen-1);  
+
+            if(iCRC == buf[readLen-1])
+            {             
+                send_to_host(DOOR_B,buf,readLen);
+                vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
+                Motro_B = 0;
+            }            
+        }
+        
+		/* 发送事件标志，表示任务正常运行 */        
+		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_6);
+        
+        vTaskDelay(100);
+    }
+
+    #endif
 
 }
 

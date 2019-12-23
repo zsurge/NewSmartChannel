@@ -513,6 +513,12 @@ void send_to_device(CMD_RX_T *cmd_rx)
     uint8_t tmpBuf[JSON_PACK_MAX] = {0};  
     uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
+
+    #if MOTOR_MODE == JIAYU_MOTOR
+    uint8_t motor_cmd_len = 8;
+    #elif MOTOR_MODE == CBG_MOTOR
+    uint8_t motor_cmd_len = 5;
+    #endif
     
     memset(&cmd_tx,0x00,sizeof(cmd_tx));
     memset(TxdBuf,0x00,sizeof(TxdBuf));
@@ -624,14 +630,14 @@ void send_to_device(CMD_RX_T *cmd_rx)
             vTaskSuspend(xHandleTaskQueryMotor); //若是操作电机，则关掉电机查询
 //            xSemaphoreGive( gBinarySem_Handle );    //释放二值信号量
 //            comSendBuf(COM4, cmd_rx->cmd_data,8);    
-            RS485_SendBuf(COM4,cmd_rx->cmd_data,8);
-            dbh("SEND A",(char *)cmd_rx->cmd_data,8);
+            RS485_SendBuf(COM4,cmd_rx->cmd_data,motor_cmd_len);
+            dbh("SEND A",(char *)cmd_rx->cmd_data,motor_cmd_len);
             return;//这里不需要向上位机上送，在另外一个任务中才上送
         case DOOR_B:
             //发给B门
             vTaskSuspend(xHandleTaskQueryMotor);//若是操作电机，则关掉电机查询
 //            xSemaphoreGive( gBinarySem_Handle );    //释放二值信号量
-            RS485_SendBuf(COM5,cmd_rx->cmd_data,8);            
+            RS485_SendBuf(COM5,cmd_rx->cmd_data,motor_cmd_len);            
             return;//这里不需要向上位机上送，在另外一个任务中才上送
 
         default:

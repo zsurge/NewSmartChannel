@@ -89,6 +89,11 @@
 #define MAX_TXD_BUF_LEN					512   
 #define MAX_CMD_BUF_LEN					256  
 
+#define JIAYU_MOTOR                     0X01
+#define CBG_MOTOR                       0x02
+    
+#define MOTOR_MODE                      CBG_MOTOR        
+
 //#define USEQUEUE
 
 #ifdef USEQUEUE

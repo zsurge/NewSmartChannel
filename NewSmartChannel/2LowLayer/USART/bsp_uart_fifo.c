@@ -22,7 +22,7 @@
 
 #include "bsp_uart_fifo.h"
 #include "bsp_time.h"
-
+#include "tool.h"
 volatile uint8_t Motro_A = 0;
 volatile uint8_t Motro_B = 0;
 
@@ -671,7 +671,7 @@ void RS485_SendOver(void)
 *********************************************************************************************************
 */
 void RS485_SendBuf(COM_PORT_E _ucPort,uint8_t *_ucaBuf, uint16_t _usLen)
-{
+{    
 	comSendBuf(_ucPort, _ucaBuf, _usLen);
 }
 

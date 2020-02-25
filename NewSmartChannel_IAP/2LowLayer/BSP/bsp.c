@@ -46,8 +46,8 @@
 
 	bsp_LED_Init();		        //初始化LED端口	 
 	
-    bsp_Usart1_Init(38400);     //初始化串口，接android板    
-	bsp_Usart2_Init(38400);    //初始化串口，接嘉昱电机
+    bsp_Usart1_Init(9600);     //初始化串口，接android板，这里跟智慧通道有区别
+	bsp_Usart2_Init(38400);    //初始化串口，做为调试串口使用
 	
 //	bsp_Uart4_Init(38400);     
     

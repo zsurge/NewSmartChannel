@@ -411,6 +411,7 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
 
     if (root == NULL)                 // 如果转化错误，则报错退出
     {
+        cJSON_Delete(root);
         return 0;
     }
 

@@ -48,7 +48,7 @@
 #define CMD_STK_SIZE 		(1024*1)
 #define INFRARED_STK_SIZE 	(1024)
 #define START_STK_SIZE 	    (1024)
-#define QR_STK_SIZE 		(1024)
+#define QR_STK_SIZE 		(1280)
 #define READER_STK_SIZE     (1024)
 #define HANDSHAKE_STK_SIZE  (1024)
 #define KEY_STK_SIZE        (1024)
@@ -792,7 +792,7 @@ void vTaskQR(void *pvParameters)
            memset(recv_buf,0x00,sizeof(recv_buf));
            len = comRecvBuff(COM3,recv_buf,sizeof(recv_buf));
 
-           if(len > 0  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
+           if(len > 2  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
            {
                 DBG("QR = %s\r\n",recv_buf);
                 SendAsciiCodeToHost(QRREADER,NO_ERR,recv_buf);

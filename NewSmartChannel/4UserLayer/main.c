@@ -1082,6 +1082,10 @@ void vTaskQR(void *pvParameters)
                 DBG("QR = %s\r\n",recv_buf);
                 SendAsciiCodeToHost(QRREADER,NO_ERR,recv_buf);
            }
+           else
+           {
+                comClearTxFifo(COM3);
+           }
        }
 
 		/* 发送事件标志，表示任务正常运行 */        

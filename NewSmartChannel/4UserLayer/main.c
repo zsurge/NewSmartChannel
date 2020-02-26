@@ -432,7 +432,7 @@ void vTaskQueryMotor(void *pvParameters)
 //LED任务函数 
 void vTaskLed(void *pvParameters)
 {   
-    //uint8_t pcWriteBuffer[512];
+//    uint8_t pcWriteBuffer[1024];
     uint8_t tmp[15] = {0x00};
     BaseType_t xReturn = pdTRUE;/* 定义一个创建信息返回值，默认为pdPASS */
     const TickType_t xMaxBlockTime = pdMS_TO_TICKS(1000); /* 设置最大等待时间为1000ms */  
@@ -775,7 +775,7 @@ void vTaskReader(void *pvParameters)
 
 void vTaskQR(void *pvParameters)
 { 
-    uint8_t recv_buf[256] = {0};
+    uint8_t recv_buf[256] = {0};    
     uint16_t len = 0;  
     
 //    uint32_t FunState = 0;
@@ -791,12 +791,19 @@ void vTaskQR(void *pvParameters)
        {
            memset(recv_buf,0x00,sizeof(recv_buf));
            len = comRecvBuff(COM3,recv_buf,sizeof(recv_buf));
+           
+//           dbh("QR HEX", recv_buf, len);
 
            if(len > 2  && recv_buf[len-1] == 0x0A && recv_buf[len-2] == 0x0D)
            {
-                DBG("QR = %s\r\n",recv_buf);
+
                 SendAsciiCodeToHost(QRREADER,NO_ERR,recv_buf);
            }
+           else
+           {
+                comClearRxFifo(COM3);
+           }
+
        }
 
 		/* 发送事件标志，表示任务正常运行 */        

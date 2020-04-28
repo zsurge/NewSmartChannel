@@ -726,10 +726,10 @@ void vTaskKey(void *pvParameters)
                        check_msg_queue();
                     }
                     while (i++ < 8);
-                            isOpen = !isOpen;
-                            DBG("isOpen = %d\r\n",isOpen);                   
-                                                    xQueueReset(xTransKeyQueue);
-                            xQueueReset(xTransMotorBQueue);
+                    isOpen = !isOpen;
+                    DBG("isOpen = %d\r\n",isOpen);                   
+                    xQueueReset(xTransKeyQueue);
+                    xQueueReset(xTransMotorBQueue);
                     //向android发送消防联动的消息
                     SendAsciiCodeToHost(FIREFIGHTINGLINKAGE,NO_ERR,"Fire fighting linkage");                    
                     break;

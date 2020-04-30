@@ -1033,9 +1033,9 @@ void vTaskReader(void *pvParameters)
     			/* 使用消息队列实现指针变量的传递 */
     			if(xQueueSend(xTransQueue,              /* 消息队列句柄 */
     						 (void *) &ptReaderToHost,   /* 发送结构体指针变量ptQueueToHost的地址 */
-    						 (TickType_t)10) != pdPASS )
+    						 (TickType_t)100) != pdPASS )
     			{
-                    DBG("向xTransQueue发送数据失败，即使等待了10个时钟节拍\r\n");                
+                    DBG("向xTransQueue发送数据失败，即使等待了100个时钟节拍\r\n");                
                 } 
                 else
                 {

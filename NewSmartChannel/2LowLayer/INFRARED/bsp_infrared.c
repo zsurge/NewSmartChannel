@@ -67,7 +67,7 @@ void bsp_infrared_init ( void )
 	GPIO_SetBits ( GPIO_PORT_SENSOR56,GPIO_PIN_SENSOR5 |GPIO_PIN_SENSOR6 );
 	GPIO_SetBits ( GPIO_PORT_SENSOR78,GPIO_PIN_SENSOR7 |GPIO_PIN_SENSOR8 );
 
-	memset ( &SR_INF,0,sizeof ( SR_INF ) );
+	memset ( &SR_INF,0,sizeof ( TSR_INF ) );
 
 }
 
@@ -153,20 +153,19 @@ uint32_t bsp_infrared_scan ( void )
 void bsp_GetSensorStatus ( uint8_t* dat )
 {
 	//static uint32_t code = 0;
-	uint8_t bcd[3] = {0};
-	uint8_t buf[6] = {0};
+	uint8_t bcd[3+1] = {0};
+	uint8_t buf[6+1] = {0};
 	//uint8_t i;
+
+	memset ( bcd,0x00,sizeof ( bcd ) );
+	memset ( buf,0x00,sizeof ( buf ) );
 
 	bcd[0] = SR_INF.code>>16;
 	bcd[1] = SR_INF.code>>8;
 	bcd[2] = SR_INF.code&0xff;
 
-	memset ( buf,0x00,sizeof ( buf ) );
-
 	bcd2asc ( buf, bcd, 6, 0 );
-
 	memcpy ( dat,buf,6 );
-
 }
 
 

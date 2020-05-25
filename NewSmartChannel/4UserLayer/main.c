@@ -27,6 +27,7 @@
  *----------------------------------------------*/
 //任务优先级   
 
+static void check_msg_queue(void);
 
 #define LED_TASK_PRIO	    ( tskIDLE_PRIORITY)
 #define HANDSHAKE_TASK_PRIO	( tskIDLE_PRIORITY)
@@ -62,7 +63,7 @@
 #define INFRARED_STK_SIZE 	(1024)
 #define RS485_STK_SIZE 		(1024)
 #define START_STK_SIZE 	    (512)
-#define QR_STK_SIZE 		(1024)
+#define QR_STK_SIZE 		(1280)
 #define READER_STK_SIZE     (1024)
 #define HANDSHAKE_STK_SIZE  (1024)
 #define KEY_STK_SIZE        (1024)
@@ -116,7 +117,14 @@ static QueueHandle_t xTransQueue = NULL;
 #endif
 
 
+volatile int8_t mau_key = 0;
 
+static QueueHandle_t xTransKeyQueue = NULL;
+static QueueHandle_t xTransMotorBQueue = NULL;
+
+
+#define  KEY_QUEUE_LEN    10   /* 队列的长度，最大可包含多少个消息 */
+#define  KEY_QUEUE_SIZE   4   /* 队列中每个消息大小（字节） */
 
 
 /*----------------------------------------------*
@@ -332,6 +340,23 @@ static void AppObjCreate (void)
     }	
     #endif
 
+
+    /* 创建消息队列 */
+    xTransKeyQueue = xQueueCreate((UBaseType_t ) KEY_QUEUE_LEN,/* 消息队列的长度 */
+                            (UBaseType_t )KEY_QUEUE_SIZE);/* 消息的大小 */
+    if(xTransKeyQueue == NULL)
+    {
+        App_Printf("xTransKeyQueue error!\r\n");
+    }	
+
+    xTransMotorBQueue = xQueueCreate((UBaseType_t ) KEY_QUEUE_LEN,/* 消息队列的长度 */
+                            (UBaseType_t )KEY_QUEUE_SIZE);/* 消息的大小 */
+    if(xTransMotorBQueue == NULL)
+    {
+        App_Printf("xTransKeyQueue error!\r\n");
+    }	
+
+
 }
 
 
@@ -529,6 +554,11 @@ void vTaskMortorToHost(void *pvParameters)
     uint16_t readLen = 0;
     uint16_t iCRC = 0;
     uint8_t crcBuf[2] = {0};
+    
+    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为pdPASS */
+    uint32_t motora = 55;
+
+    
 
     #ifdef USEQUEUE
     QUEUE_TO_HOST_T *ptMotorToHost;  
@@ -566,7 +596,25 @@ void vTaskMortorToHost(void *pvParameters)
                 }    
                 #endif
 
-                dbh("RECV A",(char *)buf,readLen);
+                if(readLen == 8 && mau_key >= 55)
+                {
+                    xReturn = xQueueSend( xTransKeyQueue, /* 消息队列的句柄 */
+                                        &motora,/* 发送的消息内容 */
+                                        (TickType_t)30 );        /* 等待时间 0 */    
+                     if(xReturn != pdPASS)
+                     {
+                        DBG("queue is full,reset\r\n");
+                        xQueueReset(xTransKeyQueue);
+                     }
+                     else
+                     {
+                        DBG("door A  return\r\n");
+                        check_msg_queue();
+                     }                     
+                }               
+                                      
+
+//                dbh("RECV A",(char *)buf,readLen);
                 send_to_host(CONTROLMOTOR,buf,readLen);
                 vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
                 Motro_A = 0;
@@ -585,12 +633,21 @@ void vTaskMortorToHost(void *pvParameters)
 #if 0
 void vTaskKey(void *pvParameters)
 {
-//    uint8_t CloseDoor[8] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
+    uint8_t CloseDoor[8] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
     uint8_t OpenDoor[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x02,0xCA,0x68 };
 //    uint8_t OpenDoor_R[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x03,0x0B,0xA8 };
 //    uint8_t QuestStatus[8] =  { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
 //    uint8_t MotorReset[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x07,0x0A,0x6B };    
 	uint8_t ucKeyCode;
+
+    BaseType_t xReturn = pdTRUE;/* 定义一个创建信息返回值，默认为pdTRUE */
+    uint32_t r_queue; /* 定义一个接收消息的变量 */
+    uint8_t i = 0;
+
+    uint8_t t1 = 0;
+    uint8_t t2 = 0;
+
+    static uint8_t isOpen = 1;
     
     while(1)
     {
@@ -601,25 +658,146 @@ void vTaskKey(void *pvParameters)
 			switch (ucKeyCode)
 			{
 				/* 开门键按下执行向上位机发送开门请求 */
-				case KEY_DOOR_B_PRES:	 
+				case KEY_DOOR_B_PRES:
                     SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
 					break;	
                 case KEY_FIREFIGHTING_PRES:
-                    //开门
-                    RS485_SendBuf(COM4,OpenDoor,8);//打开A门 
-                    RS485_SendBuf(COM5,OpenDoor,8);//打开B门                    
+//                    vTaskSuspend(xHandleTaskQueryMotor); //若是操作电机，则关掉电机查询 
+                    mau_key = 100;
+                    i = 0;
+                    t1 = 0;
+                    t2 =2;
+                    do
+                    {                           
+                        xReturn = xQueueReceive( xTransKeyQueue,    /* 消息队列的句柄 */
+                                                 &r_queue,      /* 发送的消息内容 */
+                                                 (TickType_t)50); /* 等待时间 一直等 */
+                        if(pdTRUE == xReturn&& i>0)
+                        {
+                            DBG("A第%d次接收 = %d\r\n",i,r_queue);
+                            if(r_queue == 55)
+                            {
+                                t1 = 1;
+                            }
+                        }  
+                        else
+                        {
+                            if(isOpen)
+                            {
+                                RS485_SendBuf(COM4,OpenDoor,8);//打开A门  
+                            }
+                            else
+                            {
+                                RS485_SendBuf(COM4,CloseDoor,8);//打开A门 
+                            }
+                        }
+                        
+                        xReturn = xQueueReceive( xTransMotorBQueue,    /* 消息队列的句柄 */
+                                                    &r_queue,      /* 发送的消息内容 */
+                                                    (TickType_t)50); /* 等待时间 一直等 */
+                        if(pdTRUE == xReturn&& i>1)
+                        {
+                            DBG("B第%d次接收 = %d\r\n",i,r_queue);
+                            if(r_queue == 66)
+                            {
+                                t2 = 1;
+                            }
+                        }
+                        else
+                        {
+                            if(isOpen)
+                            {
+                                RS485_SendBuf(COM5,OpenDoor,8);//打开A门  
+                            }
+                            else
+                            {
+                                RS485_SendBuf(COM5,CloseDoor,8);//打开A门 
+                            }
+                        }
+
+                        vTaskDelay(100);
+
+                        if(t1==1 && t2==1)
+                        {
+                            mau_key = 0;
+                            i=20;
+                        }
+
+                       check_msg_queue();
+                    }
+                    while (i++ < 8);
+                    isOpen = !isOpen;
+                    DBG("isOpen = %d\r\n",isOpen);                   
+                    xQueueReset(xTransKeyQueue);
+                    xQueueReset(xTransMotorBQueue);
                     //向android发送消防联动的消息
                     SendAsciiCodeToHost(FIREFIGHTINGLINKAGE,NO_ERR,"Fire fighting linkage");                    
                     break;
                 case KEY_OPEN_DOOR_A_PRES:
+//                    vTaskSuspend(xHandleTaskQueryMotor); //若是操作电机，则关掉电机查询
                     //Open door a manually
-                    RS485_SendBuf(COM4,OpenDoor,8);//打开A门 
-                    
+                    mau_key = 55;
+                    i = 0;
+                    do
+                    {  
+                        xReturn = xQueueReceive( xTransKeyQueue,    /* 消息队列的句柄 */
+                                                 &r_queue,      /* 发送的消息内容 */
+                                                 (TickType_t)50); /* 等待时间 一直等 */
+                        if(pdTRUE == xReturn&& i!=0)
+                        {
+                            DBG("第%d次接收 = %d\r\n",i,r_queue);
+                            if(r_queue == 55)
+                            {
+                                
+                                mau_key = 0;
+                                i = 20;
+                            }
+                        }  
+                        else
+                        {
+                            RS485_SendBuf(COM4,OpenDoor,8);//打开A门                             
+                            DBG("开A门\r\n");
+                            vTaskDelay(100);   
+                        }
+
+                        check_msg_queue();
+                    }
+                    while (i++ < 8);                
+                    xQueueReset(xTransKeyQueue);
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
                     break;
                 case KEY_OPEN_DOOR_B_PRES:
+//                    vTaskSuspend(xHandleTaskQueryMotor); //若是操作电机，则关掉电机查询
                     //Open door b manually
-                    RS485_SendBuf(COM5,OpenDoor,8);//打开B门
+                    mau_key = 66;
+                    i= 0;
+                    do
+                    {                        
+                        xReturn = xQueueReceive( xTransMotorBQueue,    /* 消息队列的句柄 */
+                                                 &r_queue,      /* 发送的消息内容 */
+                                                 (TickType_t)50); /* 等待时间 一直等 */
+                        if(pdTRUE == xReturn && i!=0)
+                        {
+                            DBG("第%d次接收 = %d\r\n",i,r_queue);
+                            if(r_queue == 66)
+                            {
+                                
+                                mau_key = 0;
+                                i=20;
+                            }
+                        }
+                        else
+                        {
+                            RS485_SendBuf(COM5,OpenDoor,8);//打开B门 
+                            DBG("开B门\r\n");
+                            vTaskDelay(100);
+
+                        }
+
+                        check_msg_queue();
+                    }
+                    while (i++ < 8); 
+										xQueueReset(xTransMotorBQueue);
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
                     break;			
 				/* 其他的键值不处理 */
@@ -751,6 +929,9 @@ void vTaskRs485(void *pvParameters)
     QUEUE_TO_HOST_T *ptInfraredToHost; 
     ptInfraredToHost = &gQueueToHost;
     #endif
+
+    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为pdPASS */
+    uint32_t motora = 66;    
     
     while (1)
     {
@@ -781,6 +962,23 @@ void vTaskRs485(void *pvParameters)
     				dbh("DOOR_B",(char *)buf,readLen);
                 }   
                 #endif
+
+                if(readLen == 8 && mau_key >= 66 )
+                {
+                    xReturn = xQueueSend( xTransMotorBQueue, /* 消息队列的句柄 */
+                                        &motora,/* 发送的消息内容 */
+                                        50 );        /* 等待时间 0 */    
+                     if(xReturn != pdPASS)
+                     {
+                        DBG("queue is full,reset\r\n");
+                        xQueueReset(xTransMotorBQueue);
+                     }
+                     else
+                     {
+                        DBG("door B  return\r\n");
+                        check_msg_queue();
+                     }
+                }                  
             
                 send_to_host(DOOR_B,buf,readLen);
                 vTaskResume(xHandleTaskQueryMotor);//重启状态查询线程
@@ -835,9 +1033,9 @@ void vTaskReader(void *pvParameters)
     			/* 使用消息队列实现指针变量的传递 */
     			if(xQueueSend(xTransQueue,              /* 消息队列句柄 */
     						 (void *) &ptReaderToHost,   /* 发送结构体指针变量ptQueueToHost的地址 */
-    						 (TickType_t)10) != pdPASS )
+    						 (TickType_t)100) != pdPASS )
     			{
-                    DBG("向xTransQueue发送数据失败，即使等待了10个时钟节拍\r\n");                
+                    DBG("向xTransQueue发送数据失败，即使等待了100个时钟节拍\r\n");                
                 } 
                 else
                 {
@@ -883,6 +1081,10 @@ void vTaskQR(void *pvParameters)
            {
                 DBG("QR = %s\r\n",recv_buf);
                 SendAsciiCodeToHost(QRREADER,NO_ERR,recv_buf);
+           }
+           else
+           {
+                comClearTxFifo(COM3);
            }
        }
 
@@ -1032,5 +1234,23 @@ static void vTaskMonitor(void *pvParameters)
   }    
 }
 #endif
+
+//查询Message_Queue队列中的总队列数量和剩余队列数量
+static void check_msg_queue(void)
+{
+    
+	u8 msgq_remain_size;	//消息队列剩余大小
+    u8 msgq_total_size;     //消息队列总大小
+    
+    taskENTER_CRITICAL();   //进入临界区
+    msgq_remain_size=uxQueueSpacesAvailable(xTransKeyQueue);//得到队列剩余大小
+    msgq_total_size=uxQueueMessagesWaiting(xTransKeyQueue)+uxQueueSpacesAvailable(xTransKeyQueue);//得到队列总大小，总大小=使用+剩余的。
+	DBG("Total Size = %d, Remain Size = %d\r\n",msgq_total_size,msgq_remain_size);	//显示DATA_Msg消息队列总的大小
+
+    taskEXIT_CRITICAL();    //退出临界区
+}
+
+
+
 
 

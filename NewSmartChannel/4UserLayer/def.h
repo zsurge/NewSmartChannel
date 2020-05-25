@@ -38,13 +38,11 @@
     //中间件头文件
 #include "sys.h"
 #include "delay.h"
-#include "cmd_fun.h"
 #include "ini.h"
 
     
     //用户层头文件
 #include "test.h"
-#include "iap.h"
 #include "tool.h"
 #include "comm.h"
 #include "Devinfo.h"

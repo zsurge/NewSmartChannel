@@ -1,5 +1,5 @@
 #忽略SI目录
-/NewSmartChannel/NewSmartChannelAppV2.0.si4project
+/NewSmartChannel/NewSmartChannelV1.si4project
 
 #忽略BIN下所有文件
 /NewSmartChannel/6Bin/*
@@ -9,3 +9,9 @@
 
 #忽略BIN下所有文件
 /NewSmartChannel_IAP/6Bin/*
+
+#忽略SI目录
+/NewSmartChannelV2/NewSmartChannelV2.si4project
+
+#忽略BIN下所有文件
+/NewSmartChannelV2/6Bin/*

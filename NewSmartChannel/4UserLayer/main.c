@@ -630,7 +630,7 @@ void vTaskMortorToHost(void *pvParameters)
 
 }
 
-#if 0
+#if 1
 void vTaskKey(void *pvParameters)
 {
     uint8_t CloseDoor[8] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };

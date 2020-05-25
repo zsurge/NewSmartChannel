@@ -19,11 +19,7 @@
 
 #include "bsp_key.h"
 
-<<<<<<< HEAD
-#if 0
-=======
 
->>>>>>> test
 //按键初始化函数
 void bsp_key_Init ( void )
 {

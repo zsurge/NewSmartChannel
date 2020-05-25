@@ -100,6 +100,9 @@ static void AppTaskCreate (void)
     //B门电机控制处理
     CreateMotorCtrlSecDoorTask();    
 
+    //监控任务
+    CreateMonitorTask();
+
     //按键处理
     CreateKeyTask();
 
@@ -116,7 +119,7 @@ static void AppTaskCreate (void)
     CreateSensorTask();
 
     //看门狗
-    CreateWatchDogTask();
+//    CreateWatchDogTask();
 
     //删除本身
 //    vTaskDelete(xHandleTaskAppCreate); //删除AppTaskCreate任务

@@ -143,6 +143,7 @@ to exclude the API function. */
 
 //add 0525
 #define configUSE_STATS_FORMATTING_FUNCTIONS 1
+//#define configUSE_TASK_NOTIFICATIONS 1
 
 
 

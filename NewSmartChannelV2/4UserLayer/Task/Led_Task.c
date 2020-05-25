@@ -32,7 +32,7 @@
  * 宏定义                                       *
  *----------------------------------------------*/
 #define LED_TASK_PRIO	    ( tskIDLE_PRIORITY)
-#define LED_STK_SIZE 		(configMINIMAL_STACK_SIZE*4)
+#define LED_STK_SIZE 		(configMINIMAL_STACK_SIZE*8)
 
 /*----------------------------------------------*
  * 常量定义                                     *
@@ -86,7 +86,7 @@ static void vTaskLed(void *pvParameters)
 //    uint8_t pcWriteBuffer[1024];
     uint8_t tmp[15] = {0x00};
     BaseType_t xReturn = pdTRUE;/* 定义一个创建信息返回值，默认为pdPASS */
-    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为1000ms */  
+    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(50); /* 设置最大等待时间为1000ms */  
     char *recvbuff;
     uint16_t i = 0;
 
@@ -122,10 +122,10 @@ static void vTaskLed(void *pvParameters)
             i = 0;
             LED4=!LED4; 
             
-            showTask();
+//            showTask();
         }
 
-        //获取任务通知，等待1000个时间节拍，获取到，则执行上位机指令，获取不到，则执行状态查询
+        //获取任务通知，等待50个时间节拍，获取到，则执行上位机指令，获取不到，则执行状态查询
 		xReturn=xTaskNotifyWait(0x0,			//进入函数的时候不清除任务bit
                             ULONG_MAX,	        //退出函数的时候清除所有的bit
                             (uint32_t *)&recvbuff,//保存任务通知值                    

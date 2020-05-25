@@ -23,6 +23,8 @@
 #include"MotorCtrl_Task.h"
 #include "bsp_uart_fifo.h"
 #include "comm.h"
+#include "string.h"
+#include"Monitor_Task.h"
 
 
 /*----------------------------------------------*
@@ -73,7 +75,11 @@ static void vTaskMotorCtrl(void *pvParameters)
     uint16_t readLen = 0;
     uint16_t iCRC = 0;
     uint8_t crcBuf[2] = {0};
+    uint8_t CloseDoor[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
+    uint8_t ReadStatus[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
 
+    uint32_t NotifyValue = 0x55;
+    
     MOTORCTRL_QUEUE_T *ptMotor; 
 	/* 初始化结构体指针 */
 	ptMotor = &gMotorCtrlQueue;
@@ -81,9 +87,6 @@ static void vTaskMotorCtrl(void *pvParameters)
     /* 清零 */
     ptMotor->cmd = 0;
     memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN); 
-      
-
-    uint8_t ReadStatus[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
     
     while (1)
     {   
@@ -97,13 +100,28 @@ static void vTaskMotorCtrl(void *pvParameters)
             //消息接收成功，发送接收到的消息
             dbh("A Recv：",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
             RS485_SendBuf(COM4, ptMotor->data,MOTORCTRL_QUEUE_BUF_LEN);//操作A电机  
+
+            //判定是否是关门指令
+            if(memcmp(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN) == 0)
+            {                
+                printf("the door is closeing,enable monitor task\r\n");
+                NotifyValue = 0x55;
+                //发送通知，启用监控任务
+                xReturn = xTaskNotify( xHandleTaskMonitor, /*任务句柄*/
+                                     NotifyValue, /* 发送的数据，最大为4字节 */
+                                     eSetValueWithOverwrite );/*覆盖当前通知*/
+            
+//                  if( xReturn == pdPASS )
+//                    printf("Receive1_Task_Handle 任务通知消息发送成功!\r\n"); 
+            }
+        
         }
         else
         {
             //发送默认数据包
             RS485_SendBuf(COM4, ReadStatus,MOTORCTRL_QUEUE_BUF_LEN);//查询A电机状态
-        }     
-
+        }  
+        
 
         vTaskDelay(50);
         
@@ -120,6 +138,23 @@ static void vTaskMotorCtrl(void *pvParameters)
             {                                
                 send_to_host(CONTROLMOTOR_A,buf,readLen);              
                 Motro_A = 0;
+
+                //这里判定是否是关到位,0x08代表电机关到位
+                if(buf[3] == 0x08 && NotifyValue == 0x55)
+                {
+                    //置信号量，停用监控任务
+                    printf("the door is closed,disable monitor task\r\n");
+                    NotifyValue = 0xAA;
+                    //发送通知，启用监控任务
+                    xReturn = xTaskNotify( xHandleTaskMonitor, /*任务句柄*/
+                                         NotifyValue, /* 发送的数据，最大为4字节 */
+                                         eSetValueWithOverwrite );/*覆盖当前通知*/
+                
+//                      if( xReturn == pdPASS )
+//                        printf("Receive1_Task_Handle 任务通知消息发送成功!\r\n");  
+                    
+                }
+                
             }
         } 
         else

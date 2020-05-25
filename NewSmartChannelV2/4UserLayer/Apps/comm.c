@@ -274,7 +274,7 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     cmd_tx.cmd = cmd;
     cmd_tx.code = 0;
     
-    bcd2asc(cmd_tx.data, buf, len*2, 0);        
+    bcd2asc(cmd_tx.data, buf, len*2, 0); 
     json_len = packetJSON(&cmd_tx,tmpBuf);  
     if(json_len == 0)
     {        
@@ -297,11 +297,8 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
 //    DBG("send json data = %s\r\n",tmpBuf);
 //    dbh("send_to_host",(char *)TxdBuf,i);
 
-
-
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-//        comSendBuf(COM1,TxdBuf,i); 
           BSP_UartSend(SCOM1,TxdBuf,i); 
     }
     
@@ -558,11 +555,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
                                  (uint32_t)&cmd_rx->cmd_data,
                                  eSetValueWithOverwrite );/*覆盖当前通知*/
           
-            if( xReturn == pdPASS )
-            {
-                //dbh("Set LED Send", (char *)cmd_rx->cmd_data, MAX_EXLED_LEN);
-            }
-            else
+            if( xReturn != pdPASS )
             {
                 SendAsciiCodeToHost(ERRORINFO,COMM_SEND_ERR,"set led error,try again");
                 DBG("Set LED Send Error!\r\n");

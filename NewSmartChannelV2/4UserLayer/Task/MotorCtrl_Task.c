@@ -104,7 +104,7 @@ static void vTaskMotorCtrl(void *pvParameters)
             //判定是否是关门指令
             if(memcmp(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN) == 0)
             {                
-                printf("the door is closeing,enable monitor task\r\n");
+                printf("the door is closing,enable monitor task\r\n");
                 NotifyValue = 0x55;
                 //发送通知，启用监控任务
                 xReturn = xTaskNotify( xHandleTaskMonitor, /*任务句柄*/

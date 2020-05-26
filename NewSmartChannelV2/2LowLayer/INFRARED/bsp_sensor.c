@@ -72,7 +72,7 @@ void bsp_sensor_init(void)
 }
 
 
-#if 0
+#if 1
 uint32_t bsp_sensor_scan(void)
 {
     uint8_t i = 0;
@@ -210,8 +210,6 @@ void bsp_GetSensorValue(uint8_t *dat)
 	
 	bcd2asc ( buf, bcd, 6, 0 );
 	memcpy ( dat,buf,6 );
-
-    printf("bsp_GetSensorStatus = %s\r\n",buf);
 }
 
 

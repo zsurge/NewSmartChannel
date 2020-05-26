@@ -27,6 +27,7 @@
 #include "comm.h"
 #include "bsp_sensor.h"
 #include "stdlib.h"
+#include "bsp_uart_fifo.h"
 
     
     
@@ -66,8 +67,7 @@ void CreateMonitorTask(void)
                 (uint16_t       )MONITOR_STK_SIZE, 
                 (void*          )NULL,
                 (UBaseType_t    )MONITOR_TASK_PRIO,
-                (TaskHandle_t*  )&xHandleTaskMonitor);     
-
+                (TaskHandle_t*  )&xHandleTaskMonitor);
 }
 
 static void vTaskMonitor(void *pvParameters)
@@ -75,6 +75,7 @@ static void vTaskMonitor(void *pvParameters)
     BaseType_t xReturn = pdTRUE;/* 定义一个创建信息返回值，默认为pdPASS */
     uint32_t r_num = 0;
     uint8_t buf[8] = {0};
+    uint8_t OpenDoor[8] = { 0x01,0x06,0x08,0x0C,0x00,0x02,0xCA,0x68 };
     static uint32_t flag = MON_DISABLE;
 
     while (1)
@@ -92,12 +93,12 @@ static void vTaskMonitor(void *pvParameters)
             
             bsp_GetSensorValue(buf);
 //            printf("r_num == %x,sensor = %s,flag = %x\r\n",r_num,buf,flag);
-            if(atoi((const char*)buf) != 0)
+            if(atoi((const char*)buf) != 0 && flag != MON_DISABLE) 
             {
                 printf("waring!!! open door\r\n");
+                RS485_SendBuf(COM4, OpenDoor,sizeof(OpenDoor));//打开A电机
             }
         }
-
         
          vTaskDelay(20);
         

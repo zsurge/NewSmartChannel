@@ -89,8 +89,7 @@ static void vTaskMotorCtrl(void *pvParameters)
     memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN); 
     
     while (1)
-    {   
-
+    { 
         //获取到，则执行上位机指令，获取不到，则执行状态查询
         xReturn = xQueueReceive( gxMotorCtrlQueue,    /* 消息队列的句柄 */
                                  (void *)&ptMotor,  /*这里获取的是结构体的地址 */
@@ -106,13 +105,13 @@ static void vTaskMotorCtrl(void *pvParameters)
             {                
                 printf("the door is closing,enable monitor task\r\n");
                 NotifyValue = 0x55;
-                //发送通知，启用监控任务
-                xReturn = xTaskNotify( xHandleTaskMonitor, /*任务句柄*/
-                                     NotifyValue, /* 发送的数据，最大为4字节 */
-                                     eSetValueWithOverwrite );/*覆盖当前通知*/
+//                //发送通知，启用监控任务
+//                xReturn = xTaskNotify( xHandleTaskMonitor, /*任务句柄*/
+//                                     NotifyValue, /* 发送的数据，最大为4字节 */
+//                                     eSetValueWithOverwrite );/*覆盖当前通知*/
+
+                vTaskResume(xHandleTaskMonitor);
             
-//                  if( xReturn == pdPASS )
-//                    printf("Receive1_Task_Handle 任务通知消息发送成功!\r\n"); 
             }
         
         }
@@ -145,14 +144,11 @@ static void vTaskMotorCtrl(void *pvParameters)
                     //置信号量，停用监控任务
                     printf("the door is closed,disable monitor task\r\n");
                     NotifyValue = 0xAA;
-                    //发送通知，启用监控任务
-                    xReturn = xTaskNotify( xHandleTaskMonitor, /*任务句柄*/
-                                         NotifyValue, /* 发送的数据，最大为4字节 */
-                                         eSetValueWithOverwrite );/*覆盖当前通知*/
-                
-//                      if( xReturn == pdPASS )
-//                        printf("Receive1_Task_Handle 任务通知消息发送成功!\r\n");  
-                    
+//                    //发送通知，启用监控任务
+//                    xReturn = xTaskNotify( xHandleTaskMonitor, /*任务句柄*/
+//                                         NotifyValue, /* 发送的数据，最大为4字节 */
+//                                         eSetValueWithOverwrite );/*覆盖当前通知*/
+                    vTaskSuspend(xHandleTaskMonitor); 
                 }
                 
             }

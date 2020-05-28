@@ -56,6 +56,9 @@ static uint16_t crc_value = 0;
 static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx); //私有函数
 static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
 static uint16_t  packetDeviceInfo(uint8_t *command_data);
+static void parseMotorParam(CMD_RX_T *cmd_rx);
+
+
 
 //static void displayTask(void);
 
@@ -274,7 +277,7 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     cmd_tx.cmd = cmd;
     cmd_tx.code = 0;
     
-    bcd2asc(cmd_tx.data, buf, len*2, 0); 
+    bcd2asc(cmd_tx.data, buf, len*2, 1); 
     json_len = packetJSON(&cmd_tx,tmpBuf);  
     if(json_len == 0)
     {        
@@ -355,15 +358,15 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
 
     strcpy((char *)asc_dat,(char *)tmpCmd);
     
-    asc2bcd(bcd_cmd, asc_dat, strlen((const char*)asc_dat), 0);
+    asc2bcd(bcd_cmd, asc_dat, strlen((const char*)asc_dat), 1); 
 
     //目前指令只有1byte 所以直接赋值
-    cmd_rx->cmd = bcd_cmd[0];
+    cmd_rx->cmd = bcd_cmd[0];    
 
     tmpdat = (uint8_t *)cJSON_GetObjectItem(root,"data")->valuestring;  
 
     asc_len = strlen((const char*)tmpdat);
-
+    
     //若是有数据，则转换;无数据则不处理
     if(asc_len > 0)
     {
@@ -371,10 +374,18 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
         {
             asc_len += 1;
         }
-        asc2bcd(bcd_dat,tmpdat,asc_len,0);
-        memcpy(cmd_rx->cmd_data,bcd_dat,asc_len/2);
+        if(cmd_rx->cmd == SET_MOTOR_A_PARAM || cmd_rx->cmd == SET_MOTOR_B_PARAM)
+        {
+            memcpy(cmd_rx->cmd_data,tmpdat,strlen((const char*)tmpdat));
+            cmd_rx->len = strlen((const char*)tmpdat);
+        }
+        else
+        {
+            asc2bcd(bcd_dat,tmpdat,strlen((const char*)tmpdat),1);
+            memcpy(cmd_rx->cmd_data,bcd_dat,asc_len/2);
+            cmd_rx->len = asc_len/2;
+        }
     }
-    
 
     cJSON_Delete(root);
 
@@ -507,11 +518,10 @@ void send_to_device(CMD_RX_T *cmd_rx)
     uint8_t tmpBuf[JSON_PACK_MAX] = {0};  
     uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
-
     
-
     MOTORCTRL_QUEUE_T *ptMotor; 
     MOTORCTRL_QUEUE_T *ptSecMotor; 
+    
 	/* 初始化结构体指针 */
 	ptMotor = &gMotorCtrlQueue;
 
@@ -623,7 +633,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
             break;
         case UPGRADE:
             SystemUpdate();
-            break;   
+            break;         
 
         case CONTROLMOTOR_A:
              //向电机发送控制指令
@@ -636,7 +646,6 @@ void send_to_device(CMD_RX_T *cmd_rx)
 						 (TickType_t)100) != pdPASS )
 			{
                 xQueueReset(gxMotorCtrlQueue);
-//                DBG("A the queue is full!\r\n");                             
             } 
 //            else
 //            {
@@ -663,6 +672,17 @@ void send_to_device(CMD_RX_T *cmd_rx)
 //            }
             
             return;//这里不需要向上位机上送，在另外一个任务中才上送
+
+       case SET_MOTOR_A_PARAM:
+            DBG("SET_MOTOR_A_PARAM!  cmd_rx = %s\r\n",cmd_rx->cmd_data);
+            parseMotorParam(cmd_rx);  
+            return;
+
+       case SET_MOTOR_B_PARAM:
+            DBG("SET_MOTOR_B_PARAM!\r\n");
+            parseMotorParam(cmd_rx);  
+            return;
+
             
         default:
             init_serial_boot(); 
@@ -676,6 +696,80 @@ void send_to_device(CMD_RX_T *cmd_rx)
     }
     xSemaphoreGive(gxMutex);
 
+}
+
+
+static void parseMotorParam(CMD_RX_T *cmd_rx)
+{
+    int i = 0;
+    uint16_t iCRC = 0;
+    //分割后子字符串的个数
+    int num = 0;
+    //用来接收返回数据的数组。这里的数组元素只要设置的比分割后的子字符串个数大就好了。
+    char *revbuf[6] = {0}; //存放分割后的子字符串 
+    uint8_t TxdBuf[8+1] = {0};
+
+
+    MOTORCTRL_QUEUE_T *ptMotor; 
+
+    /* 初始化结构体指针 */
+    ptMotor = &gMotorCtrlQueue;
+
+    /* 清零 */
+    ptMotor->cmd = 0;
+    memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN); 	  
+
+    if(cmd_rx == NULL)
+    {
+        return ;
+    }
+      
+    split((char *)cmd_rx->cmd_data,",",revbuf,&num); //调用函数进行分割
+    
+    //输出返回的每个内容 
+    for(i = 0;i < num; i++) 
+    {
+        TxdBuf[0] = 0x01;   
+        TxdBuf[1] = 0x06;
+        TxdBuf[2] = 0x09;   
+        TxdBuf[3] = i;   
+        TxdBuf[4] = atoi(revbuf[i])>>8; //high
+        TxdBuf[5] = atoi(revbuf[i])&0xFF; //low
+                
+        iCRC = CRC16_Modbus(TxdBuf, 6);  
+        TxdBuf[6] = iCRC & 0xff;//低8位
+        TxdBuf[7] = iCRC >> 8;  //高8位
+
+       
+
+        ptMotor->cmd = cmd_rx->cmd;
+        
+        memcpy(ptMotor->data,TxdBuf,MOTORCTRL_QUEUE_BUF_LEN); 
+
+        if(ptMotor->cmd == SET_MOTOR_A_PARAM)
+        {
+            /* 使用消息队列实现指针变量的传递 */
+            if(xQueueSend(gxMotorCtrlQueue,      /* 消息队列句柄 */
+            			 (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
+            			 (TickType_t)100) != pdPASS )
+            {
+                xQueueReset(gxMotorCtrlQueue);
+            }
+        }
+        else if(ptMotor->cmd == SET_MOTOR_B_PARAM)
+        {
+
+            /* 使用消息队列实现指针变量的传递 */
+            if(xQueueSend(gxMotorSecDoorCtrlQueue,      /* 消息队列句柄 */
+                         (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
+                         (TickType_t)100) != pdPASS )
+            {
+                xQueueReset(gxMotorSecDoorCtrlQueue);
+            }
+        }
+
+        vTaskDelay(60);
+    }
 }
 
 

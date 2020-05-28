@@ -164,7 +164,7 @@ void bsp_GetSensorStatus ( uint8_t* dat )
 	bcd[1] = SR_INF.code>>8;
 	bcd[2] = SR_INF.code&0xff;	
 	
-	bcd2asc ( buf, bcd, 6, 0 );
+	bcd2asc ( buf, bcd, 6, 1 );
 	memcpy ( dat,buf,6 );
 
     printf("bsp_GetSensorStatus = %s\r\n",buf);

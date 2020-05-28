@@ -69,7 +69,7 @@ void vTaskHandShake(void *pvParameters)
     /* set and store the boot count number to Env */
     ef_set_env("boot_times", c_new_boot_times);    
 
-    asc2bcd(bcdbuf,(uint8_t *)c_new_boot_times , 12, 0);
+    asc2bcd(bcdbuf,(uint8_t *)c_new_boot_times , 12, 1);
 
     send_to_host(HANDSHAKE,bcdbuf,6);  
 

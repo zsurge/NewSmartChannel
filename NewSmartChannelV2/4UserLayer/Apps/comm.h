@@ -49,13 +49,13 @@
 #define DEVRESET                        0xA5
 #define SETDEVPARAM                     0xA6
 #define UPGRADE                         0xA7
-#define CONTROLMOTOR_A                    0xA8
+#define CONTROLMOTOR_A                  0xA8
 
 #define WGREADER                        0xA9
 #define QRREADER                        0xA0
 
 #define REQUEST_OPEN_DOOR_B             0xB7
-#define CONTROLMOTOR_B                          0xB8
+#define CONTROLMOTOR_B                  0xB8
 
 #define ERRORINFO                       0XB0
 
@@ -64,6 +64,10 @@
 #define FIREFIGHTINGLINKAGE             0xB2
 #define MANUALLY_OPEN_DOOR_A            0xB3
 #define MANUALLY_OPEN_DOOR_B            0xB4
+
+//add 2020.05.26
+#define SET_MOTOR_A_PARAM               0xB5
+#define SET_MOTOR_B_PARAM               0xB6
 
 
 
@@ -95,6 +99,7 @@ typedef struct
 {
     uint8_t cmd;     //指令字
     uint8_t *cmd_desc;//指令描述    
+    uint8_t len;
     uint8_t cmd_data[MAX_CMD_BUF_LEN];//指令内容(若有)
 }CMD_RX_T;
 

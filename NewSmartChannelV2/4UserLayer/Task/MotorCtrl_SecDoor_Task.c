@@ -50,6 +50,8 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters);
 
 
 
+
+
 void CreateMotorCtrlSecDoorTask(void)
 {
     //创建电机信息返回任务
@@ -135,6 +137,7 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters)
     }
 
 }
+
 
 
 

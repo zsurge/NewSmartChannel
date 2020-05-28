@@ -381,5 +381,64 @@ uint8_t Nonzero(uint8_t *buf,uint8_t len)
     return 0;
 }
 
+/*****************************************************************************
+ 函 数 名  : split
+ 功能描述  : 字符串分割
+ 输入参数  : char *src       源字符串的首地址(buf的地址)        
+             const char *separator  指定的分割字符
+             char **dest   接收子字符串的数组         
+             int *num    分割后子字符串的个数           
+ 输出参数  : 无
+ 返 回 值  : 
+ 
+ 修改历史      :
+  1.日    期   : 2019年12月30日
+    作    者   : 张舵
+void split(char *src,const char *separator,char **dest,int *num) 
+    修改内容   : 新生成函数
+
+*****************************************************************************/
+void split(char *src,const char *separator,char **dest,int *num) 
+{
+
+     char *pNext;
+     int count = 0;
+     if (src == NULL || strlen(src) == 0) //如果传入的地址为空或长度为0，直接终止 
+        return;
+     if (separator == NULL || strlen(separator) == 0) //如未指定分割的字符串，直接终止 
+        return;
+     pNext = (char *)strtok(src,separator); //必须使用(char *)进行强制类型转换(虽然不写有的编译器中不会出现指针错误)
+     while(pNext != NULL) {
+          *dest++ = pNext;
+          ++count;
+         pNext = (char *)strtok(NULL,separator);  //必须使用(char *)进行强制类型转换
+    }  
+    *num = count;
+} 	
+
+// 将strRes中的t替换为s，替换成功返回e68a84e79fa5e98193313333373866361，否则返回0。
+int StrReplace(char strRes[],char from[], char to[]) 
+{
+    int i,flag = 0;
+    char *p,*q,*ts;
+    for(i = 0; strRes[i]; ++i) {
+        if(strRes[i] == from[0]) {
+            p = strRes + i;
+            q = from;
+            while(*q && (*p++ == *q++));
+            if(*q == '\0') {
+                ts = (char *)malloc(strlen(strRes) + 1);
+                strcpy(ts,p);
+                strRes[i] = '\0';
+                strcat(strRes,to);
+                strcat(strRes,ts);
+                free(ts);
+                flag = 1;
+            }
+        } 
+    }
+    return flag;
+}
+
 
 

@@ -395,3 +395,29 @@ void testled(uint8_t flag)
     
 }
 
+
+//int testSplit(void)
+//{
+//	int i;
+//	char *value;
+//	//用来接收返回数据的数组。这里的数组元素只要设置的比分割后的子字符串个数大就好了。
+//	char *revbuf[6] = {0}; //存放分割后的子字符串 
+//	
+//	//分割后子字符串的个数
+//	int num = 0;
+//	
+//	split(value,";",revbuf,&num); //调用函数进行分割 
+//	
+//	
+//	//输出返回的每个内容 
+//	for(i = 0;i < num; i ++) {
+//		printf("%s\r\n",revbuf[i]);
+//	}
+
+
+//	return 0;
+//}
+
+
+
+

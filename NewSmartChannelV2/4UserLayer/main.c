@@ -44,6 +44,7 @@ SemaphoreHandle_t gxMutex = NULL;
 EventGroupHandle_t xCreatedEventGroup = NULL;
 QueueHandle_t gxMotorCtrlQueue = NULL; 
 QueueHandle_t gxMotorSecDoorCtrlQueue = NULL;
+//QueueSetHandle_t gxQueueSet = NULL;
 
 
 
@@ -119,7 +120,7 @@ static void AppTaskCreate (void)
     CreateSensorTask();
 
     //看门狗
-//    CreateWatchDogTask();
+    CreateWatchDogTask();
 
     //删除本身
 //    vTaskDelete(xHandleTaskAppCreate); //删除AppTaskCreate任务
@@ -140,6 +141,16 @@ static void AppTaskCreate (void)
 */
 static void AppObjCreate (void)
 {
+//    /* 创建QueuSet */
+//    gxQueueSet = xQueueCreateSet(COMBINED_LENGTH);
+//	
+//	if(gxQueueSet == NULL)
+//    {
+//        /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
+//         AppPrintf("创建QueuSet失败\r\n");
+//    }
+
+
 	/* 创建事件标志组 */
 	xCreatedEventGroup = xEventGroupCreate();
 	
@@ -175,6 +186,12 @@ static void AppObjCreate (void)
         AppPrintf("创建xTransQueue2消息队列失败!\r\n");
     }	
 
+
+    /* 添加到queue set时，消息队列和信号量必须为空*/
+    /* 添加消息队列和信号量到Queue Set */
+//    #define configUSE_QUEUE_SETS 1    
+//    xQueueAddToSet(gxMotorCtrlQueue, gxQueueSet);
+//    xQueueAddToSet(gxMotorSecDoorCtrlQueue, gxQueueSet);
 }
 
 /*

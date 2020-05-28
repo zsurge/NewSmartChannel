@@ -31,7 +31,7 @@
  * 宏定义                                       *
  *----------------------------------------------*/
  
-#define DEBUG_PRINT
+//#define DEBUG_PRINT
  
 #define setbit(x,y) x|=(1<<y)         //将X的第Y位置1    
 #define clrbit(x,y) x&=~(1<<y)        //将X的第Y位清0
@@ -71,6 +71,9 @@ uint8_t is_bit_set(uint16_t      value, uint16_t bit);
 void int2Str(uint8_t* str, int32_t intnum);
 int32_t str2int(const char* str);
 uint8_t bcd2byte(uint8_t ucBcd);
+
+void split(char *src,const char *separator,char **dest,int *num);
+int StrReplace(char strRes[],char from[], char to[]);
 
 
 

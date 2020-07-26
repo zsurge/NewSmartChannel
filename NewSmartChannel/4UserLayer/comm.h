@@ -87,7 +87,7 @@
 
 #define MAX_RXD_BUF_LEN        			512
 #define MAX_TXD_BUF_LEN					512   
-#define MAX_CMD_BUF_LEN					256  
+#define MAX_CMD_BUF_LEN					512  
 
 //#define USEQUEUE
 
@@ -141,9 +141,6 @@ typedef struct
     uint16_t RxdTotalLen;               //接收包数据长度
     volatile uint8_t RxdBuf[MAX_RXD_BUF_LEN];   //接收包数据缓存
 }RECVHOST_T;
-
-
-
 
 
 

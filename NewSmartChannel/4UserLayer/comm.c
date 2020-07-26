@@ -657,7 +657,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     uint16_t i = 0;
     uint16_t json_len = 0;
     uint8_t TxdBuf[JSON_PACK_MAX]={0};
-    uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
+    uint8_t tmpBuf[JSON_PACK_MAX] = {0};
     uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
 

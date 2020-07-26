@@ -1060,7 +1060,7 @@ void vTaskReader(void *pvParameters)
 
 void vTaskQR(void *pvParameters)
 { 
-    uint8_t recv_buf[256] = {0};
+    uint8_t recv_buf[512] = {0};
     uint16_t len = 0;  
     
 //    uint32_t FunState = 0;

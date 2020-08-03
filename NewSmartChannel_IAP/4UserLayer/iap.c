@@ -47,8 +47,15 @@ uint8_t IAP_JumpToApplication(void)
 //void IAP_JumpToApplication(void)
 {
     uint32_t JumpAddress = 0;//Ìø×ªµØÖ·
+
+
+//    uint32_t tmp = (* (volatile uint32_t*) APPLICATION_ADDRESS);
+
+//    printf("dec = %d,hex = %x ;\r\n\r\n",tmp,tmp);
     
     if ( ( (* (volatile uint32_t*) APPLICATION_ADDRESS) & 0x2FFE0000 ) == 0x20000000)
+    
+//    if ( ( tmp & 0x2FFE0000 ) == 0x20000000)
     {
 		/* Jump to user application */
 		JumpAddress = *(volatile uint32_t*) (APPLICATION_ADDRESS + 4);

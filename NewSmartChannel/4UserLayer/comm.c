@@ -204,7 +204,7 @@ void deal_rx_data(void)
     uint8_t json_buf[JSON_PACK_MAX] = {0};
     CMD_RX_T cmd_rx;
 
-    memset(&cmd_rx,0x00,sizeof(cmd_rx));  
+    memset(&cmd_rx,0x00,sizeof(CMD_RX_T));  
     
     if (FINISH == gRecvHost.RxdFrameStatus)
     {        
@@ -272,14 +272,14 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
 
     memset(tmpBuf,0x00,sizeof(tmpBuf));
     memset(TxdBuf,0x00,sizeof(TxdBuf));
-    memset(&cmd_tx,0x00,sizeof(cmd_tx));
-
+    memset(&cmd_tx,0x00,sizeof(CMD_TX_T)); 
+    
     i = 3;
     TxdBuf[0] = STX;
     cmd_tx.cmd = cmd;
     cmd_tx.code = 0;
     
-    bcd2asc(cmd_tx.data, buf, len*2, 0);        
+    bcd2asc(cmd_tx.data, buf, len*2, 1); 
     json_len = packetJSON(&cmd_tx,tmpBuf);  
     if(json_len == 0)
     {        
@@ -334,6 +334,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     if (root == NULL)                 // 如果转化错误，则报错退出
     {
         DBG("1.Error before: [%s]\n", cJSON_GetErrorPtr());
+          cJSON_Delete(root);
         return CJSON_PARSE_ERR;
     }
 
@@ -342,6 +343,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     if(cmd_rx->cmd_desc == NULL)
     {
         DBG("2.Error before: [%s]\n", cJSON_GetErrorPtr());
+        cJSON_Delete(root);
         return CJSON_GETITEM_ERR;
     }
 
@@ -351,6 +353,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     if(cmd == NULL)
     {
         DBG("3.Error before: [%s]\n", cJSON_GetErrorPtr());
+          cJSON_Delete(root);
         return CJSON_GETITEM_ERR;
     }    
 
@@ -358,12 +361,13 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     if(tmpCmd == NULL)
     {
         DBG("3.Error before: [%s]\n", cJSON_GetErrorPtr());
+        cJSON_Delete(root);
         return CJSON_GETITEM_ERR;
     }      
 
     strcpy((char *)asc_dat,(char *)tmpCmd);
     
-    asc2bcd(bcd_cmd, asc_dat, strlen((const char*)asc_dat), 0);
+    asc2bcd(bcd_cmd, asc_dat, strlen((const char*)asc_dat), 1);
 
     //目前指令只有1byte 所以直接赋值
     cmd_rx->cmd = bcd_cmd[0];
@@ -410,6 +414,7 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
 
     if (root == NULL)                 // 如果转化错误，则报错退出
     {
+        cJSON_Delete(root);
         return 0;
     }
 
@@ -426,6 +431,7 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
 
     if(TxdBuf == NULL)
     {
+        cJSON_Delete(root);
         return 0;
     }
 
@@ -514,7 +520,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
     uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
     
-    memset(&cmd_tx,0x00,sizeof(cmd_tx));
+    memset(&cmd_tx,0x00,sizeof(CMD_TX_T));
     memset(TxdBuf,0x00,sizeof(TxdBuf));
     
     switch (cmd_rx->cmd)
@@ -663,7 +669,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
 
     memset(tmpBuf,0x00,sizeof(tmpBuf));
     memset(TxdBuf,0x00,sizeof(TxdBuf));
-    memset(&cmd_tx,0x00,sizeof(cmd_tx));
+    memset(&cmd_tx,0x00,sizeof(CMD_TX_T));
 
     i = 3;
     TxdBuf[0] = STX;

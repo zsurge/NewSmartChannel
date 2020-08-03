@@ -44,7 +44,7 @@
 #define ADDR_FLASH_SECTOR_11    ((uint32_t)0x080E0000) /* Base @ of Sector 11, 128 Kbyte */
 
 //片内FLASH结束地址 128K
-#define USER_FLASH_END_ADDRESS        0x080FFFFF
+#define USER_FLASH_END_ADDRESS        0x0801FFFF
 
 //APP大小
 #define USER_FLASH_SIZE   (USER_FLASH_END_ADDRESS - APPLICATION_ADDRESS + 1)

@@ -54,6 +54,13 @@ static void vTaskUpdate(void *pvParameters)
 
         //打印下参数，DEBUG时使用，RELEASE里需删除
         //ef_print_env();
+        
+//        ef_set_env("WSPIFLASH", W_SPI_FLASH_OK);
+//        ef_set_env("WMCUFLASH", W_MCU_FLASH_OK);  
+//        ef_set_env("WSPIFLASH", "1235");
+//        ef_set_env("WMCUFLASH", "1235");  
+//        while(1);
+
 
         //读取升级标志位
         spi_flash_value = ef_get_env("WSPIFLASH");

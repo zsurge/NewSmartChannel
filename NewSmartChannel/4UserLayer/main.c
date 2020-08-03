@@ -459,11 +459,6 @@ static void vTaskStart(void *pvParameters)
 }
 
 
-
-
-
-
-
 //²éÑ¯µç»ú×´Ì¬
 void vTaskQueryMotor(void *pvParameters)
 {

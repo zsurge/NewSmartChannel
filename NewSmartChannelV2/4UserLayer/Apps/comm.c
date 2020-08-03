@@ -202,7 +202,7 @@ void deal_rx_data(void)
     uint8_t json_buf[JSON_PACK_MAX] = {0};
     CMD_RX_T cmd_rx;
 
-    memset(&cmd_rx,0x00,sizeof(cmd_rx));  
+    memset(&cmd_rx,0x00,sizeof(CMD_RX_T));  
     
     if (FINISH == gRecvHost.RxdFrameStatus)
     {        
@@ -315,13 +315,12 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
 {
     cJSON  *root = NULL;			                    // root    
     cJSON  *cmd = NULL;			                        // cmd     
+    cJSON  *tmpJson = NULL;			                    // cmd
     SYSERRORCODE_E result = NO_ERR;
     
     uint8_t bcd_cmd[2] = {0};
-    uint8_t bcd_dat[MAX_CMD_BUF_LEN] = {0};
-    uint8_t asc_dat[MAX_RXD_BUF_LEN] = {0};
-    uint8_t *tmpCmd = NULL;
-    uint8_t *tmpdat = NULL;
+    uint8_t bcd_dat[MAX_CMD_BCD_BUF_LEN] = {0};
+    uint8_t asc_dat[MAX_CMD_BUF_LEN] = {0};
     uint16_t asc_len = 0;  
     
     root = cJSON_Parse((const char*)text);
@@ -329,44 +328,64 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     if (root == NULL)                 // 如果转化错误，则报错退出
     {
         DBG("1.Error before: [%s]\n", cJSON_GetErrorPtr());
+          cJSON_Delete(root);
         return CJSON_PARSE_ERR;
     }
 
     //获取KEY,指令描述
-    cmd_rx->cmd_desc = (uint8_t *)cJSON_GetObjectItem(root,"cmd")->valuestring;  
-    if(cmd_rx->cmd_desc == NULL)
+//    cmd_rx->cmd_desc = (uint8_t *)cJSON_GetObjectItem(root,"cmd")->valuestring;  
+    
+    tmpJson = cJSON_GetObjectItem(root,"cmd");
+    if(tmpJson == NULL)
     {
         DBG("2.Error before: [%s]\n", cJSON_GetErrorPtr());
+        cJSON_Delete(root);
         return CJSON_GETITEM_ERR;
     }
+    
+    strcpy(cmd_rx->cmd_desc,tmpJson->valuestring);  
 
-
+    DBG("cmd_rx->cmd_desc = %s\r\n",cmd_rx->cmd_desc);
+    
     //获取指令字
     cmd = cJSON_GetObjectItem(root,"value"); 
     if(cmd == NULL)
     {
         DBG("3.Error before: [%s]\n", cJSON_GetErrorPtr());
+          cJSON_Delete(root);
         return CJSON_GETITEM_ERR;
-    }    
-
-    tmpCmd = (uint8_t *)cJSON_GetObjectItem(cmd,(const char*)cmd_rx->cmd_desc)->valuestring; 
-    if(tmpCmd == NULL)
+    } 
+    
+    tmpJson = cJSON_GetObjectItem(cmd,(const char*)cmd_rx->cmd_desc);
+    
+    if(tmpJson == NULL)
     {
         DBG("3.Error before: [%s]\n", cJSON_GetErrorPtr());
+        cJSON_Delete(root);
         return CJSON_GETITEM_ERR;
     }      
 
-    strcpy((char *)asc_dat,(char *)tmpCmd);
+    strcpy((char *)asc_dat,tmpJson->valuestring);
+
+    DBG("cmd len = %d,cmd = %s\r\n",strlen((const char*)asc_dat),asc_dat);
     
-    asc2bcd(bcd_cmd, asc_dat, strlen((const char*)asc_dat), 1); 
+    asc2bcd(bcd_cmd, asc_dat, 2, 1); 
 
     //目前指令只有1byte 所以直接赋值
-    cmd_rx->cmd = bcd_cmd[0];    
+    cmd_rx->cmd = bcd_cmd[0];
 
-    tmpdat = (uint8_t *)cJSON_GetObjectItem(root,"data")->valuestring;  
-
-    asc_len = strlen((const char*)tmpdat);
+    //获取数据
+    tmpJson = cJSON_GetObjectItem(root,"data");
     
+    if(tmpJson == NULL)
+    {
+        DBG("3.Error before: [%s]\n", cJSON_GetErrorPtr());
+          cJSON_Delete(root);
+        return CJSON_GETITEM_ERR;
+    }       
+
+    asc_len = strlen((const char*)tmpJson->valuestring);
+
     //若是有数据，则转换;无数据则不处理
     if(asc_len > 0)
     {
@@ -374,24 +393,21 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
         {
             asc_len += 1;
         }
+        
         if(cmd_rx->cmd == SET_MOTOR_A_PARAM || cmd_rx->cmd == SET_MOTOR_B_PARAM)
         {
-            memcpy(cmd_rx->cmd_data,tmpdat,strlen((const char*)tmpdat));
-            cmd_rx->len = strlen((const char*)tmpdat);
+            memcpy(cmd_rx->cmd_data,tmpJson->valuestring,asc_len);
+            cmd_rx->len = strlen((const char*)tmpJson->valuestring);
         }
         else
         {
-            asc2bcd(bcd_dat,tmpdat,strlen((const char*)tmpdat),1);
+            asc2bcd(bcd_dat,tmpJson->valuestring,asc_len,1);
             memcpy(cmd_rx->cmd_data,bcd_dat,asc_len/2);
             cmd_rx->len = asc_len/2;
         }
     }
 
     cJSON_Delete(root);
-
-    my_free(cmd);
-    my_free(tmpCmd);
-    my_free(tmpdat);
     
     return result;
 
@@ -406,9 +422,9 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
     uint16_t len = 0;//返回json的长度
 
     uint8_t tmp_code = cmd_tx->code;
-    uint8_t tmpCmddata[MAX_CMD_BUF_LEN] = {0}; 
+//    uint8_t tmpCmddata[MAX_CMD_BUF_LEN] = {0}; 
     
-    memset(tmpCmddata,0x00,sizeof(tmpCmddata));
+//    memset(tmpCmddata,0x00,sizeof(tmpCmddata));
     root=cJSON_CreateObject(); // 创建root对象，返回值为cJSON指针
 
     if (root == NULL)                 // 如果转化错误，则报错退出
@@ -418,18 +434,21 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
     }
 
     //这里若是不中转则，JSON打包的数据会变，原因未知  2019.07.12 surge
-    memcpy(tmpCmddata,cmd_tx->data,strlen((const char*)cmd_tx->data));
+//    memcpy(tmpCmddata,cmd_tx->data,strlen((const char*)cmd_tx->data));
     
     sprintf(TxdBuf,"%02x",cmd_tx->cmd);
     
     cJSON_AddStringToObject(root,"cmd",TxdBuf);
     cJSON_AddNumberToObject(root,"code",tmp_code);
-    cJSON_AddStringToObject(root,"data",(const char*)tmpCmddata);   
+//    cJSON_AddStringToObject(root,"data",(const char*)tmpCmddata);   
+    cJSON_AddStringToObject(root,"data",(const char*)cmd_tx->data);   
+    
 
     TxdBuf = cJSON_PrintUnformatted(root); 
 
     if(TxdBuf == NULL)
     {
+        cJSON_Delete(root);
         return 0;
     }
 
@@ -456,6 +475,7 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
 
     if (root == NULL||dataobj == NULL)                 // 如果转化错误，则报错退出
     {
+        cJSON_Delete(root);
         return CJSON_CREATE_ERR;//直接返回一个较大的值，超出数组长度
     }
 
@@ -475,6 +495,7 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
 
     if(TxdBuf == NULL)
     {
+        cJSON_Delete(root);
         return 0;
     }    
 
@@ -535,7 +556,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
     ptSecMotor->cmd = 0;
     memset(ptSecMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN);     
     
-    memset(&cmd_tx,0x00,sizeof(cmd_tx));
+    memset(&cmd_tx,0x00,sizeof(CMD_TX_T));
     memset(TxdBuf,0x00,sizeof(TxdBuf));
     
     switch (cmd_rx->cmd)

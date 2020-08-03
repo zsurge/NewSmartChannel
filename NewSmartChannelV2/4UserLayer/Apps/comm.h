@@ -81,7 +81,11 @@
 
 #define MAX_RXD_BUF_LEN        			512
 #define MAX_TXD_BUF_LEN					512   
-#define MAX_CMD_BUF_LEN					256  
+#define MAX_CMD_BUF_LEN					512  
+#define MAX_CMD_BCD_BUF_LEN				256  
+
+#define MAX_HOST_CMD_LEN			    256 
+#define MAX_CMD_DESC_LEN			    20 
 
 #define MAX_EXLED_LEN                   0x0F
 
@@ -98,7 +102,7 @@
 typedef struct
 {
     uint8_t cmd;     //指令字
-    uint8_t *cmd_desc;//指令描述    
+    uint8_t cmd_desc[MAX_CMD_DESC_LEN];//指令描述    
     uint8_t len;
     uint8_t cmd_data[MAX_CMD_BUF_LEN];//指令内容(若有)
 }CMD_RX_T;
@@ -120,7 +124,7 @@ typedef struct
     uint8_t RxdFrameStatus;            //接收包状态
     uint16_t NowLen;                    //接收字节数
     uint16_t RxdTotalLen;               //接收包数据长度
-    volatile uint8_t RxdBuf[MAX_RXD_BUF_LEN];   //接收包数据缓存
+    volatile uint8_t RxdBuf[MAX_HOST_CMD_LEN];   //接收包数据缓存
 }RECVHOST_T;
 
 static RECVHOST_T gRecvHost;

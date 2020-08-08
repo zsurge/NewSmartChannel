@@ -17,6 +17,10 @@
 #include "string.h"
 #include "stm32f4xx_conf.h"
 
+#define STEP1   0
+#define STEP2   10
+#define STEP3   20
+
 
 #define  USE_FreeRTOS      1
 
@@ -138,6 +142,18 @@ typedef struct
 	void (*SendOver)(void); 	/* 发送完毕的回调函数指针（主要用于RS485将发送模式切换为接收模式） */
 	void (*ReciveNew)(uint8_t _byte);	/* 串口收到数据的回调函数指针 */
 }UART_T;
+
+typedef struct FROMHOST
+{
+    uint8_t rxStatus;                   //接收状态
+    uint8_t rxCRCHi;                      //校验值.
+    uint8_t rxCRCLow;                      //校验值    
+    uint8_t rxLen;                     //需要接收的字节长度
+    uint8_t rxCnt;                     //已接收字节数  
+    uint8_t rxBuff[8];                 //接收字节
+}FROMHOST_STRU;
+
+uint8_t deal_motor_Parse(COM_PORT_E _ucPort,FROMHOST_STRU *rxFromDev);
 
 void bsp_InitUart(void);
 void comSendBuf(COM_PORT_E _ucPort, uint8_t *_ucaBuf, uint16_t _usLen);

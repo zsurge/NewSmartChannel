@@ -147,8 +147,7 @@ void deal_Serial_Parse(void)
                     gRecvHost.RxdTotalLen = gRecvHost.NowLen;
                     gRecvHost.RxdFrameStatus = FINISH;                    
                     gRecvHost.RxdStatus = 0;
-                    
-//                    dbh("recv finish",(char *)gRecvHost.RxdBuf,gRecvHost.RxdTotalLen);
+                   
                     break;
                 }
                 else
@@ -278,7 +277,8 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     cmd_tx.code = 0;
     
     bcd2asc(cmd_tx.data, buf, len*2, 1); 
-    json_len = packetJSON(&cmd_tx,tmpBuf);  
+    json_len = packetJSON(&cmd_tx,tmpBuf);
+    
     if(json_len == 0)
     {        
         return CJSON_PACKET_ERR;
@@ -320,17 +320,19 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     
     uint8_t bcd_cmd[2] = {0};
     uint8_t bcd_dat[MAX_CMD_BCD_BUF_LEN] = {0};
-    uint8_t asc_dat[MAX_CMD_BUF_LEN] = {0};
+    uint8_t asc_dat[2] = {0};
     uint16_t asc_len = 0;  
     
     root = cJSON_Parse((const char*)text);
 
     if (root == NULL)                 // 如果转化错误，则报错退出
     {
-        DBG("1.Error before: [%s]\n", cJSON_GetErrorPtr());
-          cJSON_Delete(root);
+        DBG("1.Error before: [%s]\r\n", cJSON_GetErrorPtr());
+        cJSON_Delete(root);
         return CJSON_PARSE_ERR;
     }
+
+    DBG("json data = %s\r\n",text);
 
     //获取KEY,指令描述
 //    cmd_rx->cmd_desc = (uint8_t *)cJSON_GetObjectItem(root,"cmd")->valuestring;  
@@ -338,7 +340,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     tmpJson = cJSON_GetObjectItem(root,"cmd");
     if(tmpJson == NULL)
     {
-        DBG("2.Error before: [%s]\n", cJSON_GetErrorPtr());
+        DBG("2.Error before: [%s]\r\n", cJSON_GetErrorPtr());
         cJSON_Delete(root);
         return CJSON_GETITEM_ERR;
     }
@@ -351,7 +353,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     cmd = cJSON_GetObjectItem(root,"value"); 
     if(cmd == NULL)
     {
-        DBG("3.Error before: [%s]\n", cJSON_GetErrorPtr());
+        DBG("3.Error before: [%s]\r\n", cJSON_GetErrorPtr());
           cJSON_Delete(root);
         return CJSON_GETITEM_ERR;
     } 
@@ -360,7 +362,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     
     if(tmpJson == NULL)
     {
-        DBG("3.Error before: [%s]\n", cJSON_GetErrorPtr());
+        DBG("3.Error before: [%s]\r\n", cJSON_GetErrorPtr());
         cJSON_Delete(root);
         return CJSON_GETITEM_ERR;
     }      
@@ -377,35 +379,34 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     //获取数据
     tmpJson = cJSON_GetObjectItem(root,"data");
     
-    if(tmpJson == NULL)
+    if(tmpJson != NULL)
     {
-        DBG("3.Error before: [%s]\n", cJSON_GetErrorPtr());
-          cJSON_Delete(root);
-        return CJSON_GETITEM_ERR;
+        asc_len = strlen((const char*)tmpJson->valuestring);
+
+        //若是有数据，则转换;无数据则不处理
+        if(asc_len > 0)
+        {
+            if(asc_len % 2 != 0)
+            {
+                asc_len += 1;
+            }
+            
+            if(cmd_rx->cmd == SET_MOTOR_A_PARAM || cmd_rx->cmd == SET_MOTOR_B_PARAM)
+            {
+                memcpy(cmd_rx->cmd_data,tmpJson->valuestring,asc_len);
+                cmd_rx->len = strlen((const char*)tmpJson->valuestring);
+            }
+            else
+            {
+                asc2bcd(bcd_dat,tmpJson->valuestring,asc_len,1);
+                memcpy(cmd_rx->cmd_data,bcd_dat,asc_len/2);
+                cmd_rx->len = asc_len/2;
+            }
+        }
+
     }       
 
-    asc_len = strlen((const char*)tmpJson->valuestring);
 
-    //若是有数据，则转换;无数据则不处理
-    if(asc_len > 0)
-    {
-        if(asc_len % 2 != 0)
-        {
-            asc_len += 1;
-        }
-        
-        if(cmd_rx->cmd == SET_MOTOR_A_PARAM || cmd_rx->cmd == SET_MOTOR_B_PARAM)
-        {
-            memcpy(cmd_rx->cmd_data,tmpJson->valuestring,asc_len);
-            cmd_rx->len = strlen((const char*)tmpJson->valuestring);
-        }
-        else
-        {
-            asc2bcd(bcd_dat,tmpJson->valuestring,asc_len,1);
-            memcpy(cmd_rx->cmd_data,bcd_dat,asc_len/2);
-            cmd_rx->len = asc_len/2;
-        }
-    }
 
     cJSON_Delete(root);
     
@@ -502,7 +503,7 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
     strcpy((char *)command_data,TxdBuf);
 
 
-    DBG("send json data = %s\r\n",TxdBuf);
+//    DBG("send json data = %s\r\n",TxdBuf);
 
     len = strlen((const char*)TxdBuf);
 
@@ -540,18 +541,13 @@ void send_to_device(CMD_RX_T *cmd_rx)
     uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
     
-    MOTORCTRL_QUEUE_T *ptMotor; 
-    MOTORCTRL_QUEUE_T *ptSecMotor; 
-    
-	/* 初始化结构体指针 */
-	ptMotor = &gMotorCtrlQueue;
+    MOTORCTRL_QUEUE_T *ptMotor = &gMotorCtrlQueue; 
+    MOTORCTRL_QUEUE_T *ptSecMotor = &gSecMotorCtrlQueue;  
 
     /* 清零 */
     ptMotor->cmd = 0;
-    memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN); 	
-
-	/* 初始化结构体指针 */
-	ptSecMotor = &gSecMotorCtrlQueue;
+    memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN); 
+    
     /* 清零 */
     ptSecMotor->cmd = 0;
     memset(ptSecMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN);     
@@ -664,7 +660,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 			/* 使用消息队列实现指针变量的传递 */
 			if(xQueueSend(gxMotorCtrlQueue,             /* 消息队列句柄 */
 						 (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
-						 (TickType_t)100) != pdPASS )
+						 (TickType_t)50) != pdPASS )
 			{
                 xQueueReset(gxMotorCtrlQueue);
             } 
@@ -682,7 +678,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 			/* 使用消息队列实现指针变量的传递 */
 			if(xQueueSend(gxMotorSecDoorCtrlQueue,      /* 消息队列句柄 */
 						 (void *) &ptSecMotor,             /* 发送结构体指针变量ptReader的地址 */
-						 (TickType_t)100) != pdPASS )
+						 (TickType_t)50) != pdPASS )
 			{
                 xQueueReset(gxMotorSecDoorCtrlQueue);
 //                DBG("B the queue is full!\r\n");                             
@@ -711,6 +707,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
     }
 
 
+//    dbh("send_to_device", TxdBuf, i);
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
         BSP_UartSend(SCOM1,TxdBuf,i); 
@@ -839,6 +836,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     TxdBuf[i++] = iCRC & 0xff;  
 
 
+//    dbh("SendAsciiCodeToHost", TxdBuf, i);
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
@@ -849,6 +847,24 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     
     return result;
 }
+
+
+void respondLed(void)
+{    
+    uint8_t retLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0x85,0x7a };
+
+
+    DBG("SEND LED RESPOND\r\n\r\n");
+    
+    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+    {
+        BSP_UartSend(SCOM1,retLed,39); 
+    }
+    
+    xSemaphoreGive(gxMutex); 
+}
+
+
 
 
 

@@ -140,6 +140,7 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len);
 void send_to_device(CMD_RX_T *cmd_rx);
 SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf);
 
+void respondLed(void);
 
 #endif
 

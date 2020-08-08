@@ -1601,4 +1601,82 @@ void USART6_IRQHandler(void)
 
 
 
+uint8_t deal_motor_Parse(COM_PORT_E _ucPort,FROMHOST_STRU *rxFromDev)
+{
+    uint8_t ch = 0;
+    uint16_t iCRC = 0;
+    uint8_t crcBuf[2] = {0};
+
+    FROMHOST_STRU rxFromHost;
+
+    memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));
+    
+    
+    while(RS485_Recv(_ucPort,&ch,1))
+    {
+       switch (rxFromHost.rxStatus)
+        {                
+            case STEP1:
+                if(0x01 == ch) /*接收包头*/
+                {
+                    rxFromHost.rxBuff[0] = ch;                    
+                    rxFromHost.rxCnt = 1;
+                    rxFromHost.rxStatus = STEP2;
+                }
+
+                break;
+           case STEP2:
+                if(0x03 == ch || 0x06 == ch) //判定第二个字节是否是需要的字节，若多梯联动时需读取拨码开关的值
+                {
+                    rxFromHost.rxBuff[1] = ch;
+                    if(ch == 0x03)
+                    {
+                        rxFromHost.rxLen = 7;
+                    }
+                    else if(ch == 0x06)
+                    {
+                        rxFromHost.rxLen = 8;
+                    }
+                    else
+                    {
+                        rxFromHost.rxLen = 7;
+                    }
+                    
+                    rxFromHost.rxCnt = 2;
+                    rxFromHost.rxStatus = STEP3;                
+                }
+                else
+                {                
+                   memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));                   
+                }
+                break;           
+            default:      /* 接收整个数据包 */
+            
+                rxFromHost.rxBuff[rxFromHost.rxCnt++] = ch;
+                
+                if(rxFromHost.rxCnt == rxFromHost.rxLen)
+                {  
+                    
+                    iCRC = CRC16_Modbus(rxFromHost.rxBuff, rxFromHost.rxCnt-2);  
+
+                    crcBuf[0] = iCRC >> 8;
+                    crcBuf[1] = iCRC & 0xff;  
+            
+                    if(crcBuf[1] == rxFromHost.rxBuff[rxFromHost.rxCnt-2] && crcBuf[0] == rxFromHost.rxBuff[rxFromHost.rxCnt-1])
+                    { 
+                        *rxFromDev = rxFromHost;
+                        
+                        return rxFromHost.rxCnt;                         
+                    }  
+                    memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));
+                }              
+                break;
+         }
+         
+    }   
+
+    return 0;
+}
+
+
 

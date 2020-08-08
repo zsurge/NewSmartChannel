@@ -78,7 +78,7 @@ void bsp_Ex_LED_Init(void)
 
 void bsp_Ex_SetLed(uint8_t *dat)
 {
-    uint8_t buf[64] = {0};
+    uint8_t buf[16] = {0};
 
     if(!dat)
     {

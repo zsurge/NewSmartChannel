@@ -41,12 +41,10 @@
 #define USART5_TX_SOURCE                   GPIO_PinSource12
 
 
-#define RS485_U5_RX_EN()	    GPIOG->BSRRH = GPIO_Pin_0
-#define RS485_U5_TX_EN()	    GPIOG->BSRRL = GPIO_Pin_0
-
+#define RS485_U5_RX_EN()	    GPIOD->BSRRH = GPIO_Pin_7
+#define RS485_U5_TX_EN()	    GPIOD->BSRRL = GPIO_Pin_7
 
 #define USART5MAXBUFFSIZE 1024
-extern volatile uint8_t Motro_B;
 
 
 

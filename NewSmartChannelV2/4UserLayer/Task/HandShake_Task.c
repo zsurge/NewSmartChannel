@@ -51,7 +51,9 @@ void vTaskHandShake(void *pvParameters)
 
     uint32_t i_boot_times = NULL;
     char *c_old_boot_times, c_new_boot_times[12] = {0};
-    uint8_t bcdbuf[6] = {0};
+    uint8_t bcdbuf[6] = {0x00,0x00,0x00,0x01,0x02,0x03};
+
+#if 0
 
     /* get the boot count number from Env */
     c_old_boot_times = ef_get_env((const char*)"boot_times");
@@ -70,6 +72,8 @@ void vTaskHandShake(void *pvParameters)
     ef_set_env("boot_times", c_new_boot_times);    
 
     asc2bcd(bcdbuf,(uint8_t *)c_new_boot_times , 12, 1);
+
+#endif
 
     send_to_host(HANDSHAKE,bcdbuf,6);  
 

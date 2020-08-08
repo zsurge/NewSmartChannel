@@ -24,7 +24,6 @@ volatile uint8_t USART5RecvBuf[USART5MAXBUFFSIZE] = {0};
 volatile uint16_t RecvTop5 = 0;
 volatile uint16_t RecvEnd5 = 0;
 
-volatile uint8_t Motro_B = 0;
 
 
 
@@ -52,8 +51,8 @@ void bsp_Usart5_Init (uint32_t BaudRate)
 
 
 	RCC_APB1PeriphClockCmd(USART5_CLK,ENABLE); //使能GPIOA时钟
-	RCC_AHB1PeriphClockCmd(USART5_GPIO_RX_CLK|USART5_GPIO_TX_CLK|RCC_AHB1Periph_GPIOG,ENABLE);//使能Usart5时钟 
-    
+	RCC_AHB1PeriphClockCmd(USART5_GPIO_RX_CLK|USART5_GPIO_TX_CLK,ENABLE);//使能Usart5时钟
+ 
 	//串口1对应引脚复用映射
 	GPIO_PinAFConfig(USART5_GPIO_TX_PORT,USART5_TX_SOURCE,USART5_TX_AF); //GPIOB10复用为USART3
 	GPIO_PinAFConfig(USART5_GPIO_RX_PORT,USART5_RX_SOURCE,USART5_RX_AF); //GPIOB11复用为USART3
@@ -74,13 +73,12 @@ void bsp_Usart5_Init (uint32_t BaudRate)
 	GPIO_Init(USART5_GPIO_TX_PORT,&GPIO_InitStructure); //初始化PB10，PB11
 
 
-   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;       /* 设为输出口 */
-   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;      /* 设为推挽 */
-   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;    /* 无上拉电阻 */
-   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;  /* IO口最大速度 */
-   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
-   GPIO_Init(GPIOG, &GPIO_InitStructure); 
-   
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;		/* 设为输出口 */
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;		/* 设为推挽 */
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;	/* 无上拉电阻 */
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	/* IO口最大速度 */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);   
 
 
    //USART3 初始化设置
@@ -95,7 +93,7 @@ void bsp_Usart5_Init (uint32_t BaudRate)
 	//USART3 NVIC 配置
 	NVIC_InitStructure.NVIC_IRQChannel = UART5_IRQn;//串口3中断通道
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;//抢占优先级3
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority =4;		//子优先级3
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority =3;		//子优先级3
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			//IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化VIC寄存器
 	
@@ -111,7 +109,6 @@ void bsp_Usart5_Init (uint32_t BaudRate)
 void UART5_IRQHandler (void)
 {
 	uint8_t temp = 0;
-    Motro_B = 1;
 
 	//Receive data register not empty flag
 	if (USART_GetITStatus (UART5, USART_IT_RXNE) != RESET)

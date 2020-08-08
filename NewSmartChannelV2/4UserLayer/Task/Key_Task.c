@@ -171,6 +171,9 @@ static void optDoor(uint8_t motorNo)
         {
             memcpy(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN); 
         }
+
+        isFirstOpen = !isFirstOpen;
+                
     
         /* 使用消息队列实现指针变量的传递 */
         if(xQueueSend(gxMotorCtrlQueue,             /* 消息队列句柄 */
@@ -180,7 +183,7 @@ static void optDoor(uint8_t motorNo)
             xQueueReset(gxMotorCtrlQueue);            
         }   
 
-        isFirstOpen = !isFirstOpen;
+
     }
     else
     {
@@ -194,6 +197,9 @@ static void optDoor(uint8_t motorNo)
         {
             memcpy(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN); 
         }
+
+        
+        isSecondOpen = !isSecondOpen;
         
         /* 使用消息队列实现指针变量的传递 */
         if(xQueueSend(gxMotorSecDoorCtrlQueue,      /* 消息队列句柄 */
@@ -203,7 +209,6 @@ static void optDoor(uint8_t motorNo)
             xQueueReset(gxMotorSecDoorCtrlQueue);
         }
 
-        isSecondOpen = !isSecondOpen;
 
     }
 }

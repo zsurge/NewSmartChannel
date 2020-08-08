@@ -46,14 +46,14 @@
 #define TASK_BIT_ALL ( TASK_BIT_0 | TASK_BIT_1 | TASK_BIT_2 |TASK_BIT_3|TASK_BIT_4|TASK_BIT_5|TASK_BIT_6|TASK_BIT_7)
 
 //读取电机状态最大次数
-#define READ_MOTOR_STATUS_TIMES 5
+#define READ_MOTOR_STATUS_TIMES 40
 
 
 #define MOTORCTRL_QUEUE_LEN    20     /* 队列的长度，最大可包含多少个消息 */
 #define MOTORCTRL_QUEUE_BUF_LEN 8     //每个队列buff的长度
 
 
-#define COMBINED_LENGTH (MOTORCTRL_QUEUE_LEN + MOTORCTRL_QUEUE_LEN) /* 添加到Queue Set的总长度 */
+//#define COMBINED_LENGTH (MOTORCTRL_QUEUE_LEN + MOTORCTRL_QUEUE_LEN) /* 添加到Queue Set的总长度 */
 
 
 
@@ -62,6 +62,9 @@ typedef struct
     uint8_t cmd;                                    //指令字
     uint8_t data[MOTORCTRL_QUEUE_BUF_LEN];          //需要发送给android板的数据
 }MOTORCTRL_QUEUE_T;
+
+
+
 
 /*----------------------------------------------*
  * 常量定义                                     *

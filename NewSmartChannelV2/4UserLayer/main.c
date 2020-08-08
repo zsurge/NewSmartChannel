@@ -102,7 +102,7 @@ static void AppTaskCreate (void)
     CreateMotorCtrlSecDoorTask();    
 
     //监控任务
-    CreateMonitorTask();
+//    CreateMonitorTask();
 
     //按键处理
     CreateKeyTask();

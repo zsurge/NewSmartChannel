@@ -49,8 +49,8 @@ static void vTaskHandShake(void *pvParameters);
 void vTaskHandShake(void *pvParameters)
 {
 
-    uint32_t i_boot_times = NULL;
-    char *c_old_boot_times, c_new_boot_times[12] = {0};
+//    uint32_t i_boot_times = NULL;
+//    char *c_old_boot_times, c_new_boot_times[12] = {0};
     uint8_t bcdbuf[6] = {0x00,0x00,0x00,0x01,0x02,0x03};
 
 #if 0

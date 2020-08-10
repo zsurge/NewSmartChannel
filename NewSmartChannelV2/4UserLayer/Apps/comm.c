@@ -345,7 +345,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
         return CJSON_GETITEM_ERR;
     }
     
-    strcpy(cmd_rx->cmd_desc,tmpJson->valuestring);  
+    strcpy((char *)cmd_rx->cmd_desc,tmpJson->valuestring);  
 
 //    DBG("cmd_rx->cmd_desc = %s\r\n",cmd_rx->cmd_desc);
     
@@ -398,7 +398,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
             }
             else
             {
-                asc2bcd(bcd_dat,tmpJson->valuestring,asc_len,1);
+                asc2bcd(bcd_dat,(uint8_t *)tmpJson->valuestring,asc_len,1);
                 memcpy(cmd_rx->cmd_data,bcd_dat,asc_len/2);
                 cmd_rx->len = asc_len/2;
             }
@@ -836,7 +836,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     TxdBuf[i++] = iCRC & 0xff;  
 
 
-    dbh("SendAsciiCodeToHost", TxdBuf, i);
+    dbh("SendAsciiCodeToHost", (char *)TxdBuf, i);
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
@@ -878,7 +878,7 @@ void KeyOpenDoorB(void)
     xSemaphoreGive(gxMutex); 
 }
 
-void respHost(uint8_t cmd,uint8_t len)
+void respHost(uint8_t *cmd,uint8_t len)
 {
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {

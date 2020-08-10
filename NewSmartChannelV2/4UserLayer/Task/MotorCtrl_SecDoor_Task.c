@@ -64,11 +64,9 @@ void CreateMotorCtrlSecDoorTask(void)
 static void vTaskMotorCtrlSecDoor(void *pvParameters)
 {  
     BaseType_t xReturn = pdTRUE;/* 定义一个创建信息返回值，默认为pdPASS */
-    uint32_t i = 0;
-    uint8_t buf[8] = {0};
-    uint16_t readLen = 0; 
+//    uint32_t i = 0;
     
-    uint8_t resetMotor[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x06,0x08,0x0C,0x00,0x07,0x0A,0x6B };
+//    uint8_t resetMotor[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x06,0x08,0x0C,0x00,0x07,0x0A,0x6B };
     uint8_t ReadStatus[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
     FROMHOST_STRU rxFromHost;   
 
@@ -93,7 +91,6 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters)
             //消息接收成功，发送接收到的消息
 //            dbh("B queue recv",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
             RS485_SendBuf(COM5, ptMotor->data,MOTORCTRL_QUEUE_BUF_LEN);//操作B电机  
-//            bsp_Usart5_SendData(ptMotor->data,MOTORCTRL_QUEUE_BUF_LEN);
 
         }
         else
@@ -102,7 +99,6 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters)
             //发送默认数据包
             RS485_SendBuf(COM5, ReadStatus,MOTORCTRL_QUEUE_BUF_LEN);//查询B电机状态
             
-//            bsp_Usart5_SendData(ReadStatus,MOTORCTRL_QUEUE_BUF_LEN);
         }                            
 
         vTaskDelay(80);
@@ -110,7 +106,7 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters)
         if(deal_motor_Parse(COM5,&rxFromHost) != 0)
         {
 //            dbh("B send host", rxFromHost.rxBuff,rxFromHost.rxCnt);   
-            i = 0;
+//            i = 0;
             send_to_host(CONTROLMOTOR_B,rxFromHost.rxBuff,rxFromHost.rxCnt);              
             Motro_B = 0;
             memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));

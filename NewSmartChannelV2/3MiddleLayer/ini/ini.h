@@ -46,7 +46,9 @@ typedef struct
 extern ICREADER_T   gICReaderParam; 
 extern QRCODE_T     gQRCodeParam;
 
+#if 0
 void ReadIAP(void);
+#endif
 
 void RestoreDefaultSetting(void);
 

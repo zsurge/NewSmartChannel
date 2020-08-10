@@ -70,14 +70,14 @@ void CreateMotorCtrlTask(void)
 static void vTaskMotorCtrl(void *pvParameters)
 {  
     BaseType_t xReturn = pdTRUE;/* 定义一个创建信息返回值，默认为pdPASS */
-    uint32_t i = 0;
-    uint8_t buf[8] = {0};
-    uint16_t readLen = 0;
-    uint16_t iCRC = 0;
-    uint8_t crcBuf[2] = {0};
-    uint8_t CloseDoor[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
+//    uint32_t i = 0;
+//    uint8_t buf[8] = {0};
+//    uint16_t readLen = 0;
+//    uint16_t iCRC = 0;
+//    uint8_t crcBuf[2] = {0};
+//    uint8_t CloseDoor[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
     uint8_t ReadStatus[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
-    uint8_t resetMotor[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x06,0x08,0x0C,0x00,0x07,0x0A,0x6B };
+//    uint8_t resetMotor[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x06,0x08,0x0C,0x00,0x07,0x0A,0x6B };
 //    uint32_t NotifyValue = 0x55;
     FROMHOST_STRU rxFromHost;   
     MOTORCTRL_QUEUE_T *ptMotor; 
@@ -123,7 +123,7 @@ static void vTaskMotorCtrl(void *pvParameters)
         if(deal_motor_Parse(COM4,&rxFromHost) != 0)
         { 
 //            dbh("a send host", rxFromHost.rxBuff,rxFromHost.rxCnt);   
-            i = 0;
+//            i = 0;
             send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);              
             Motro_A = 0;
             memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));

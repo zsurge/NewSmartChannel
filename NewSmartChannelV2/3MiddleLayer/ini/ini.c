@@ -32,7 +32,7 @@ static SYSERRORCODE_E SaveICParam(void);
 static SYSERRORCODE_E SaveQRParam(void);
 
 
-
+#if 0
 #define SFUD_DEMO_TEST_BUFFER_SIZE 1024
 
 static uint8_t sfud_demo_test_buf[SFUD_DEMO_TEST_BUFFER_SIZE];
@@ -79,7 +79,7 @@ void ReadIAP(void)
         printf("The %s flash test is success.\r\n", flash->name);
     }
 }
-
+#endif
 
 //#define param_start_addr 0x00
 

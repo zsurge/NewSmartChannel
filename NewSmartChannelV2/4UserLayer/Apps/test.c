@@ -24,12 +24,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bsp_flash.h"
 #include "malloc.h"
 #include "tool.h"
 
 
-
+#if 0
 
 void FlashTest(void)
 {
@@ -97,7 +96,7 @@ void FlashTest(void)
     }    
 }
 
-
+#endif
 
 
 

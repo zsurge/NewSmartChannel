@@ -35,15 +35,14 @@
 
 
 //驱动层头文件
-#include "bsp_flash.h"
-#include "bsp_uart.h"
 #include "bsp_uart_fifo.h"
-#include "bsp_usart1.h"
-#include "bsp_usart2.h"
-#include "bsp_rs485.h"
-#include "bsp_usart3.h"
-#include "bsp_usart4.h"
+//#include "bsp_usart1.h"
+//#include "bsp_usart2.h"
+//#include "bsp_rs485.h"
+//#include "bsp_usart3.h"
+//#include "bsp_usart4.h"
 //#include "bsp_usart5.h"
+#include "BSP_Uart.h"
 #include "bsp_key.h"
 #include "bsp_time.h"
 #include "bsp_led.h"

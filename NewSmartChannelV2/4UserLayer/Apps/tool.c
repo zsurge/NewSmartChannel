@@ -23,7 +23,8 @@
 #include "tool.h"
 #include "stdarg.h"
 #include "stdio.h"
-#include "bsp_usart2.h"
+#include "string.h"
+
 
 /*----------------------------------------------*
  * ∫Í∂®“Â                                       *

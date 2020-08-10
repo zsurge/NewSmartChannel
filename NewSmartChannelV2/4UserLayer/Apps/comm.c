@@ -347,7 +347,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     
     strcpy(cmd_rx->cmd_desc,tmpJson->valuestring);  
 
-    DBG("cmd_rx->cmd_desc = %s\r\n",cmd_rx->cmd_desc);
+//    DBG("cmd_rx->cmd_desc = %s\r\n",cmd_rx->cmd_desc);
     
     //»ñÈ¡Ö¸Áî×Ö
     cmd = cJSON_GetObjectItem(root,"value"); 
@@ -786,7 +786,7 @@ static void parseMotorParam(CMD_RX_T *cmd_rx)
             }
         }
 
-        vTaskDelay(60);
+        vTaskDelay(100);
     }
 }
 
@@ -836,7 +836,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     TxdBuf[i++] = iCRC & 0xff;  
 
 
-//    dbh("SendAsciiCodeToHost", TxdBuf, i);
+    dbh("SendAsciiCodeToHost", TxdBuf, i);
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
@@ -865,6 +865,28 @@ void respondLed(void)
 }
 
 
+void KeyOpenDoorB(void)
+{
+    uint8_t open[61] = { 0x02,0x00,0x3b,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x62,0x37,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x52,0x65,0x71,0x75,0x65,0x73,0x74,0x20,0x74,0x6f,0x20,0x6f,0x70,0x65,0x6e,0x20,0x74,0x68,0x65,0x20,0x64,0x6f,0x6f,0x72,0x22,0x7d,0x03,0xa4,0x87 };
+    DBG("KeyOpenDoorB\r\n\r\n");
+    
+    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+    {
+        BSP_UartSend(SCOM1,open,61); 
+    }
+    
+    xSemaphoreGive(gxMutex); 
+}
+
+void respHost(uint8_t cmd,uint8_t len)
+{
+    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+    {
+        BSP_UartSend(SCOM1,cmd,len); 
+    }
+    
+    xSemaphoreGive(gxMutex); 
+}
 
 
 

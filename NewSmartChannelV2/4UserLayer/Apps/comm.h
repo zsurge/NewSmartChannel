@@ -141,6 +141,8 @@ void send_to_device(CMD_RX_T *cmd_rx);
 SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf);
 
 void respondLed(void);
+void KeyOpenDoorB(void);
+void respHost(uint8_t cmd,uint8_t len);
 
 #endif
 

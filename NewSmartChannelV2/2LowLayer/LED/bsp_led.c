@@ -97,7 +97,7 @@ void bsp_Ex_SetLed(uint8_t *dat)
         LED_R_R = buf[12];
         LED_R_G = buf[14];
 
-        DBG("2,4,7,9,12,14 = %d,%d,%d,%d,%d,%d\r\n",buf[2],buf[4],buf[7],buf[9],buf[12],buf[14]);
+//        DBG("2,4,7,9,12,14 = %d,%d,%d,%d,%d,%d\r\n",buf[2],buf[4],buf[7],buf[9],buf[12],buf[14]);
     }    
     
 }

@@ -51,9 +51,6 @@
 #define KEY_OPEN_DOOR_B_PRES 	4	//B门开门键按下
 
 
-
-
-
 void bsp_key_Init(void);	//IO初始化
 uint8_t bsp_key_Scan(uint8_t);  		//按键扫描函数		
 

@@ -139,7 +139,7 @@ static void vTaskLed(void *pvParameters)
             
             if(Nonzero(tmp,MAX_EXLED_LEN))
             {
-                DBG("set led \r\n");
+//                DBG("set led \r\n");
                 bsp_Ex_SetLed((uint8_t*)tmp); 
                 respondLed();
 //                memset(tmp,0x00,sizeof(tmp));

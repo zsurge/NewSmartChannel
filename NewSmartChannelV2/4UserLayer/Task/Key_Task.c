@@ -108,7 +108,8 @@ static void vTaskKey(void *pvParameters)
 //                    g_memsize = xPortGetFreeHeapSize();
 //                    printf("系统当前内存大小为 %d 字节，开始申请内存\n",g_memsize);
                     
-                    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+                    //SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+                    KeyOpenDoorB();
 					break;				
 				/* K2键按下，打印串口操作命令 */
 				case KEY_FIREFIGHTING_PRES:
@@ -123,7 +124,7 @@ static void vTaskKey(void *pvParameters)
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
 					break;
 				case KEY_OPEN_DOOR_B_PRES: 
-				DBG("KEY_OPEN_DOOR_B_PRES is press\r\n");
+				    DBG("KEY_OPEN_DOOR_B_PRES is press\r\n");
                     optDoor(MOTOR_NO2);
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
 					break;                

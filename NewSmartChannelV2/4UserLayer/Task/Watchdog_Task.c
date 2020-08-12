@@ -78,7 +78,7 @@ static void vTaskWatchDog(void *pvParameters)
       下面设置的是4s，如果4s内没有喂狗，系统复位。
     */
 //    bsp_InitIwdg(4000);
-      bsp_InitIwdg(4000);//8S内没有喂狗就系统复位
+      bsp_InitIwdg(2500);//5S内没有喂狗就系统复位
 
     
     /* 打印系统开机状态，方便查看系统是否复位 */

@@ -28,7 +28,7 @@
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
-#define MOTOR_SEC_TASK_PRIO		( tskIDLE_PRIORITY + 4)
+#define MOTOR_SEC_TASK_PRIO		( tskIDLE_PRIORITY + 7)
 #define MOTOR_SEC_STK_SIZE 		(configMINIMAL_STACK_SIZE*8)
 
 
@@ -85,11 +85,11 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters)
         //获取到，则执行上位机指令，获取不到，则执行状态查询
         xReturn = xQueueReceive( gxMotorSecDoorCtrlQueue,    /* 消息队列的句柄 */
                                  (void *)&ptMotor,          /*这里获取的是结构体的地址 */
-                                 (TickType_t)50);          /* 设置阻塞时间 */
+                                 (TickType_t)30);          /* 设置阻塞时间 */
         if(pdTRUE == xReturn)
         {
             //消息接收成功，发送接收到的消息
-//            dbh("B queue recv",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
+            dbh("B queue recv",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
             RS485_SendBuf(COM5, ptMotor->data,MOTORCTRL_QUEUE_BUF_LEN);//操作B电机  
 
         }
@@ -101,7 +101,7 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters)
             
         }                            
 
-        vTaskDelay(80);
+        vTaskDelay(50);
 
         if(deal_motor_Parse(COM5,&rxFromHost) != 0)
         {

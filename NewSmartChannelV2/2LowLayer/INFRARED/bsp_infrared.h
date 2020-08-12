@@ -31,7 +31,7 @@
  * 宏定义                                       *
  *----------------------------------------------*/
 //LED端口定义
-#if 0
+#if 1
 #define ERR_INFRARED    (0xF0000000)
     
 #define RCC_ALL_SENSOR     (RCC_AHB1Periph_GPIOA|RCC_AHB1Periph_GPIOB|RCC_AHB1Periph_GPIOC\
@@ -131,7 +131,7 @@
 #define INF_F	1		//无触发
 
 #define TIM_UP	2	
-#define JET_TIM	20+TIM_UP		//防抖时间
+#define JET_TIM	10+TIM_UP		//防抖时间
 	
 
 

@@ -26,7 +26,7 @@
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
-#define MSGPARSE_TASK_PRIO		( tskIDLE_PRIORITY + 4)
+#define MSGPARSE_TASK_PRIO		( tskIDLE_PRIORITY + 8)
 #define MSGPARSE_STK_SIZE 		(configMINIMAL_STACK_SIZE*8)
 
 /*----------------------------------------------*
@@ -66,7 +66,7 @@ static void vTaskMsgParse(void *pvParameters)
 
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_2);
-        vTaskDelay(100);
+        vTaskDelay(20);
     }
 
 }

@@ -58,8 +58,6 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
 static uint16_t  packetDeviceInfo(uint8_t *command_data);
 static void parseMotorParam(CMD_RX_T *cmd_rx);
 
-
-
 //static void displayTask(void);
 
 
@@ -430,6 +428,7 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
 
     if (root == NULL)                 // 如果转化错误，则报错退出
     {
+        my_free(TxdBuf);
         cJSON_Delete(root);
         return 0;
     }
@@ -449,6 +448,7 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
 
     if(TxdBuf == NULL)
     {
+         my_free(TxdBuf);
         cJSON_Delete(root);
         return 0;
     }
@@ -475,7 +475,8 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
     dataobj=cJSON_CreateObject(); // 创建dataobj对象，返回值为cJSON指针
 
     if (root == NULL||dataobj == NULL)                 // 如果转化错误，则报错退出
-    {
+    {    
+        my_free(TxdBuf);
         cJSON_Delete(root);
         return CJSON_CREATE_ERR;//直接返回一个较大的值，超出数组长度
     }
@@ -495,7 +496,8 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
     TxdBuf = cJSON_PrintUnformatted(root); 
 
     if(TxdBuf == NULL)
-    {
+    {    
+        my_free(TxdBuf);
         cJSON_Delete(root);
         return 0;
     }    
@@ -506,11 +508,11 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
 //    DBG("send json data = %s\r\n",TxdBuf);
 
     len = strlen((const char*)TxdBuf);
-
+    
+    my_free(TxdBuf);
     cJSON_Delete(root);
 
-    my_free(dataobj);
-    my_free(TxdBuf);
+  
 
     return len;    
 }
@@ -563,7 +565,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[0] = STX;            
             cmd_tx.cmd = GETSENSOR;
             cmd_tx.code = 0x00;
-            //bsp_GetSensorStatus(cmd_tx.data);      
+//            bsp_GetSensorStatus(cmd_tx.data);      
             bsp_GetSensorValue(cmd_tx.data);
             i += packetJSON(&cmd_tx,tmpBuf);            
             memcpy(TxdBuf+3,tmpBuf,i-3); 
@@ -663,6 +665,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 						 (TickType_t)50) != pdPASS )
 			{
                 xQueueReset(gxMotorCtrlQueue);
+                DBG("A the queue is error!\r\n"); 
             } 
 //            else
 //            {
@@ -681,6 +684,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 						 (TickType_t)50) != pdPASS )
 			{
                 xQueueReset(gxMotorSecDoorCtrlQueue);
+                DBG("B the queue is error!\r\n"); 
 //                DBG("B the queue is full!\r\n");                             
             } 
 //            else

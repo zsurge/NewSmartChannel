@@ -30,7 +30,7 @@
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
-#define MOTOR_TASK_PRIO		( tskIDLE_PRIORITY + 3)
+#define MOTOR_TASK_PRIO		( tskIDLE_PRIORITY + 6)
 #define MOTOR_STK_SIZE 		(configMINIMAL_STACK_SIZE*8)
 
 
@@ -94,11 +94,11 @@ static void vTaskMotorCtrl(void *pvParameters)
         //获取到，则执行上位机指令，获取不到，则执行状态查询
         xReturn = xQueueReceive( gxMotorCtrlQueue,    /* 消息队列的句柄 */
                                  (void *)&ptMotor,  /*这里获取的是结构体的地址 */
-                                 (TickType_t)50); /* 设置阻塞时间 */
+                                 (TickType_t)30); /* 设置阻塞时间 */
         if(pdTRUE == xReturn)
         {
             //消息接收成功，发送接收到的消息
-//            dbh("A queue recv:",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
+            dbh("A queue recv:",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
             RS485_SendBuf(COM4, ptMotor->data,MOTORCTRL_QUEUE_BUF_LEN);//操作A电机  
 
             //判定是否是关门指令
@@ -126,7 +126,7 @@ static void vTaskMotorCtrl(void *pvParameters)
 //            i = 0;
             send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);              
             Motro_A = 0;
-            memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));
+            memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));            
         }
         #else
         

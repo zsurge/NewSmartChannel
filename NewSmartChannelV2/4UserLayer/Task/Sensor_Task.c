@@ -29,7 +29,7 @@
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
-#define SENSOR_TASK_PRIO		(tskIDLE_PRIORITY + 2)
+#define SENSOR_TASK_PRIO		(tskIDLE_PRIORITY + 1)
 #define SENSOR_STK_SIZE 		(configMINIMAL_STACK_SIZE*4)
 
 /*----------------------------------------------*
@@ -67,7 +67,8 @@ static void vTaskSensor(void *pvParameters)
     
     while(1)
     {  
-        code = bsp_sensor_scan();//bsp_infrared_scan();       
+        code = bsp_sensor_scan();//bsp_infrared_scan();// ;       
+
 
         if(code != ERR_INFRARED)
         {
@@ -86,7 +87,7 @@ static void vTaskSensor(void *pvParameters)
         /* 发送事件标志，表示任务正常运行 */        
         xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_3);    
         
-        vTaskDelay(20);
+        vTaskDelay(10);
     }
 }
 

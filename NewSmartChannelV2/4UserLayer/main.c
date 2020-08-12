@@ -93,34 +93,34 @@ static void AppTaskCreate (void)
     CreateHandShakeTask();
 
     //与上位机通讯处理
-    CreateMsgParseTask();
+    CreateMsgParseTask();//8
     
     //A门电机控制处理
-    CreateMotorCtrlTask();
+    CreateMotorCtrlTask();//6
 
     //B门电机控制处理
-    CreateMotorCtrlSecDoorTask();    
+    CreateMotorCtrlSecDoorTask(); //7
 
     //监控任务
 //    CreateMonitorTask();
 
     //按键处理
-    CreateKeyTask();
+    CreateKeyTask();//4
 
     //方向指示灯
-    CreateLedTask();
+    CreateLedTask();//5
 
     //读卡器数据收集
-    CreateReaderTask();
+    CreateReaderTask();//3
 
     //条码扫描数据处理
-    CreateBarCodeTask();
+    CreateBarCodeTask();//2
 
     //红外传感器数据上送
-    CreateSensorTask();
+    CreateSensorTask();//1
 
     //看门狗
-    CreateWatchDogTask();
+    CreateWatchDogTask();//9
 
     //删除本身
 //    vTaskDelete(xHandleTaskAppCreate); //删除AppTaskCreate任务

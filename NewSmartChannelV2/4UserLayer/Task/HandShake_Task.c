@@ -23,6 +23,8 @@
 #include "handshake_task.h"
 #include "easyflash.h"
 #include "comm.h"
+#include "Devinfo.h"
+
 /*----------------------------------------------*
  * ∫Í∂®“Â                                       *
  *----------------------------------------------*/
@@ -46,6 +48,18 @@ TaskHandle_t xHandleTaskHandShake = NULL;      //LEDµ∆
  *----------------------------------------------*/
 static void vTaskHandShake(void *pvParameters);
 
+static void DisplayDevInfo (void);
+
+static void DisplayDevInfo(void)
+{
+	printf("Softversion :%s\r\n",gDevinfo.SoftwareVersion);
+    printf("HardwareVersion :%s\r\n", gDevinfo.HardwareVersion);
+	printf("Model :%s\r\n", gDevinfo.Model);
+	printf("ProductBatch :%s\r\n", gDevinfo.ProductBatch);	    
+	printf("BulidDate :%s\r\n", gDevinfo.BulidDate);
+	printf("DevSn :%s\r\n", gDevinfo.GetSn());
+}
+
 void vTaskHandShake(void *pvParameters)
 {
 
@@ -53,6 +67,7 @@ void vTaskHandShake(void *pvParameters)
 //    char *c_old_boot_times, c_new_boot_times[12] = {0};
     uint8_t bcdbuf[6] = {0x00,0x00,0x00,0x01,0x02,0x03};
 
+    DisplayDevInfo();
 #if 0
 
     /* get the boot count number from Env */

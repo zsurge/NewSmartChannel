@@ -31,7 +31,7 @@
 #include "stmflash.h"
 #include "easyflash.h"
 //#include "sfud.h"
-
+#include "cm_backtrace.h"
 
 
 //驱动层头文件

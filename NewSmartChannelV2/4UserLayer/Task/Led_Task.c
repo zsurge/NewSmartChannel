@@ -32,7 +32,7 @@
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
-#define LED_TASK_PRIO	    ( tskIDLE_PRIORITY)
+#define LED_TASK_PRIO	    ( tskIDLE_PRIORITY+5)
 #define LED_STK_SIZE 		(configMINIMAL_STACK_SIZE*8)
 
 /*----------------------------------------------*
@@ -137,18 +137,15 @@ static void vTaskLed(void *pvParameters)
 
 //            dbh("led data",tmp,MAX_EXLED_LEN);
             
-            if(Nonzero(tmp,MAX_EXLED_LEN))
-            {
-//                DBG("set led \r\n");
+//            if(Nonzero(tmp,MAX_EXLED_LEN))
+//            {
                 bsp_Ex_SetLed((uint8_t*)tmp); 
                 respondLed();
-//                memset(tmp,0x00,sizeof(tmp));
-//                send_to_host(SETLED,tmp,1);
-            }
-            else
-            {
-                SendAsciiCodeToHost(ERRORINFO,COMM_SEND_ERR,"set led error,try again");
-            }
+//            }
+//            else
+//            {
+//                SendAsciiCodeToHost(ERRORINFO,COMM_SEND_ERR,"set led error,try again");
+//            }
         }         
         
 		/* 发送事件标志，表示任务正常运行 */        

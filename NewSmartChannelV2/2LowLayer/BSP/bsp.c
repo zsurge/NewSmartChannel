@@ -25,7 +25,8 @@
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
-
+#define HARDWARE_VERSION               "V1.0.1"
+#define SOFTWARE_VERSION               "V1.0.4"
 /*----------------------------------------------*
  * 常量定义                                     *
  *----------------------------------------------*/
@@ -65,6 +66,9 @@
     bsp_beep_init();            //蜂鸣器初始化    
 //    bsp_infrared_init();        //红外传感器初始化
     bsp_sensor_init();
-//    
+//  
+
+  /* CmBacktrace initialize */
+   cm_backtrace_init("ElevatorControlAPP", HARDWARE_VERSION, SOFTWARE_VERSION);
 }
 

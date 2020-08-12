@@ -165,6 +165,8 @@ static void vTaskMonitor(void *pvParameters)
         }
 
         bsp_GetSensorValue(buf);
+//        bsp_GetSensorStatus(buf); 
+
 
         if(atoi((const char*)buf) != 0) 
         {

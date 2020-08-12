@@ -30,7 +30,7 @@
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
-#define KEY_TASK_PRIO	    (tskIDLE_PRIORITY + 2)
+#define KEY_TASK_PRIO	    (tskIDLE_PRIORITY + 4)
 #define KEY_STK_SIZE        (configMINIMAL_STACK_SIZE*4)
 
 #define FIRSTDOOR_ISOPEN_YES    1
@@ -82,6 +82,8 @@ static void vTaskKey(void *pvParameters)
 	
 //	uint8_t pcWriteBuffer[1024];
 //    uint32_t g_memsize;  
+//    int32_t iTime1, iTime2;
+
     
     while(1)
     {
@@ -95,7 +97,11 @@ static void vTaskKey(void *pvParameters)
 			{
 				/* K1键按下 打印任务执行情况 */
 				case KEY_DOOR_B_PRES:	   
-					DBG("KEY_DOOR_B_PRES is press\r\n");
+					DBG("KEY_DOOR_B_PRES is press\r\n");					
+//	                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
+//	                iTime2 = xTaskGetTickCount();   /* 记下结束时间 */
+//	                DBG ( "修改记录成功，耗时: %dms\r\n",iTime2 - iTime1 );
+	                
 //					printf("=================================================\r\n");
 //					printf("任务名      任务状态 优先级   剩余栈 任务序号\r\n");
 //					vTaskList((char *)&pcWriteBuffer);

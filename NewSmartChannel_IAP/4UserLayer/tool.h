@@ -28,6 +28,9 @@
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
+#define DEBUG_PRINT
+
+#define DBG(...) dbg(__FILE__, __LINE__, __VA_ARGS__)
 
 /*----------------------------------------------*
  * 常量定义                                     *
@@ -50,6 +53,8 @@ void int2Str(uint8_t* str, int32_t intnum);
 int32_t str2int(const char* str);
 uint8_t bcd2byte(uint8_t ucBcd);
 
+void dbg(const char *file, const long line, const char *format, ...);
+void dbh(char *title,char *buf,int len);
 
 
 #endif

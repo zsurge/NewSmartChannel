@@ -27,15 +27,13 @@
  */
 
 #include <easyflash.h>
-#include "bsp_flash.h"
+#include "bsp_spi_flash.h"
 #include "stdarg.h"
 #include "stdio.h"
 #include <sfud.h>
 
 
 
-#define SF_VERSION "V1.0.1"
-#define HD_VERSION "V1.0"
 
 /* default environment variables set for user */
  
@@ -43,19 +41,9 @@ static const ef_env default_env_set[] =
 {
    {"boot_times","0001"},
    {"mcu_id","0000"},
-   {"release","20190718"},
-   {"software version",SF_VERSION},
-   {"hardware version",HD_VERSION},
    {"WSPIFLASH","5555"},
    {"WMCUFLASH","6666"},    
-   {"key1","key1_value"},
-   {"key2","key2_value"},
-   {"key3","key3_value"},
-   {"key4","key4_value"},
-   {"key5","key5_value"},
-   {"key6","key6_value"},
-   {"key7","key7_value"},
-   {"key8","key8_value"}   
+  
 };
 
 
@@ -76,7 +64,7 @@ EfErrCode ef_port_init(ef_env const **default_env, size_t *default_env_size) {
     *default_env = default_env_set;
     *default_env_size = sizeof(default_env_set) / sizeof(default_env_set[0]);
     /* initialize SFUD library for SPI Flash */
-    sfud_init();
+    bsp_spi_flash_init();
 
     return result;
 }
@@ -93,9 +81,7 @@ EfErrCode ef_port_init(ef_env const **default_env, size_t *default_env_size) {
  */
 EfErrCode ef_port_read(uint32_t addr, uint32_t *buf, size_t size) {
     EfErrCode result = EF_NO_ERR;
-    const sfud_flash *flash = sfud_get_device_table() + SFUD_W25Q128JV_DEVICE_INDEX;
-
-    sfud_read(flash, addr, size, (uint8_t *)buf);
+    bsp_sf_ReadBuffer((uint8_t *)buf, addr, size);
 
     return result;
 }
@@ -112,17 +98,12 @@ EfErrCode ef_port_read(uint32_t addr, uint32_t *buf, size_t size) {
  */
 EfErrCode ef_port_erase(uint32_t addr, size_t size) {
     EfErrCode result = EF_NO_ERR;
-    sfud_err sfud_result = SFUD_SUCCESS;
-    const sfud_flash *flash = sfud_get_device_table() + SFUD_W25Q128JV_DEVICE_INDEX;
-    
     /* make sure the start address is a multiple of FLASH_ERASE_MIN_SIZE */
     EF_ASSERT(addr % EF_ERASE_MIN_SIZE == 0);
-    
-    sfud_result = sfud_erase(flash, addr, size);
 
-    if(sfud_result != SFUD_SUCCESS) {
-        result = EF_ERASE_ERR;
-    }
+
+    bsp_sf_EraseSector(addr);
+
 
     
     return result;
@@ -140,14 +121,11 @@ EfErrCode ef_port_erase(uint32_t addr, size_t size) {
  */
 EfErrCode ef_port_write(uint32_t addr, const uint32_t *buf, size_t size) {
     EfErrCode result = EF_NO_ERR;
-    sfud_err sfud_result = SFUD_SUCCESS;
-    const sfud_flash *flash = sfud_get_device_table() + SFUD_W25Q128JV_DEVICE_INDEX;
-
-    sfud_result = sfud_write(flash, addr, size, (const uint8_t *)buf);
-
-    if(sfud_result != SFUD_SUCCESS) {
+    if(bsp_sf_WriteBuffer((uint8_t *)buf, addr, size) == 0)
+    {
         result = EF_WRITE_ERR;
     }
+
 
     return result;
 }

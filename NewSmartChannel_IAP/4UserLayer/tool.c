@@ -351,6 +351,34 @@ int32_t str2int(const char* str)
 	return temp;
 }
 
+void dbg(const char *file, const long line, const char *format, ...)
+{
+    #ifdef DEBUG_PRINT
+    va_list args;
+	char debug_buf[255] = {0};	
+    /* args point to the first variable parameter */
+    va_start(args, format);
+    printf("[DEBUG](%s:%ld) ", file, line);
+    /* must use vprintf to print */
+    vsnprintf(debug_buf, sizeof(debug_buf), format, args);
+    printf("%s\n", debug_buf);
+    va_end(args);
+    #endif
+
+}
+
+void dbh(char *title,char *buf,int len)
+{
+    #ifdef DEBUG_PRINT
+    int i = 0;
+    printf("<%s,len=%d>:<",title,len);
+    for(i=0;i<len;i++)
+    {
+        printf("%02x ",buf[i]);
+    }
+    printf(" >\r\n");   
+    #endif
+}
 
 
 

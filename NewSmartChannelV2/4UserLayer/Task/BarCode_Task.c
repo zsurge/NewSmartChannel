@@ -92,7 +92,7 @@ static void vTaskBarCode(void *pvParameters)
 
         /* 发送事件标志，表示任务正常运行 */        
         xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_5);  
-        vTaskDelay(500);        
+        vTaskDelay(600);        
     }
 }
 

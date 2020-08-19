@@ -101,6 +101,8 @@ static void vTaskWatchDog(void *pvParameters)
             IWDG_Feed(); //喂狗    
         }
         else
+            
+        
         {
             /* 基本是每xTicksToWait进来一次 */
             /* 通过变量uxBits简单的可以在此处检测那个任务长期没有发来运行标志 */

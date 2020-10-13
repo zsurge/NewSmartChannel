@@ -62,7 +62,7 @@ void NMI_Handler(void)
   * @param  None
   * @retval None
   */
-#if 0  
+#if 1  
 void HardFault_Handler(void)
 {
     
@@ -77,6 +77,8 @@ void HardFault_Handler(void)
        while ((USART1->SR & USART_FLAG_TC) == (uint16_t)RESET);
     }
 #endif
+    
+    NVIC_SystemReset();
 
   /* Go to infinite loop when Hard Fault exception occurs */
   while (1)

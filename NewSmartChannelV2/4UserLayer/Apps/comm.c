@@ -101,8 +101,8 @@ void deal_Serial_Parse(void)
 //        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
 //        if(comGetChar(COM1, &ch) != 1)    //读取串口数据
 
-//        if(BSP_UartRead(SCOM1,&ch,1)!=1)
-        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
+        if(BSP_UartRead(SCOM1,&ch,1)!=1)
+//        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
         {
             delay_ms(10);
             
@@ -301,8 +301,8 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-//          BSP_UartSend(SCOM1,TxdBuf,i); 
-          bsp_Usart1_SendData(TxdBuf,i);
+          BSP_UartSend(SCOM1,TxdBuf,i); 
+//          bsp_Usart1_SendData(TxdBuf,i);
     }
     
     xSemaphoreGive(gxMutex);
@@ -716,9 +716,9 @@ void send_to_device(CMD_RX_T *cmd_rx)
 //    dbh("send_to_device", TxdBuf, i);
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-//        BSP_UartSend(SCOM1,TxdBuf,i); 
+        BSP_UartSend(SCOM1,TxdBuf,i); 
         
-    bsp_Usart1_SendData(TxdBuf,i);
+//    bsp_Usart1_SendData(TxdBuf,i);
     }
     xSemaphoreGive(gxMutex);
 
@@ -848,9 +848,9 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-//        BSP_UartSend(SCOM1,TxdBuf,i); 
+        BSP_UartSend(SCOM1,TxdBuf,i); 
         
-    bsp_Usart1_SendData(TxdBuf,i);
+//    bsp_Usart1_SendData(TxdBuf,i);
     }
     
     xSemaphoreGive(gxMutex);
@@ -868,9 +868,9 @@ void respondLed(void)
     
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-//        BSP_UartSend(SCOM1,retLed,39); 
+        BSP_UartSend(SCOM1,retLed,39); 
         
-    bsp_Usart1_SendData(retLed,39);
+//    bsp_Usart1_SendData(retLed,39);
     }
     
     xSemaphoreGive(gxMutex); 
@@ -884,9 +884,9 @@ void KeyOpenDoorB(void)
     
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-//        BSP_UartSend(SCOM1,open,61); 
+        BSP_UartSend(SCOM1,open,61); 
         
-    bsp_Usart1_SendData(open,61);
+//    bsp_Usart1_SendData(open,61);
     }
     
     xSemaphoreGive(gxMutex); 
@@ -896,8 +896,8 @@ void respHost(uint8_t *cmd,uint8_t len)
 {
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-//        BSP_UartSend(SCOM1,cmd,len); 
-        bsp_Usart1_SendData(cmd,len);
+        BSP_UartSend(SCOM1,cmd,len); 
+//        bsp_Usart1_SendData(cmd,len);
     }
     
     xSemaphoreGive(gxMutex); 

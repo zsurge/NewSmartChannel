@@ -42,11 +42,11 @@
  *----------------------------------------------*/
 static uint8_t * GetDevSn(void);
 
-const uint8_t Softversion[] = "1.0.4";
+const uint8_t Softversion[] = "1.0.5";
 const uint8_t Hardversion[] = "1.0.1";
 const uint8_t SoftBulidDate[] = __DATE__ " " __TIME__;
 const uint8_t DevModel[] = "SmartChannelAPP";
-const uint8_t DevBatch[] = "20200528001";
+const uint8_t DevBatch[] = "20201013001";
 
 
 static uint8_t * GetDevSn(void)

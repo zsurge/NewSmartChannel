@@ -45,8 +45,8 @@
 
 	bsp_TIM6_Init();            //定时器6初始化
 	
-    bsp_Usart1_Init(38400);   
-//    BSP_UartOpen(SCOM1,  38400, 8, 1, 0);
+    //bsp_Usart1_Init(38400);   
+    BSP_UartOpen(SCOM1,  38400, 8, 1, 0);
     bsp_InitUart();             //modify 2019.8.5
 //  bsp_Usart5_Init(115200);
 //  bsp_Usart2_Init(38400);     //初始化串口，DEBUG,接上位机
@@ -69,6 +69,6 @@
 //  
 
   /* CmBacktrace initialize */
-   cm_backtrace_init("ElevatorControlAPP", HARDWARE_VERSION, SOFTWARE_VERSION);
+//   cm_backtrace_init("ElevatorControlAPP", HARDWARE_VERSION, SOFTWARE_VERSION);
 }
 

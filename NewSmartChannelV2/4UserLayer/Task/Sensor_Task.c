@@ -80,7 +80,6 @@ static void vTaskSensor(void *pvParameters)
             code = 0;
                 
             send_to_host(GETSENSOR,dat,3);
-//            dbh("sensor", (char *)dat, 3);
         }
 
 

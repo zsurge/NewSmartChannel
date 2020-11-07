@@ -52,6 +52,8 @@ MOTORCTRL_QUEUE_T gSecMotorCtrlQueue;    //∂®“Â“ª∏ˆΩ·ππÃÂ”√”⁄œ˚œ¢∂”¡–£¨”√”⁄Õ¨≤Ω¥
 RECVHOST_T gRecvHost;
 static uint16_t crc_value = 0;
 
+//uint32_t gTime1 = 0;
+//uint32_t gTime2 = 0;
 
 static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx); //ÀΩ”–∫Ø ˝
 static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
@@ -369,7 +371,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
 
     strcpy((char *)asc_dat,tmpJson->valuestring);
 
-    DBG("cmd len = %d,cmd = %s\r\n",strlen((const char*)asc_dat),asc_dat);
+//    DBG("cmd len = %d,cmd = %s\r\n",strlen((const char*)asc_dat),asc_dat);
     
     asc2bcd(bcd_cmd, asc_dat, 2, 1); 
 
@@ -462,6 +464,8 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
     cJSON_Delete(root);
 
     my_free(TxdBuf);
+    
+    TxdBuf=NULL;        
 
     return len;
 }
@@ -479,6 +483,7 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
     if (root == NULL||dataobj == NULL)                 // »Áπ˚◊™ªØ¥ÌŒÛ£¨‘Ú±®¥ÌÕÀ≥ˆ
     {    
         my_free(TxdBuf);
+        TxdBuf = NULL;        
         cJSON_Delete(root);
         return CJSON_CREATE_ERR;//÷±Ω”∑µªÿ“ª∏ˆΩœ¥Ûµƒ÷µ£¨≥¨≥ˆ ˝◊È≥§∂»
     }
@@ -500,6 +505,8 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
     if(TxdBuf == NULL)
     {    
         my_free(TxdBuf);
+        TxdBuf = NULL;
+        
         cJSON_Delete(root);
         return 0;
     }    
@@ -514,7 +521,7 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
     my_free(TxdBuf);
     cJSON_Delete(root);
 
-  
+    TxdBuf = NULL;
 
     return len;    
 }
@@ -538,10 +545,11 @@ static uint16_t  packetDeviceInfo(uint8_t *command_data)
 
 void send_to_device(CMD_RX_T *cmd_rx)
 {
-    BaseType_t xReturn = pdPASS;//∂®“Â“ª∏ˆ¥¥Ω®–≈œ¢∑µªÿ÷µ£¨ƒ¨»œŒ™pdPASS
     uint16_t i = 0;
     uint8_t TxdBuf[JSON_PACK_MAX]={0};
     uint8_t tmpBuf[JSON_PACK_MAX] = {0};  
+    
+    uint8_t setLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0x85,0x7a };
     uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
     
@@ -582,17 +590,25 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[i++] = iCRC & 0xff;            
             break;
         case SETLED: //…Ë÷√LEDµ∆
-          xReturn = xTaskNotify( xHandleTaskLed, /*»ŒŒÒæ‰±˙*/
-                                 (uint32_t)&cmd_rx->cmd_data,
-                                 eSetValueWithOverwrite );/*∏≤∏«µ±«∞Õ®÷™*/
-          
-            if( xReturn != pdPASS )
-            {
-                SendAsciiCodeToHost(ERRORINFO,COMM_SEND_ERR,"set led error,try again");
-                DBG("Set LED Send Error!\r\n");
-                dbh("Set LED Send Error", (char *)cmd_rx->cmd_data, MAX_EXLED_LEN);                
-            }
-            
+//            gTime1 = xTaskGetTickCount();
+//            xReturn = xTaskNotify( xHandleTaskLed, /*»ŒŒÒæ‰±˙*/
+//                                 (uint32_t)&cmd_rx->cmd_data,
+//                                 eSetValueWithOverwrite );/*∏≤∏«µ±«∞Õ®÷™*/
+//          
+//            if( xReturn != pdPASS )
+//            {
+//                SendAsciiCodeToHost(ERRORINFO,COMM_SEND_ERR,"set led error,try again");
+//                DBG("Set LED Send Error!\r\n");
+//                dbh("Set LED Send Error", (char *)cmd_rx->cmd_data, MAX_EXLED_LEN);                
+//            }
+//            else
+//            {
+//                dbh("SET LED", (char *)cmd_rx->cmd_data, cmd_rx->len);
+//            }
+            DBG("set led ......\r\n");
+            bsp_Ex_SetLed((uint8_t*)cmd_rx->cmd_data);             
+            i = 39;
+            memcpy(TxdBuf,setLed,i);   
             break;                        
         case GETDEVICEINFO://ªÒ»°…Ë±∏–≈œ¢
             i = 3;
@@ -713,14 +729,15 @@ void send_to_device(CMD_RX_T *cmd_rx)
     }
 
 
-//    dbh("send_to_device", TxdBuf, i);
+   // dbh("send_to_device", (char *)TxdBuf, i);
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
-        BSP_UartSend(SCOM1,TxdBuf,i); 
-        
-//    bsp_Usart1_SendData(TxdBuf,i);
+        BSP_UartSend(SCOM1,TxdBuf,i);         
     }
     xSemaphoreGive(gxMutex);
+    
+//    gTime2 = xTaskGetTickCount();
+//    DBG("set led use %d ms\r\n",gTime2 - gTime1);
 
 }
 

@@ -1610,9 +1610,7 @@ uint8_t deal_motor_Parse(COM_PORT_E _ucPort,FROMHOST_STRU *rxFromDev)
     uint8_t crcBuf[2] = {0};
 
     FROMHOST_STRU rxFromHost;
-
-    memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));
-    
+    memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));   
     
     while(RS485_Recv(_ucPort,&ch,1))
     {
@@ -1625,7 +1623,6 @@ uint8_t deal_motor_Parse(COM_PORT_E _ucPort,FROMHOST_STRU *rxFromDev)
                     rxFromHost.rxCnt = 1;
                     rxFromHost.rxStatus = STEP2;
                 }
-
                 break;
            case STEP2:
                 if(0x03 == ch || 0x06 == ch) //判定第二个字节是否是需要的字节，若多梯联动时需读取拨码开关的值

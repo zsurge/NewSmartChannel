@@ -62,9 +62,7 @@ void bsp_Ex_LED_Init(void)
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;    
 	GPIO_Init(GPIO_PORT_EX_LED, &GPIO_InitStructure);			    //³õÊ¼»¯GPIO
 
-
 	//GPIO_SetBits(GPIO_PORT_EX_LED,GPIO_PIN_L_G|GPIO_PIN_M_R|GPIO_PIN_M_G|GPIO_PIN_R_R|GPIO_PIN_R_G );	//µÆÃð
-
 
     LED_L_R = 1;
     LED_L_G = 1;

@@ -293,10 +293,15 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
 
     TxdBuf[1] = i>>8; //high
     TxdBuf[2] = i&0xFF; //low
-            
-    iCRC = CRC16_Modbus(TxdBuf, i);  
-    TxdBuf[i++] = iCRC >> 8;
-    TxdBuf[i++] = iCRC & 0xff;  
+
+//    //2020.11.09 修改，因为上位机不检验，并且校验值有可能跟包头冲突，所以设置为固定值
+//    iCRC = CRC16_Modbus(TxdBuf, i);  
+//    TxdBuf[i++] = iCRC >> 8;
+//    TxdBuf[i++] = iCRC & 0xff;  
+
+    TxdBuf[i++] = 0xA5;
+    TxdBuf[i++] = 0xA5;  
+
 
 //    DBG("send json data = %s\r\n",tmpBuf);
 //    dbh("send_to_host",(char *)TxdBuf,i);
@@ -304,7 +309,6 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
           BSP_UartSend(SCOM1,TxdBuf,i); 
-//          bsp_Usart1_SendData(TxdBuf,i);
     }
     
     xSemaphoreGive(gxMutex);
@@ -854,11 +858,15 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     TxdBuf[i++] = ETX;   
 
     TxdBuf[1] = i>>8; //high
-    TxdBuf[2] = i&0xFF; //low
-            
-    iCRC = CRC16_Modbus(TxdBuf, i);  
-    TxdBuf[i++] = iCRC >> 8;
-    TxdBuf[i++] = iCRC & 0xff;  
+    TxdBuf[2] = i&0xFF; //low    
+
+//    //2020.11.09 修改，因为上位机不检验，并且校验值有可能跟包头冲突，所以设置为固定值
+//    iCRC = CRC16_Modbus(TxdBuf, i);  
+//    TxdBuf[i++] = iCRC >> 8;
+//    TxdBuf[i++] = iCRC & 0xff;  
+
+    TxdBuf[i++] = 0xA5;
+    TxdBuf[i++] = 0xA5;    
 
 
     dbh("SendAsciiCodeToHost", (char *)TxdBuf, i);
@@ -909,16 +917,15 @@ void KeyOpenDoorB(void)
     xSemaphoreGive(gxMutex); 
 }
 
-void respHost(uint8_t *cmd,uint8_t len)
-{
-    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
-    {
-        BSP_UartSend(SCOM1,cmd,len); 
-//        bsp_Usart1_SendData(cmd,len);
-    }
-    
-    xSemaphoreGive(gxMutex); 
-}
+//void respHost(uint8_t *cmd,uint8_t len)
+//{
+//    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+//    {
+//        BSP_UartSend(SCOM1,cmd,len); 
+//    }
+//    
+//    xSemaphoreGive(gxMutex); 
+//}
 
 
 

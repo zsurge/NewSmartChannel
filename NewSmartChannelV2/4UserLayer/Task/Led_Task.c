@@ -26,7 +26,9 @@
 #include "comm.h"
 #include "bsp_beep.h" 
 #include "bsp_uart_fifo.h"
-#include "bsp_usart5.h"
+#include "Devinfo.h"
+
+
 
 
 /*----------------------------------------------*
@@ -51,6 +53,20 @@ TaskHandle_t xHandleTaskLed = NULL;      //LED灯
  * 内部函数原型说明                             *
  *----------------------------------------------*/
 static void vTaskLed(void *pvParameters);
+
+static void DisplayDevInfo (void);
+
+static void DisplayDevInfo(void)
+{
+	printf("Softversion :%s\r\n",gDevinfo.SoftwareVersion);
+    printf("HardwareVersion :%s\r\n", gDevinfo.HardwareVersion);
+	printf("Model :%s\r\n", gDevinfo.Model);
+	printf("ProductBatch :%s\r\n", gDevinfo.ProductBatch);	    
+	printf("BulidDate :%s\r\n", gDevinfo.BulidDate);
+	printf("DevSn :%s\r\n", gDevinfo.GetSn());
+}
+
+
 //static void showTask ( void );
 
 //static void showTask ( void )
@@ -85,7 +101,15 @@ void CreateLedTask(void)
 static void vTaskLed(void *pvParameters)
 {   
     uint16_t i = 0;    
+    uint8_t bcdbuf[6] = {0x00,0x00,0x00,0x01,0x02,0x03};
     
+    LED_L_G = 1;
+    LED_R_G = 1;
+    DisplayDevInfo();
+
+    send_to_host(HANDSHAKE,bcdbuf,6);  
+
+       
     BEEP = 0;
     vTaskDelay(300);    
     BEEP = 1;

@@ -179,7 +179,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\4UserLayer\Task\Monitor_Task.c</Filename>
+          <Filename>E:\Work\5.SmartChannel\2.Src\NewSmartChannelV2\4UserLayer\Task\Monitor_Task.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\SmartChannelApp\../4UserLayer/Task/Monitor_Task.c\85</Expression>
         </Bp>
@@ -238,7 +238,7 @@
 
   <Group>
     <GroupName>UserLayer</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -473,8 +473,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\4UserLayer\Task\Monitor_Task.c</PathWithFileName>
-      <FilenameWithoutPath>Monitor_Task.c</FilenameWithoutPath>
+      <PathWithFileName>..\4UserLayer\Task\ToHost_Task.c</PathWithFileName>
+      <FilenameWithoutPath>ToHost_Task.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -586,7 +586,7 @@
 
   <Group>
     <GroupName>DriveLayer</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

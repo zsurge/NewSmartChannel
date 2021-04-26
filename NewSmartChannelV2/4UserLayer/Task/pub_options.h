@@ -52,6 +52,9 @@
 #define MOTORCTRL_QUEUE_LEN    20     /* 队列的长度，最大可包含多少个消息 */
 #define MOTORCTRL_QUEUE_BUF_LEN 8     //每个队列buff的长度
 
+#define TOHOST_DATA_MAX_LEN    512    //通过队列传，最大的数据长度
+
+
 
 //#define COMBINED_LENGTH (MOTORCTRL_QUEUE_LEN + MOTORCTRL_QUEUE_LEN) /* 添加到Queue Set的总长度 */
 
@@ -62,6 +65,14 @@ typedef struct
     uint8_t cmd;                                    //指令字
     uint8_t data[MOTORCTRL_QUEUE_BUF_LEN];          //需要发送给android板的数据
 }MOTORCTRL_QUEUE_T;
+
+typedef struct
+{
+    uint8_t cmd;                                    //指令字    
+    uint8_t data[TOHOST_DATA_MAX_LEN];              //需要发送给android板的数据
+    uint16_t len;
+}TOHOST_QUEUE_T;
+
 
 
 
@@ -78,11 +89,13 @@ extern EventGroupHandle_t xCreatedEventGroup;
 extern SemaphoreHandle_t gxMutex;
 extern QueueHandle_t gxMotorCtrlQueue; 
 extern QueueHandle_t gxMotorSecDoorCtrlQueue; 
-//extern QueueSetHandle_t gxQueueSet;
+extern QueueHandle_t gxToHostQueue;
+
 
 
 extern MOTORCTRL_QUEUE_T gMotorCtrlQueue;    //定义一个结构体用于消息队列，跟andorid通信
 extern MOTORCTRL_QUEUE_T gSecMotorCtrlQueue;
+extern TOHOST_QUEUE_T    gToHostQueueBuf,gToHostQueueBuf_recv;
 
 
 /*----------------------------------------------*

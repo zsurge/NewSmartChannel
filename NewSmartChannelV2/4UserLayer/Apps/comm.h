@@ -85,19 +85,8 @@
 #define MAX_CMD_BCD_BUF_LEN				256  
 
 #define MAX_HOST_CMD_LEN			    256 
-#define MAX_CMD_DESC_LEN			    20 
-
+#define MAX_CMD_DESC_LEN			    20
 #define MAX_EXLED_LEN                   0x0F
-
-//typedef enum
-//{
-//    NoCMD = 0xA0,
-//    GetSensor = 0xA1,
-//    SetLed,
-//    GetDeviceStatus,
-//    GetVersion,
-//    UpGradeApp    
-//}CommandType;    
 
 typedef struct
 {
@@ -145,6 +134,8 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
 void respondLed(void);
 void KeyOpenDoorB(void);
 //void respHost(uint8_t *cmd,uint8_t len);
+
+char send_to_host_queue(uint8_t cmd,uint8_t *buf,int len);
 
 #endif
 

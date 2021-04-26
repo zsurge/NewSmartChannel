@@ -29,7 +29,7 @@
 #include "bsp_uart.h"
 #include "pub_options.h"
 #include "led_task.h"
-
+#include "log.h"
 
 
 /*----------------------------------------------*
@@ -46,6 +46,7 @@
 
 MOTORCTRL_QUEUE_T gMotorCtrlQueue;    //定义一个结构体用于消息队列，用于同步处理相应数据
 MOTORCTRL_QUEUE_T gSecMotorCtrlQueue;    //定义一个结构体用于消息队列，用于同步处理相应数据
+TOHOST_QUEUE_T     gToHostQueueBuf,gToHostQueueBuf_recv;
 
 
 
@@ -264,7 +265,7 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     uint16_t json_len = 0;
     uint8_t TxdBuf[MAX_TXD_BUF_LEN]={0};
     uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
-    uint16_t iCRC = 0;
+//    uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
 
 
@@ -556,7 +557,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 //    uint8_t setLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0x85,0x7a };
     uint8_t setLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0xA5,0xA5 };
     
-    uint16_t iCRC = 0;
+//    uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
     
     MOTORCTRL_QUEUE_T *ptMotor = &gMotorCtrlQueue; 
@@ -612,7 +613,6 @@ void send_to_device(CMD_RX_T *cmd_rx)
 //            {
 //                dbh("SET LED", (char *)cmd_rx->cmd_data, cmd_rx->len);
 //            }
-            DBG("set led ......\r\n");
             bsp_Ex_SetLed((uint8_t*)cmd_rx->cmd_data);             
             i = 39;
             memcpy(TxdBuf,setLed,i);   
@@ -742,13 +742,13 @@ void send_to_device(CMD_RX_T *cmd_rx)
             return;
     }
 
+    send_to_host_queue(cmd_rx->cmd,TxdBuf,i);
 
-   // dbh("send_to_device", (char *)TxdBuf, i);
-    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
-    {
-        BSP_UartSend(SCOM1,TxdBuf,i);         
-    }
-    xSemaphoreGive(gxMutex);
+//    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+//    {
+//        BSP_UartSend(SCOM1,TxdBuf,i);         
+//    }
+//    xSemaphoreGive(gxMutex);
     
 //    gTime2 = xTaskGetTickCount();
 //    DBG("set led use %d ms\r\n",gTime2 - gTime1);
@@ -838,7 +838,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     uint16_t json_len = 0;
     uint8_t TxdBuf[JSON_PACK_MAX]={0};
     uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
-    uint16_t iCRC = 0;
+//    uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
 
     memset(tmpBuf,0x00,sizeof(tmpBuf));
@@ -938,6 +938,31 @@ void KeyOpenDoorB(void)
 //    
 //    xSemaphoreGive(gxMutex); 
 //}
+
+char send_to_host_queue(uint8_t cmd,uint8_t *buf,int len)
+{
+    TOHOST_QUEUE_T *ptMsg = &gToHostQueueBuf;
+    
+    ptMsg->cmd = cmd; 
+    ptMsg->len = len; 
+    memset(ptMsg->data,0x00,sizeof(ptMsg->data)); 
+    memcpy(ptMsg->data,buf,len);
+
+    
+    /* 使用消息队列实现指针变量的传递 */
+    if(xQueueSend(gxToHostQueue,                /* 消息队列句柄 */
+                 (void *) &ptMsg,               /* 发送指针变量recv_buf的地址 */
+                 (TickType_t)30) != pdPASS )
+    {              
+        xQueueReset(gxToHostQueue);      
+    } 
+    else
+    {
+        dbh("sent to host data",(char *)ptMsg->data,ptMsg->len);      
+    } 
+    
+    return NO_ERR;    
+}
 
 
 

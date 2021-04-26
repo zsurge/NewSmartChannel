@@ -44,7 +44,7 @@ SemaphoreHandle_t gxMutex = NULL;
 EventGroupHandle_t xCreatedEventGroup = NULL;
 QueueHandle_t gxMotorCtrlQueue = NULL; 
 QueueHandle_t gxMotorSecDoorCtrlQueue = NULL;
-//QueueSetHandle_t gxQueueSet = NULL;
+QueueHandle_t gxToHostQueue = NULL;
 
 
 
@@ -90,7 +90,10 @@ static void AppTaskCreate (void)
 //    taskENTER_CRITICAL(); 
     
     //握手
-    CreateHandShakeTask();
+//    CreateHandShakeTask();
+
+    //方向指示灯
+    CreateLedTask();//5     0
 
     //与上位机通讯处理
     CreateMsgParseTask();//8 2
@@ -101,14 +104,11 @@ static void AppTaskCreate (void)
     //B门电机控制处理
     CreateMotorCtrlSecDoorTask(); //7 6
 
-    //监控任务
-//    CreateMonitorTask();
+    //串口任务
+    CreateToHostTask();
 
     //按键处理
     CreateKeyTask();//4     7
-
-    //方向指示灯
-    CreateLedTask();//5     0
 
     //读卡器数据收集
     CreateReaderTask();//3  4
@@ -120,7 +120,7 @@ static void AppTaskCreate (void)
     CreateSensorTask();//1      3
 
     //看门狗
-    CreateWatchDogTask();//9
+//    CreateWatchDogTask();//9
 
     //删除本身
 //    vTaskDelete(xHandleTaskAppCreate); //删除AppTaskCreate任务
@@ -185,6 +185,16 @@ static void AppObjCreate (void)
     {
         AppPrintf("创建xTransQueue2消息队列失败!\r\n");
     }	
+
+
+    /* 创建消息队列 */
+    gxToHostQueue = xQueueCreate((UBaseType_t ) MOTORCTRL_QUEUE_LEN,/* 消息队列的长度 */
+                              (UBaseType_t ) sizeof(TOHOST_QUEUE_T *));/* 消息的大小 */
+    if(gxToHostQueue == NULL)
+    {
+        AppPrintf("创建gxToHostQueue消息队列失败!\r\n");
+    }
+    
 
 
     /* 添加到queue set时，消息队列和信号量必须为空*/

@@ -61,6 +61,7 @@
 #include "MotorCtrl_SecDoor_Task.h"
 #include "key_task.h"
 #include "ToHost_Task.h"
+#include "bsp_dma_usart1.h"
 
 
 /*

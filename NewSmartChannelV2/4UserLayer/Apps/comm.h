@@ -135,7 +135,7 @@ void respondLed(void);
 void KeyOpenDoorB(void);
 //void respHost(uint8_t *cmd,uint8_t len);
 
-char send_to_host_queue(uint8_t cmd,uint8_t *buf,int len);
+char send_to_host_queue(uint8_t *buf,int len);
 
 #endif
 

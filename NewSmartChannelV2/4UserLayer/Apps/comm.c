@@ -30,6 +30,7 @@
 #include "pub_options.h"
 #include "led_task.h"
 #include "log.h"
+#include "bsp_dma_usart1.h"
 
 
 /*----------------------------------------------*
@@ -104,14 +105,12 @@ void deal_Serial_Parse(void)
 //        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
 //        if(comGetChar(COM1, &ch) != 1)    //读取串口数据
 
-        if(BSP_UartRead(SCOM1,&ch,1)!=1)
-//        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
+        if(bsp_DMAUsart1Read(&ch,1) != 1)
         {
             delay_ms(10);
             
             return;
         }
-
         
         switch (gRecvHost.RxdStatus)
         { /*接收数据状态*/                
@@ -307,12 +306,15 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
 //    DBG("send json data = %s\r\n",tmpBuf);
 //    dbh("send_to_host",(char *)TxdBuf,i);
 
-    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
-    {
-          BSP_UartSend(SCOM1,TxdBuf,i); 
-    }
-    
-    xSemaphoreGive(gxMutex);
+//    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+//    {
+//          BSP_UartSend(SCOM1,TxdBuf,i); 
+//    }
+//    
+//    xSemaphoreGive(gxMutex);
+
+    send_to_host_queue(TxdBuf,i);
+
 
     return NO_ERR;
 }
@@ -742,7 +744,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
             return;
     }
 
-    send_to_host_queue(cmd_rx->cmd,TxdBuf,i);
+    send_to_host_queue(TxdBuf,i);
 
 //    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
 //    {
@@ -881,15 +883,13 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
 
     dbh("SendAsciiCodeToHost", (char *)TxdBuf, i);
 
-    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
-    {
-        BSP_UartSend(SCOM1,TxdBuf,i); 
-        
-//    bsp_Usart1_SendData(TxdBuf,i);
-    }
-    
-    xSemaphoreGive(gxMutex);
-    
+//    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+//    {
+//        BSP_UartSend(SCOM1,TxdBuf,i); 
+//    }    
+//    xSemaphoreGive(gxMutex);
+
+    send_to_host_queue(TxdBuf,i);
     return result;
 }
 
@@ -902,14 +902,14 @@ void respondLed(void)
 
     DBG("SEND LED RESPOND\r\n\r\n");
     
-    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
-    {
-        BSP_UartSend(SCOM1,retLed,39); 
-        
-//    bsp_Usart1_SendData(retLed,39);
-    }
-    
-    xSemaphoreGive(gxMutex); 
+//    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+//    {
+//        BSP_UartSend(SCOM1,retLed,39); 
+//    }
+//    
+//    xSemaphoreGive(gxMutex); 
+    send_to_host_queue(retLed,39);
+
 }
 
 
@@ -919,14 +919,15 @@ void KeyOpenDoorB(void)
     uint8_t open[61] = { 0x02,0x00,0x3b,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x62,0x37,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x52,0x65,0x71,0x75,0x65,0x73,0x74,0x20,0x74,0x6f,0x20,0x6f,0x70,0x65,0x6e,0x20,0x74,0x68,0x65,0x20,0x64,0x6f,0x6f,0x72,0x22,0x7d,0x03,0xA5,0xA5 };
     DBG("KeyOpenDoorB\r\n\r\n");
     
-    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
-    {
-        BSP_UartSend(SCOM1,open,61); 
-        
-//    bsp_Usart1_SendData(open,61);
-    }
     
-    xSemaphoreGive(gxMutex); 
+//    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+//    {
+//        BSP_UartSend(SCOM1,open,61); 
+//    }
+//    
+//    xSemaphoreGive(gxMutex); 
+
+    send_to_host_queue(open,61);
 }
 
 //void respHost(uint8_t *cmd,uint8_t len)
@@ -939,13 +940,13 @@ void KeyOpenDoorB(void)
 //    xSemaphoreGive(gxMutex); 
 //}
 
-char send_to_host_queue(uint8_t cmd,uint8_t *buf,int len)
+char send_to_host_queue(uint8_t *buf,int len)
 {
-    TOHOST_QUEUE_T *ptMsg = &gToHostQueueBuf;
-    
-    ptMsg->cmd = cmd; 
+    TOHOST_QUEUE_T *ptMsg = &gToHostQueueBuf;    
+
     ptMsg->len = len; 
     memset(ptMsg->data,0x00,sizeof(ptMsg->data)); 
+    
     memcpy(ptMsg->data,buf,len);
 
     

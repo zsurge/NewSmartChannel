@@ -107,7 +107,7 @@ static void vTaskLed(void *pvParameters)
     LED_R_G = 1;
     DisplayDevInfo();
 
-    send_to_host(HANDSHAKE,bcdbuf,6);  
+    //send_to_host(HANDSHAKE,bcdbuf,6);  
 
        
     BEEP = 0;

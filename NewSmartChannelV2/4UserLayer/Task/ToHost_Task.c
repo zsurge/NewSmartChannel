@@ -11,7 +11,7 @@
  * 宏定义                                       *
  *----------------------------------------------*/
 #define TOHOST_TASK_PRIO		(tskIDLE_PRIORITY + 9)
-#define TOHOST_STK_SIZE 		(configMINIMAL_STACK_SIZE*8)
+#define TOHOST_STK_SIZE 		(configMINIMAL_STACK_SIZE*4)
 
 /*----------------------------------------------*
  * 常量定义                                     *
@@ -49,7 +49,6 @@ static void vTaskToHost(void *pvParameters)
 
     while (1)
     { 
-        send->cmd = 0;
         send->len = 0;
         memset(send->data,0x00,sizeof(send->data));
         
@@ -60,16 +59,9 @@ static void vTaskToHost(void *pvParameters)
         if(pdTRUE == xReturn)
         {            
             //消息接收成功，发送接收到的消息
-            BSP_UartSend(SCOM1,send->data,send->len); 
+            //BSP_UartSend(SCOM1,send->data,send->len); 
             dbh("recv data",(char *)send->data,send->len);
         }
- 
-
-        /* 发送事件标志，表示任务正常运行 */        
-        //xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_1);
-
-        
-        vTaskDelay(20);
       
     }
 }

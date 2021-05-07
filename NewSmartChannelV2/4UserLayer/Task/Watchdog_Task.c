@@ -62,9 +62,6 @@ static void vTaskWatchDog(void *pvParameters)
     EventBits_t uxBits;
     const TickType_t xTicksToWait = 100 / portTICK_PERIOD_MS; /* 最大延迟1000ms */   
     
-    
-    
-    
     /* 
     
     设置好看门狗狗的分频系数和重装载值，就可以知道看门狗的喂狗时间（溢出时间）。怎么来分析呢？

@@ -98,7 +98,7 @@ static void vTaskMotorCtrl(void *pvParameters)
         if(pdTRUE == xReturn)
         {
             //消息接收成功，发送接收到的消息
-            dbh("A queue recv:",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
+            dbh("recv from host and send to MA:",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
             RS485_SendBuf(COM4, ptMotor->data,MOTORCTRL_QUEUE_BUF_LEN);//操作A电机  
 
             //判定是否是关门指令
@@ -122,8 +122,7 @@ static void vTaskMotorCtrl(void *pvParameters)
          #if 1 
         if(deal_motor_Parse(COM4,&rxFromHost) != 0)
         { 
-//            dbh("a send host", rxFromHost.rxBuff,rxFromHost.rxCnt);   
-//            i = 0;
+            dbh("recv MA and send to host:", rxFromHost.rxBuff,rxFromHost.rxCnt); 
             send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);              
             Motro_A = 0;
             memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));            

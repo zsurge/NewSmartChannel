@@ -89,7 +89,7 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters)
         if(pdTRUE == xReturn)
         {
             //消息接收成功，发送接收到的消息
-            dbh("B queue recv",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
+            dbh("recv from host and send to MB:",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
             RS485_SendBuf(COM5, ptMotor->data,MOTORCTRL_QUEUE_BUF_LEN);//操作B电机  
 
         }
@@ -105,8 +105,7 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters)
 
         if(deal_motor_Parse(COM5,&rxFromHost) != 0)
         {
-//            dbh("B send host", rxFromHost.rxBuff,rxFromHost.rxCnt);   
-//            i = 0;
+            dbh("recv MB and send to host:", rxFromHost.rxBuff,rxFromHost.rxCnt);  
             send_to_host(CONTROLMOTOR_B,rxFromHost.rxBuff,rxFromHost.rxCnt);              
             Motro_B = 0;
             memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));

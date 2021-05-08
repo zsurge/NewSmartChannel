@@ -240,7 +240,7 @@ void deal_rx_data(void)
             else
             {
                 DBG("CRC ERROR\r\n");
-                dbh("CRC ERROR RxdBuf", (char *)gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
+//                dbh("CRC ERROR RxdBuf", (char *)gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
 //                DBG("bccHi = %02x,bccLo = %02x",bccHi,bccLo);
 //                SendAsciiCodeToHost(ERRORINFO,COMM_CRC_ERR,"deal rx data crc error");
 
@@ -250,7 +250,7 @@ void deal_rx_data(void)
         }
         else
         {
-            DBG("-----------execute deal_rx_data-----------\r\n");
+//            DBG("-----------execute deal_rx_data-----------\r\n");
             init_serial_boot();
         }
     }
@@ -264,7 +264,7 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     uint16_t json_len = 0;
     uint8_t TxdBuf[MAX_TXD_BUF_LEN]={0};
     uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
-    uint16_t iCRC = 0;
+    //uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
 
 
@@ -338,7 +338,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
         return CJSON_PARSE_ERR;
     }
 
-    DBG("json data = %s\r\n",text);
+//    DBG("json data = %s\r\n",text);
 
     //获取KEY,指令描述
 //    cmd_rx->cmd_desc = (uint8_t *)cJSON_GetObjectItem(root,"cmd")->valuestring;  
@@ -556,7 +556,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 //    uint8_t setLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0x85,0x7a };
     uint8_t setLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0xA5,0xA5 };
     
-    uint16_t iCRC = 0;
+    //uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
     
     MOTORCTRL_QUEUE_T *ptMotor = &gMotorCtrlQueue; 
@@ -572,6 +572,8 @@ void send_to_device(CMD_RX_T *cmd_rx)
     
     memset(&cmd_tx,0x00,sizeof(CMD_TX_T));
     memset(TxdBuf,0x00,sizeof(TxdBuf));
+
+    dbh("from android--->", (char *)cmd_rx->cmd_data, cmd_rx->len);
     
     switch (cmd_rx->cmd)
     {
@@ -612,7 +614,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 //            {
 //                dbh("SET LED", (char *)cmd_rx->cmd_data, cmd_rx->len);
 //            }
-            DBG("set led ......\r\n");
+//            DBG("set led ......\r\n");
             bsp_Ex_SetLed((uint8_t*)cmd_rx->cmd_data);             
             i = 39;
             memcpy(TxdBuf,setLed,i);   
@@ -727,12 +729,12 @@ void send_to_device(CMD_RX_T *cmd_rx)
             return;//这里不需要向上位机上送，在另外一个任务中才上送
 
        case SET_MOTOR_A_PARAM:
-            DBG("SET_MOTOR_A_PARAM!  cmd_rx = %s\r\n",cmd_rx->cmd_data);
+//            DBG("SET_MOTOR_A_PARAM!  cmd_rx = %s\r\n",cmd_rx->cmd_data);
             parseMotorParam(cmd_rx);  
             return;
 
        case SET_MOTOR_B_PARAM:
-            DBG("SET_MOTOR_B_PARAM!\r\n");
+//            DBG("SET_MOTOR_B_PARAM!\r\n");
             parseMotorParam(cmd_rx);  
             return;
 
@@ -746,6 +748,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
    // dbh("send_to_device", (char *)TxdBuf, i);
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
+        dbh("direct return host", (char *)TxdBuf,i);
         BSP_UartSend(SCOM1,TxdBuf,i);         
     }
     xSemaphoreGive(gxMutex);
@@ -838,7 +841,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     uint16_t json_len = 0;
     uint8_t TxdBuf[JSON_PACK_MAX]={0};
     uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
-    uint16_t iCRC = 0;
+    //uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
 
     memset(tmpBuf,0x00,sizeof(tmpBuf));
@@ -879,7 +882,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     TxdBuf[i++] = 0xA5;    
 
 
-    dbh("SendAsciiCodeToHost", (char *)TxdBuf, i);
+//    dbh("SendAsciiCodeToHost", (char *)TxdBuf, i);
 
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
@@ -900,7 +903,7 @@ void respondLed(void)
     uint8_t retLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0xA5,0xA5 };
 
 
-    DBG("SEND LED RESPOND\r\n\r\n");
+//    DBG("SEND LED RESPOND\r\n\r\n");
     
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {
@@ -917,7 +920,7 @@ void KeyOpenDoorB(void)
 {
 //    uint8_t open[61] = { 0x02,0x00,0x3b,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x62,0x37,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x52,0x65,0x71,0x75,0x65,0x73,0x74,0x20,0x74,0x6f,0x20,0x6f,0x70,0x65,0x6e,0x20,0x74,0x68,0x65,0x20,0x64,0x6f,0x6f,0x72,0x22,0x7d,0x03,0xa4,0x87 };
     uint8_t open[61] = { 0x02,0x00,0x3b,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x62,0x37,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x52,0x65,0x71,0x75,0x65,0x73,0x74,0x20,0x74,0x6f,0x20,0x6f,0x70,0x65,0x6e,0x20,0x74,0x68,0x65,0x20,0x64,0x6f,0x6f,0x72,0x22,0x7d,0x03,0xA5,0xA5 };
-    DBG("KeyOpenDoorB\r\n\r\n");
+//    DBG("KeyOpenDoorB\r\n\r\n");
     
     if(xSemaphoreTake(gxMutex, portMAX_DELAY))
     {

@@ -122,17 +122,17 @@ static void vTaskKey(void *pvParameters)
 				    DBG("KEY_FIREFIGHTING_PRES is press\r\n");
 				    optDoor(MOTOR_NO1);
 				    optDoor(MOTOR_NO2);
-                    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+//                    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
 					break;
 				case KEY_OPEN_DOOR_A_PRES: 
 				    DBG("KEY_OPEN_DOOR_A_PRES is press\r\n");
 				    optDoor(MOTOR_NO1);
-                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
+//                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
 					break;
 				case KEY_OPEN_DOOR_B_PRES: 
 				    DBG("KEY_OPEN_DOOR_B_PRES is press\r\n");
                     optDoor(MOTOR_NO2);
-                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
+//                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
 					break;                
 				
 				/* 其他的键值不处理 */

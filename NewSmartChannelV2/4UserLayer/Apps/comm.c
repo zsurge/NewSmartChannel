@@ -230,7 +230,7 @@ void deal_rx_data(void)
                 {
                     //指令解析失败，向上位机发送解析失败的状态，要求重发
                      DBG("parseJSON error\r\n");
-                    SendAsciiCodeToHost(ERRORINFO,COMM_PARSE_ERR,"cmd parse error");
+//                    SendAsciiCodeToHost(ERRORINFO,COMM_PARSE_ERR,"cmd parse error");
                 }
 
                 init_serial_boot();   
@@ -242,7 +242,7 @@ void deal_rx_data(void)
                 DBG("CRC ERROR\r\n");
                 dbh("CRC ERROR RxdBuf", (char *)gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
 //                DBG("bccHi = %02x,bccLo = %02x",bccHi,bccLo);
-                SendAsciiCodeToHost(ERRORINFO,COMM_CRC_ERR,"deal rx data crc error");
+//                SendAsciiCodeToHost(ERRORINFO,COMM_CRC_ERR,"deal rx data crc error");
 
                 init_serial_boot();
               

@@ -102,7 +102,7 @@ void CreateLedTask(void)
 static void vTaskLed(void *pvParameters)
 {   
     uint16_t i = 0;    
-    uint8_t bcdbuf[6] = {0x00,0x00,0x00,0x01,0x02,0x03};
+    uint8_t bcdbuf[6] = {0x00,0x00,0x00,0x11,0x22,0x33};
     
     LED_L_G = 1;
     LED_R_G = 1;

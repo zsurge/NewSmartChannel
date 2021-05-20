@@ -278,9 +278,7 @@ void DMA2_Stream7_IRQHandler(void)
 		DMA_Cmd(DMA2_Stream7,DISABLE);
 		
 		//打开发送完成中断,发送最后两个字节
-        USART_ITConfig(USART1,USART_IT_TC,ENABLE);            
-
-        printf("DMA SEND END\r\n");
+        USART_ITConfig(USART1,USART_IT_TC,ENABLE); 
     } 
 }
 

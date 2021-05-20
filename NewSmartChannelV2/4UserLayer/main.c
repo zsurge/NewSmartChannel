@@ -114,7 +114,7 @@ static void AppTaskCreate (void)
     CreateSensorTask();//1      3
 
 //    //ø¥√≈π∑
-//    CreateWatchDogTask();//9      
+    CreateWatchDogTask();//9      
 
 }
 

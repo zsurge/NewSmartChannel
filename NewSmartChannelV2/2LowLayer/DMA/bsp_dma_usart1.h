@@ -40,19 +40,18 @@
 #define USART1_TX_SOURCE                   GPIO_PinSource6
 
 
-#define COM1_BUFF_SIZE   512 //串口接收缓存器长度
-#define UART1_RX_LEN         COM1_BUFF_SIZE //USART6 DMA接收缓存器长度
-#define UART1_TX_LEN         COM1_BUFF_SIZE //USART6 DMA发送缓存器长度
+#define USART1_DMA_MAX_SIZE 512 
 
+extern volatile uint8_t USART1_DMA_RecvBuf[USART1_DMA_MAX_SIZE];
+extern volatile uint16_t RecvTop1;
+extern volatile uint16_t RecvEnd1;
 
-extern uint8_t gUsart1RXBuff[COM1_BUFF_SIZE];//接收缓存器
-extern RingBuff_t ringbuff_handle;
 
 
 void bsp_Usart1_Init(uint32_t bound);
 void bsp_DMAUsart1Send(uint8_t *str,uint8_t cndtr);
 uint16_t bsp_DMAUsart1Read(uint8_t *buff, uint32_t len);
-    
+uint8_t bsp_DMAUsart1ReadOne (uint8_t *Str);   
 #endif
 
 

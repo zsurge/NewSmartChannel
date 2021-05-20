@@ -31,7 +31,7 @@
  * 宏定义                                       *
  *----------------------------------------------*/
 #define KEY_TASK_PRIO	    (tskIDLE_PRIORITY + 4)
-#define KEY_STK_SIZE        (configMINIMAL_STACK_SIZE*4)
+#define KEY_STK_SIZE        (configMINIMAL_STACK_SIZE)
 
 #define FIRSTDOOR_ISOPEN_YES    1
 #define FIRSTDOOR_ISOPEN_NO     0
@@ -145,7 +145,7 @@ static void vTaskKey(void *pvParameters)
         /* 发送事件标志，表示任务正常运行 */
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_7);
 		
-		vTaskDelay(20);
+		vTaskDelay(30);
 	}   
 
 }

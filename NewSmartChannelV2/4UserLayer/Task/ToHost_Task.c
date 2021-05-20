@@ -3,9 +3,11 @@
  *----------------------------------------------*/
 #include "ToHost_Task.h"
 #include "string.h"
-#include "bsp_uart.h"
+#include "bsp_dma_usart1.h"
 #include "log.h"
 #include "tool.h"
+#include "malloc.h"
+
 
 /*----------------------------------------------*
  * 宏定义                                       *
@@ -57,11 +59,21 @@ static void vTaskToHost(void *pvParameters)
                                  (void *)&send,    /*这里获取的是结构体的地址 */
                                  (TickType_t)30);  /* 设置阻塞时间 */
         if(pdTRUE == xReturn)
-        {            
-            //消息接收成功，发送接收到的消息
-            //BSP_UartSend(SCOM1,send->data,send->len); 
-            dbh("recv data",(char *)send->data,send->len);
+        { 
+            DBG("======vTaskDataProcess mem perused = %3d%======\r\n",mem_perused(SRAMIN));
+            dbh("send to host",(char *)send->data,send->len);
+            
+            if(send->len != 0)
+            {                
+                //消息接收成功，发送接收到的消息
+                bsp_DMAUsart1Send(send->data,send->len);     
+            }
+            else
+            {
+                DBG("vTaskToHost data error\r\n");
+            }
         }
+
       
     }
 }

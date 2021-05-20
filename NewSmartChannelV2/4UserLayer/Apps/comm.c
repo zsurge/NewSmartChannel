@@ -62,6 +62,8 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
 static uint16_t  packetDeviceInfo(uint8_t *command_data);
 static void parseMotorParam(CMD_RX_T *cmd_rx);
 
+static int count = 0;
+
 //static void displayTask(void);
 
 
@@ -101,17 +103,13 @@ void deal_Serial_Parse(void)
     uint8_t ch = 0; 
     
     while(1)
-    {  
-//        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
-//        if(comGetChar(COM1, &ch) != 1)    //读取串口数据
-
-        if(bsp_DMAUsart1Read(&ch,1) != 1)
+    { 
+        if(bsp_DMAUsart1ReadOne(&ch) != 1)
         {
             delay_ms(10);
             
             return;
         }
-        
         switch (gRecvHost.RxdStatus)
         { /*接收数据状态*/                
             case 0:
@@ -341,7 +339,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
         return CJSON_PARSE_ERR;
     }
 
-    DBG("json data = %s\r\n",text);
+//    DBG("json data = %s\r\n",text);
 
     //获取KEY,指令描述
 //    cmd_rx->cmd_desc = (uint8_t *)cJSON_GetObjectItem(root,"cmd")->valuestring;  
@@ -363,7 +361,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     if(cmd == NULL)
     {
         DBG("3.Error before: [%s]\r\n", cJSON_GetErrorPtr());
-          cJSON_Delete(root);
+        cJSON_Delete(root);
         return CJSON_GETITEM_ERR;
     } 
     
@@ -459,7 +457,7 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
 
     if(TxdBuf == NULL)
     {
-         my_free(TxdBuf);
+        my_free(TxdBuf);
         cJSON_Delete(root);
         return 0;
     }
@@ -744,6 +742,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
             return;
     }
 
+
     send_to_host_queue(TxdBuf,i);
 
 //    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
@@ -942,26 +941,40 @@ void KeyOpenDoorB(void)
 
 char send_to_host_queue(uint8_t *buf,int len)
 {
-    TOHOST_QUEUE_T *ptMsg = &gToHostQueueBuf;    
+    TOHOST_QUEUE_T *ptMsg = &gToHostQueueBuf;   
+
+    if(buf ==NULL || len == 0)
+    {
+        return COMM_PARSE_ERR;
+    }
+
+    //dbh("0 send_to_host_queue", (char *)buf, len);
 
     ptMsg->len = len; 
     memset(ptMsg->data,0x00,sizeof(ptMsg->data)); 
     
     memcpy(ptMsg->data,buf,len);
 
+    //DBG("execute %d times\r\n",count++);
+    
+    //dbh("1 send_to_host_queue",  (char *)ptMsg->data, ptMsg->len);
+
+
     
     /* 使用消息队列实现指针变量的传递 */
     if(xQueueSend(gxToHostQueue,                /* 消息队列句柄 */
                  (void *) &ptMsg,               /* 发送指针变量recv_buf的地址 */
-                 (TickType_t)30) != pdPASS )
+                 (TickType_t)50) != pdPASS )
     {              
         xQueueReset(gxToHostQueue);      
+        DBG("queue is full\r\n");
     } 
     else
-    {
-        dbh("sent to host data",(char *)ptMsg->data,ptMsg->len);      
-    } 
-    
+    {       
+        
+        //dbh("2 send_to_host_queue",  (char *)ptMsg->data, ptMsg->len);
+    }
+
     return NO_ERR;    
 }
 

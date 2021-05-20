@@ -30,7 +30,7 @@
  * 宏定义                                       *
  *----------------------------------------------*/
 #define SENSOR_TASK_PRIO		(tskIDLE_PRIORITY + 1)
-#define SENSOR_STK_SIZE 		(configMINIMAL_STACK_SIZE*4)
+#define SENSOR_STK_SIZE 		(configMINIMAL_STACK_SIZE)
 
 /*----------------------------------------------*
  * 常量定义                                     *
@@ -72,6 +72,7 @@ static void vTaskSensor(void *pvParameters)
 
         if(code != ERR_INFRARED)
         {
+            DBG("A key is pressed\r\n");
             memset(dat,0x00,sizeof(dat));
             
             dat[0] = code>>16;    
@@ -86,7 +87,7 @@ static void vTaskSensor(void *pvParameters)
         /* 发送事件标志，表示任务正常运行 */        
         xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_3);    
         
-        vTaskDelay(10);
+        vTaskDelay(30);
     }
 }
 

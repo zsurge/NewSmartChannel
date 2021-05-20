@@ -86,16 +86,10 @@ int main(void)
 */
 static void AppTaskCreate (void)
 {
-    //进入临界区
-//    taskENTER_CRITICAL(); 
-    
-    //握手
-//    CreateHandShakeTask();
-
-    //方向指示灯
+//    //方向指示灯
     CreateLedTask();//5     0
 
-    //与上位机通讯处理
+//    //与上位机通讯处理
     CreateMsgParseTask();//8 2
     
     //A门电机控制处理
@@ -104,29 +98,23 @@ static void AppTaskCreate (void)
     //B门电机控制处理
     CreateMotorCtrlSecDoorTask(); //7 6
 
-    //串口任务
-//    CreateToHostTask();
+//    //串口任务
+    CreateToHostTask();
 
-    //按键处理
+//    //按键处理
     CreateKeyTask();//4     7
 
-    //读卡器数据收集
+//    //读卡器数据收集
     CreateReaderTask();//3  4
 
-    //条码扫描数据处理
+//    //条码扫描数据处理
     CreateBarCodeTask();//2     5
 
-    //红外传感器数据上送
-    CreateSensorTask();//1      3
+//    //红外传感器数据上送
+//    CreateSensorTask();//1      3
 
-    //看门狗
-    CreateWatchDogTask();//9
-
-    //删除本身
-//    vTaskDelete(xHandleTaskAppCreate); //删除AppTaskCreate任务
-
-    //退出临界区
-//    taskEXIT_CRITICAL();            
+//    //看门狗
+    CreateWatchDogTask();//9      
 
 }
 

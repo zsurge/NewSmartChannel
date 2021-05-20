@@ -31,11 +31,12 @@
 
 
 
+
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
 #define LED_TASK_PRIO	    ( tskIDLE_PRIORITY+5)
-#define LED_STK_SIZE 		(configMINIMAL_STACK_SIZE*8)
+#define LED_STK_SIZE 		(configMINIMAL_STACK_SIZE*5)
 
 /*----------------------------------------------*
  * 常量定义                                     *
@@ -67,22 +68,22 @@ static void DisplayDevInfo(void)
 }
 
 
-//static void showTask ( void );
+static void showTask ( void );
 
-//static void showTask ( void )
-//{
-//	uint8_t pcWriteBuffer[1024] = {0};
+static void showTask ( void )
+{
+	uint8_t pcWriteBuffer[1024] = {0};
 
-//	printf ( "=================================================\r\n" );
-//	printf ( "任务名      任务状态 优先级   剩余栈 任务序号\r\n" );
-//	vTaskList ( ( char* ) &pcWriteBuffer );
-//	printf ( "%s\r\n", pcWriteBuffer );
+	printf ( "=================================================\r\n" );
+	printf ( "任务名      任务状态 优先级   剩余栈 任务序号\r\n" );
+	vTaskList ( ( char* ) &pcWriteBuffer );
+	printf ( "%s\r\n", pcWriteBuffer );
 
-//	printf ( "\r\n任务名       运行计数         使用率\r\n" );
-//	vTaskGetRunTimeStats ( ( char* ) &pcWriteBuffer );
-//	printf ( "%s\r\n", pcWriteBuffer );
-//	printf ( "当前动态内存剩余大小 = %d字节\r\n", xPortGetFreeHeapSize() );
-//}
+	printf ( "\r\n任务名       运行计数         使用率\r\n" );
+	vTaskGetRunTimeStats ( ( char* ) &pcWriteBuffer );
+	printf ( "%s\r\n", pcWriteBuffer );
+	printf ( "当前动态内存剩余大小 = %d字节\r\n", xPortGetFreeHeapSize() );
+}
 
 void CreateLedTask(void)
 {
@@ -107,7 +108,7 @@ static void vTaskLed(void *pvParameters)
     LED_R_G = 1;
     DisplayDevInfo();
 
-    //send_to_host(HANDSHAKE,bcdbuf,6);  
+    send_to_host(HANDSHAKE,bcdbuf,6);  
 
        
     BEEP = 0;
@@ -134,31 +135,13 @@ static void vTaskLed(void *pvParameters)
             LED2 = 0;
         }    
 
-        //系统状态运行灯，每500ms 一次
-        i++;
-        if(i == 5)
+        //系统状态运行灯，每500ms 一次http://192.168.10.1/
+        if(i++ == 5)
         {
             i = 0;
-            LED4=!LED4; 
-            
+            LED4=!LED4;             
 //            showTask();
-        }
-
-//        //获取任务通知，等待100个时间节拍，获取到，则执行上位机指令，获取不到，则执行状态查询
-//		xReturn=xTaskNotifyWait(0x0,			//进入函数的时候不清除任务bit
-//                            ULONG_MAX,	        //退出函数的时候清除所有的bit
-//                            (uint32_t *)&recvbuff,//保存任务通知值                    
-//                            (TickType_t)xMaxBlockTime);	//阻塞时间
-//                            
-//        if( pdTRUE == xReturn )
-//        {            
-//            memcpy(tmp,recvbuff,MAX_EXLED_LEN);      
-
-//                bsp_Ex_SetLed((uint8_t*)tmp); 
-//                respondLed();                
-//                gTime2 = xTaskGetTickCount();
-//                DBG("set led use %d ms\r\n",gTime2 - gTime1);
-//        }         
+        }       
         
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_0);  

@@ -57,7 +57,7 @@ static void vTaskToHost(void *pvParameters)
         //获取到，则执行上位机指令，获取不到，则执行状态查询
         xReturn = xQueueReceive( gxToHostQueue,    /* 消息队列的句柄 */
                                  (void *)&send,    /*这里获取的是结构体的地址 */
-                                 (TickType_t)30);  /* 设置阻塞时间 */
+                                 (TickType_t)20);  /* 设置阻塞时间 */
         if(pdTRUE == xReturn)
         { 
             DBG("======vTaskDataProcess mem perused = %3d%======\r\n",mem_perused(SRAMIN));

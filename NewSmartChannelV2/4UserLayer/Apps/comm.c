@@ -339,7 +339,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
         return CJSON_PARSE_ERR;
     }
 
-//    DBG("json data = %s\r\n",text);
+    DBG("json data = %s\r\n",text);
 
     //获取KEY,指令描述
 //    cmd_rx->cmd_desc = (uint8_t *)cJSON_GetObjectItem(root,"cmd")->valuestring;  
@@ -964,7 +964,7 @@ char send_to_host_queue(uint8_t *buf,int len)
     /* 使用消息队列实现指针变量的传递 */
     if(xQueueSend(gxToHostQueue,                /* 消息队列句柄 */
                  (void *) &ptMsg,               /* 发送指针变量recv_buf的地址 */
-                 (TickType_t)50) != pdPASS )
+                 (TickType_t)20) != pdPASS )
     {              
         xQueueReset(gxToHostQueue);      
         DBG("queue is full\r\n");

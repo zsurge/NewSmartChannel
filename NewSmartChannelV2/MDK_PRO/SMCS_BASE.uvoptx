@@ -120,7 +120,6 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>|4|	|4|	/?</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -152,18 +151,18 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>105</LineNumber>
+          <LineNumber>75</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134309850</Address>
+          <Address>134324958</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\4UserLayer\Apps\comm.c</Filename>
+          <Filename>..\4UserLayer\Task\Sensor_Task.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\SmartChannelApp\../4UserLayer/Apps/comm.c\105</Expression>
+          <Expression>\\SmartChannelApp\../4UserLayer/Task/Sensor_Task.c\75</Expression>
         </Bp>
       </Breakpoint>
       <Tracepoint>

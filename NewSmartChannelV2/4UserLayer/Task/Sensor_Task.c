@@ -30,7 +30,7 @@
  * 宏定义                                       *
  *----------------------------------------------*/
 #define SENSOR_TASK_PRIO		(tskIDLE_PRIORITY + 1)
-#define SENSOR_STK_SIZE 		(configMINIMAL_STACK_SIZE)
+#define SENSOR_STK_SIZE 		(configMINIMAL_STACK_SIZE*2)
 
 /*----------------------------------------------*
  * 常量定义                                     *

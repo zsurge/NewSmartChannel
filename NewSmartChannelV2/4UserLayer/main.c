@@ -111,10 +111,10 @@ static void AppTaskCreate (void)
     CreateBarCodeTask();//2     5
 
 //    //红外传感器数据上送
-//    CreateSensorTask();//1      3
+    CreateSensorTask();//1      3
 
 //    //看门狗
-    CreateWatchDogTask();//9      
+//    CreateWatchDogTask();//9      
 
 }
 

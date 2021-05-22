@@ -29,7 +29,7 @@
 /*----------------------------------------------*
  * ∫Í∂®“Â                                       *
  *----------------------------------------------*/
-#define SENSOR_TASK_PRIO		(tskIDLE_PRIORITY + 1)
+#define SENSOR_TASK_PRIO		(tskIDLE_PRIORITY + 9)
 #define SENSOR_STK_SIZE 		(configMINIMAL_STACK_SIZE*4)
 
 /*----------------------------------------------*

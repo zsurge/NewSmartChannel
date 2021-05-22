@@ -35,7 +35,7 @@
 /*----------------------------------------------*
  * ∫Í∂®“Â                                       *
  *----------------------------------------------*/
-#define LED_TASK_PRIO	    ( tskIDLE_PRIORITY+5)
+#define LED_TASK_PRIO	    ( tskIDLE_PRIORITY+1)
 #define LED_STK_SIZE 		(configMINIMAL_STACK_SIZE*5)
 
 /*----------------------------------------------*

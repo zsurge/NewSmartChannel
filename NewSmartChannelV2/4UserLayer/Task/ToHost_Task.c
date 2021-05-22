@@ -12,7 +12,7 @@
 /*----------------------------------------------*
  * ∫Í∂®“Â                                       *
  *----------------------------------------------*/
-#define TOHOST_TASK_PRIO		(tskIDLE_PRIORITY + 9)
+#define TOHOST_TASK_PRIO		(tskIDLE_PRIORITY + 12)
 #define TOHOST_STK_SIZE 		(configMINIMAL_STACK_SIZE*4)
 
 /*----------------------------------------------*

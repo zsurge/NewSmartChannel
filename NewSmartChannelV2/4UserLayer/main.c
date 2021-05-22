@@ -87,19 +87,19 @@ int main(void)
 static void AppTaskCreate (void)
 {
 //    //方向指示灯
-    CreateLedTask();//5     0
+    CreateLedTask();//1     0
 
 //    //与上位机通讯处理
     CreateMsgParseTask();//8 2
     
     //A门电机控制处理
-    CreateMotorCtrlTask();//6 1
+    CreateMotorCtrlTask();//7 1
 
     //B门电机控制处理
-    CreateMotorCtrlSecDoorTask(); //7 6
+    CreateMotorCtrlSecDoorTask(); //6 6
 
 //    //串口任务
-    CreateToHostTask();
+    CreateToHostTask();//12 4
 
 //    //按键处理
     CreateKeyTask();//4     7
@@ -111,10 +111,10 @@ static void AppTaskCreate (void)
     CreateBarCodeTask();//2     5
 
 //    //红外传感器数据上送
-    CreateSensorTask();//1      3
+    CreateSensorTask();//9      3
 
 //    //看门狗
-    CreateWatchDogTask();//9      
+    CreateWatchDogTask();//14      
 
 }
 

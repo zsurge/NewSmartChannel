@@ -28,7 +28,7 @@
 /*----------------------------------------------*
  * ∫Í∂®“Â                                       *
  *----------------------------------------------*/
-#define MOTOR_SEC_TASK_PRIO		( tskIDLE_PRIORITY + 7)
+#define MOTOR_SEC_TASK_PRIO		( tskIDLE_PRIORITY + 6)
 #define MOTOR_SEC_STK_SIZE 		(configMINIMAL_STACK_SIZE*8)
 
 

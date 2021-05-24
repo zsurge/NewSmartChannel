@@ -98,7 +98,7 @@ void bsp_Usart1_Init (uint32_t BaudRate)
 	//Usart1 NVIC 配置
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;//串口1中断通道
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;//抢占优先级1
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority =6;		//子优先级1
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority =0;		//子优先级1
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			//IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化VIC寄存器
 	

@@ -102,7 +102,7 @@ static void AppTaskCreate (void)
     CreateToHostTask();//12 4
 
 //    //按键处理
-    CreateKeyTask();//4     7
+    CreateKeyTask();//5     7
 
 //    //读卡器数据收集
     CreateReaderTask();//3  4

@@ -30,7 +30,7 @@
 /*----------------------------------------------*
  * ∫Í∂®“Â                                       *
  *----------------------------------------------*/
-#define KEY_TASK_PRIO	    (tskIDLE_PRIORITY + 4)
+#define KEY_TASK_PRIO	    (tskIDLE_PRIORITY + 5)
 #define KEY_STK_SIZE        (configMINIMAL_STACK_SIZE)
 
 #define FIRSTDOOR_ISOPEN_YES    1

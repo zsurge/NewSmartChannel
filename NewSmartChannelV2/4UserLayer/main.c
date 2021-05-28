@@ -51,6 +51,8 @@ QueueHandle_t gxMotorSecDoorCtrlQueue = NULL;
 static void AppTaskCreate(void);
 static void AppObjCreate (void);
 static void AppPrintf(char *format, ...);
+static void MotorInit(void);
+
 
 
 int main(void)
@@ -60,6 +62,8 @@ int main(void)
 
     //创建任务通信机制  
     AppObjCreate();  
+    
+    MotorInit();
 
     //创建AppTaskCreate任务
     AppTaskCreate();
@@ -225,6 +229,74 @@ static void  AppPrintf(char *format, ...)
 }
 
 
+static void MotorInit(void)
+{
+    uint8_t CloseDoor[8] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
+    uint8_t QuestStatus[8] =  { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
+    uint8_t MotorReset[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x07,0x0A,0x6B };
+
+
+    uint8_t buf[8] = {0};
+    uint8_t readLen = 0;
+    uint16_t iCRC = 0;
+    uint8_t crcBuf[2] = {0};
+    uint8_t flag = 100;
+    uint8_t cnt = 1;  
+
+    do
+    {   
+        RS485_SendBuf(COM4, QuestStatus,8);
+        delay_ms(50);
+        readLen = RS485_Recv(COM4,buf,8);  
+        
+        if(readLen >= 6 )
+        {
+            iCRC = CRC16_Modbus(buf, readLen-2);
+            crcBuf[0] = iCRC >> 8;
+            crcBuf[1] = iCRC & 0xff;  
+
+            if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
+            {    
+                 if(buf[3] == 6 ||  buf[3] == 7 ||  buf[3] == 8)
+                 {
+                    flag = buf[3];
+                    readLen = 7;
+                 }
+                 else
+                 {
+                    readLen = 0;
+                 }      
+            }  
+            else
+            {
+                readLen = 0;//持续查询
+            }            
+        }
+        else //进行复位
+        {
+            if(cnt % 10 == 0)
+            {
+               RS485_SendBuf(COM4, MotorReset,8);
+               delay_ms(2000);
+            }
+        }
+
+        cnt++;
+        dbh("buf", (char * )buf, readLen);
+    }
+    while (readLen != 7 && cnt != READ_MOTOR_STATUS_TIMES);
+
+    if(readLen !=7 && cnt == READ_MOTOR_STATUS_TIMES)
+    {
+        SendAsciiCodeToHost(ERRORINFO,MOTOR_RESET_ERR,(uint8_t *)"motor initial error");
+        return;
+    }
+
+    if(flag == 6 || flag == 7)
+    {
+        RS485_SendBuf(COM4, CloseDoor,8);
+    } 
+}
 
 
 

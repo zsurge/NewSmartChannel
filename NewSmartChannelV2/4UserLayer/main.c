@@ -63,7 +63,7 @@ int main(void)
     //创建任务通信机制  
     AppObjCreate();  
     
-    MotorInit();
+//    MotorInit();
 
     //创建AppTaskCreate任务
     AppTaskCreate();

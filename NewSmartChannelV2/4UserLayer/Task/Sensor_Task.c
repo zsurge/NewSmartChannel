@@ -64,12 +64,11 @@ static void vTaskSensor(void *pvParameters)
 {
     uint32_t code = 0;
     uint8_t dat[3+1] = {0};
-    
+
     while(1)
     {  
-        code = bsp_sensor_scan();//bsp_infrared_scan();// ;       
-
-
+        code = bsp_sensor_scan();
+        
         if(code != ERR_INFRARED)
         {
             memset(dat,0x00,sizeof(dat));
@@ -83,10 +82,9 @@ static void vTaskSensor(void *pvParameters)
         }
 
 
-        /* 发送事件标志，表示任务正常运行 */        
-        xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_3);    
-        
-        vTaskDelay(30);
+        //发送事件标志，表示任务正常运行        
+        xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_3);            
+        vTaskDelay(30);   
     }
 }
 

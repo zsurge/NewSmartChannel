@@ -31,7 +31,7 @@
  * 宏定义                                       *
  *----------------------------------------------*/
 #define KEY_TASK_PRIO	    (tskIDLE_PRIORITY + 4)
-#define KEY_STK_SIZE        (configMINIMAL_STACK_SIZE*4)
+#define KEY_STK_SIZE        (configMINIMAL_STACK_SIZE*6)
 
 #define FIRSTDOOR_ISOPEN_YES    1
 #define FIRSTDOOR_ISOPEN_NO     0
@@ -97,7 +97,7 @@ static void vTaskKey(void *pvParameters)
 			{
 				/* K1键按下 打印任务执行情况 */
 				case KEY_DOOR_B_PRES:	   
-//					DBG("KEY_DOOR_B_PRES is press\r\n");					
+					DBG("KEY_DOOR_B_PRES is press\r\n");					
 //	                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
 //	                iTime2 = xTaskGetTickCount();   /* 记下结束时间 */
 //	                DBG ( "修改记录成功，耗时: %dms\r\n",iTime2 - iTime1 );
@@ -119,34 +119,35 @@ static void vTaskKey(void *pvParameters)
 					break;				
 				/* K2键按下，打印串口操作命令 */
 				case KEY_FIREFIGHTING_PRES:
-//				    DBG("KEY_FIREFIGHTING_PRES is press\r\n");
-				    optDoor(MOTOR_NO1);
-				    optDoor(MOTOR_NO2);
+				    DBG("KEY_FIREFIGHTING_PRES is press\r\n");
                     SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+                    optDoor(MOTOR_NO1);
+				    optDoor(MOTOR_NO2);
 					break;
 				case KEY_OPEN_DOOR_A_PRES: 
-//				    DBG("KEY_OPEN_DOOR_A_PRES is press\r\n");
-				    optDoor(MOTOR_NO1);
+				    DBG("KEY_OPEN_DOOR_A_PRES is press\r\n");				    
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
+                    optDoor(MOTOR_NO1);
 					break;
 				case KEY_OPEN_DOOR_B_PRES: 
-//				    DBG("KEY_OPEN_DOOR_B_PRES is press\r\n");
-                    optDoor(MOTOR_NO2);
+				    DBG("KEY_OPEN_DOOR_B_PRES is press\r\n");                    
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
+                    optDoor(MOTOR_NO2);
 					break;                
 				
 				/* 其他的键值不处理 */
 				default:   
-				    printf("KEY_default\r\n");
+				    DBG("KEY_default\r\n");
 					break;
 			}
 		}
+		
 
         /* 发送事件标志，表示任务正常运行 */
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_7);
 		
-		vTaskDelay(20);
-	}   
+		vTaskDelay(30);
+	}  
 
 }
 
@@ -155,7 +156,7 @@ static void optDoor(uint8_t motorNo)
 {
     MOTORCTRL_QUEUE_T *ptMotor; 
     
-    uint8_t OpenDoor[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x02,0xCA,0x68 }; 
+    uint8_t OpenDoor[8] =  { 0x01,0x06,0x08,0x0C,0x00,0x03,0x0B,0xA8 }; //反向开门
     uint8_t CloseDoor[8] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
     
     ptMotor = &gMotorCtrlQueue;
@@ -170,25 +171,30 @@ static void optDoor(uint8_t motorNo)
     {   
         ptMotor->cmd = CONTROLMOTOR_A;
         
-        if(isFirstOpen)
-        {
+//        if(isFirstOpen)
+//        {
             memcpy(ptMotor->data,OpenDoor,MOTORCTRL_QUEUE_BUF_LEN); 
-        }
-        else
-        {
-            memcpy(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN); 
-        }
+//        }
+//        else
+//        {
+//            memcpy(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN); 
+//        }
 
-        isFirstOpen = !isFirstOpen;
+//        isFirstOpen = !isFirstOpen;
                 
     
         /* 使用消息队列实现指针变量的传递 */
         if(xQueueSend(gxMotorCtrlQueue,             /* 消息队列句柄 */
                      (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
-                     (TickType_t)100) != pdPASS )
+                     (TickType_t)30) != pdPASS )
         {
+            DBG("optDoor A send error\r\n");
             xQueueReset(gxMotorCtrlQueue);            
-        }   
+        } 
+        else
+        {
+            DBG("optDoor A complete\r\n");
+        }
 
 
     }
@@ -196,24 +202,29 @@ static void optDoor(uint8_t motorNo)
     {
         ptMotor->cmd = CONTROLMOTOR_B;
         
-        if(isSecondOpen)
-        {
+//        if(isSecondOpen)
+//        {
             memcpy(ptMotor->data,OpenDoor,MOTORCTRL_QUEUE_BUF_LEN); 
-        }
-        else
-        {
-            memcpy(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN); 
-        }
+//        }
+//        else
+//        {
+//            memcpy(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN); 
+//        }
 
-        
-        isSecondOpen = !isSecondOpen;
+//        
+//        isSecondOpen = !isSecondOpen;
         
         /* 使用消息队列实现指针变量的传递 */
         if(xQueueSend(gxMotorSecDoorCtrlQueue,      /* 消息队列句柄 */
                      (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
-                     (TickType_t)100) != pdPASS )
+                     (TickType_t)30) != pdPASS )
         {
+            DBG("optDoor B send error\r\n");
             xQueueReset(gxMotorSecDoorCtrlQueue);
+        }
+        else
+        {
+            DBG("optDoor b send complete\r\n");
         }
 
 

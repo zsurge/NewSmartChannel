@@ -30,8 +30,8 @@
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
-#define KEY_TASK_PRIO	    (tskIDLE_PRIORITY + 5)
-#define KEY_STK_SIZE        (configMINIMAL_STACK_SIZE)
+#define KEY_TASK_PRIO	    (tskIDLE_PRIORITY + 4)
+#define KEY_STK_SIZE        (configMINIMAL_STACK_SIZE*6)
 
 #define FIRSTDOOR_ISOPEN_YES    1
 #define FIRSTDOOR_ISOPEN_NO     0
@@ -114,39 +114,40 @@ static void vTaskKey(void *pvParameters)
 //                    g_memsize = xPortGetFreeHeapSize();
 //                    printf("系统当前内存大小为 %d 字节，开始申请内存\n",g_memsize);
                     
-                    //SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+//                    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
                     KeyOpenDoorB();
 					break;				
 				/* K2键按下，打印串口操作命令 */
 				case KEY_FIREFIGHTING_PRES:
 				    DBG("KEY_FIREFIGHTING_PRES is press\r\n");
-				    optDoor(MOTOR_NO1);
-				    optDoor(MOTOR_NO2);
                     SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+                    optDoor(MOTOR_NO1);
+				    optDoor(MOTOR_NO2);
 					break;
 				case KEY_OPEN_DOOR_A_PRES: 
-				    DBG("KEY_OPEN_DOOR_A_PRES is press\r\n");
-				    optDoor(MOTOR_NO1);
+				    DBG("KEY_OPEN_DOOR_A_PRES is press\r\n");				    
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
+                    optDoor(MOTOR_NO1);
 					break;
 				case KEY_OPEN_DOOR_B_PRES: 
-				    DBG("KEY_OPEN_DOOR_B_PRES is press\r\n");
-                    optDoor(MOTOR_NO2);
+				    DBG("KEY_OPEN_DOOR_B_PRES is press\r\n");                    
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
+                    optDoor(MOTOR_NO2);
 					break;                
 				
 				/* 其他的键值不处理 */
 				default:   
-				    printf("KEY_default\r\n");
+				    DBG("KEY_default\r\n");
 					break;
 			}
 		}
+		
 
         /* 发送事件标志，表示任务正常运行 */
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_7);
 		
 		vTaskDelay(30);
-	}   
+	}  
 
 }
 
@@ -170,22 +171,22 @@ static void optDoor(uint8_t motorNo)
     {   
         ptMotor->cmd = CONTROLMOTOR_A;
         
-        if(isFirstOpen)
-        {
+//        if(isFirstOpen)
+//        {
             memcpy(ptMotor->data,OpenDoor,MOTORCTRL_QUEUE_BUF_LEN); 
-        }
-        else
-        {
-            memcpy(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN); 
-        }
+//        }
+//        else
+//        {
+//            memcpy(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN); 
+//        }
 
-        isFirstOpen = !isFirstOpen;
+//        isFirstOpen = !isFirstOpen;
                 
     
         /* 使用消息队列实现指针变量的传递 */
         if(xQueueSend(gxMotorCtrlQueue,             /* 消息队列句柄 */
                      (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
-                     (TickType_t)100) != pdPASS )
+                     (TickType_t)30) != pdPASS )
         {
             xQueueReset(gxMotorCtrlQueue);            
         }   
@@ -196,22 +197,22 @@ static void optDoor(uint8_t motorNo)
     {
         ptMotor->cmd = CONTROLMOTOR_B;
         
-        if(isSecondOpen)
-        {
+//        if(isSecondOpen)
+//        {
             memcpy(ptMotor->data,OpenDoor,MOTORCTRL_QUEUE_BUF_LEN); 
-        }
-        else
-        {
-            memcpy(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN); 
-        }
+//        }
+//        else
+//        {
+//            memcpy(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN); 
+//        }
 
-        
-        isSecondOpen = !isSecondOpen;
+//        
+//        isSecondOpen = !isSecondOpen;
         
         /* 使用消息队列实现指针变量的传递 */
         if(xQueueSend(gxMotorSecDoorCtrlQueue,      /* 消息队列句柄 */
                      (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
-                     (TickType_t)100) != pdPASS )
+                     (TickType_t)30) != pdPASS )
         {
             xQueueReset(gxMotorSecDoorCtrlQueue);
         }

@@ -103,7 +103,7 @@ void RestoreDefaultSetting(void)
 {
     if(ef_env_set_default()== EF_NO_ERR)
     {
-        DBG("RestoreDefaultSetting success\r\n");
+//        DBG("RestoreDefaultSetting success\r\n");
     }
     
 }
@@ -115,7 +115,7 @@ void SystemUpdate(void)
     {
         ef_set_env("WMCUFLASH","6060");
         //jump iap
-        DBG("jump iap\r\n");
+//        DBG("jump iap\r\n");
         NVIC_SystemReset();
     }
 }
@@ -133,7 +133,7 @@ SYSERRORCODE_E RecordBootTimes(void)
     assert_param(c_old_boot_times);
     i_boot_times = atol(c_old_boot_times);
 
-    DBG("boot_times = %ld\r\n",i_boot_times);
+//    DBG("boot_times = %ld\r\n",i_boot_times);
     
     /* boot count +1 */
     i_boot_times ++;

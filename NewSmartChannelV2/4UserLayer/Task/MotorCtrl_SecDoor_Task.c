@@ -28,7 +28,7 @@
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
-#define MOTOR_SEC_TASK_PRIO		( tskIDLE_PRIORITY + 6)
+#define MOTOR_SEC_TASK_PRIO		( tskIDLE_PRIORITY + 7)
 #define MOTOR_SEC_STK_SIZE 		(configMINIMAL_STACK_SIZE*8)
 
 
@@ -89,7 +89,7 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters)
         if(pdTRUE == xReturn)
         {
             //消息接收成功，发送接收到的消息
-            dbh("B queue recv",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
+            dbh("recv from host and send to MB:",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
             RS485_SendBuf(COM5, ptMotor->data,MOTORCTRL_QUEUE_BUF_LEN);//操作B电机  
 
         }
@@ -101,49 +101,16 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters)
             
         }                            
 
-        vTaskDelay(50);
+        vTaskDelay(60);
 
         if(deal_motor_Parse(COM5,&rxFromHost) != 0)
         {
-//            dbh("B send host", rxFromHost.rxBuff,rxFromHost.rxCnt);   
-//            i = 0;
+            dbh("recv MB and send to host:", (char *)rxFromHost.rxBuff,rxFromHost.rxCnt);  
             send_to_host(CONTROLMOTOR_B,rxFromHost.rxBuff,rxFromHost.rxCnt);              
             Motro_B = 0;
             memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));
         }
-
-#if 0        
-        readLen = RS485_Recv(COM5,buf,8);     
-//        readLen = bsp_Usart5_Read(buf,8);
-        dbh("b door", buf, readLen);
         
-        if(readLen == 7 || readLen == 8)
-        {            
-            iCRC = CRC16_Modbus(buf, readLen-2);  
-
-            crcBuf[0] = iCRC >> 8;
-            crcBuf[1] = iCRC & 0xff;  
-
-            if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
-            {    
-                i = 0;
-                send_to_host(CONTROLMOTOR_B,buf,readLen);              
-                Motro_B = 0;
-            }
-        } 
-//        else
-//        {
-//            if(i++ == READ_MOTOR_STATUS_TIMES)
-//            {
-//                i = 0;
-//                DBG("door b connect error!\r\n");                 
-//                //RS485_SendBuf(COM5, resetMotor,MOTORCTRL_QUEUE_BUF_LEN);//RESET电机状态
-//                SendAsciiCodeToHost(ERRORINFO,MOTOR_B_ERR,"Motor B fault");
-//            }
-//            
-//        }
-
-#endif
 
         /* 发送事件标志，表示任务正常运行 */        
         xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_6);

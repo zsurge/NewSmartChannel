@@ -99,7 +99,7 @@ static void AppTaskCreate (void)
     CreateMotorCtrlTask();//6 1
 
     //B门电机控制处理
-    CreateMotorCtrlSecDoorTask(); //7 6
+    //CreateMotorCtrlSecDoorTask(); //7 6
 
     //监控任务
 //    CreateMonitorTask();

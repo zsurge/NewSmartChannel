@@ -135,7 +135,7 @@
  #define BSP_COM1_Tx_DMA_Channel             DMA_Channel_4
  
  #define BSP_COM1_Tx_BUFF_SIZE               0x600       //发送缓冲区大小
- #define BSP_COM1_Rx_BUFF_SIZE               0x600         //接收缓冲区大小
+ #define BSP_COM1_Rx_BUFF_SIZE               0x200         //接收缓冲区大小
  
  
  /**

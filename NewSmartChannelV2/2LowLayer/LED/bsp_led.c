@@ -86,6 +86,12 @@ void bsp_Ex_SetLed(uint8_t *dat)
     
     memcpy(buf,dat,15);    
 
+//   х╚бл    
+//            r     g
+//    L 4C   6C 01 67 00   
+//    M 4D   6C 01 67 00
+//    R 52   6C 01 67 00
+
     if(buf[0] == 0x4C && buf[5] == 0x4D && buf[10] == 0x52)
     {
         LED_L_R = buf[2];

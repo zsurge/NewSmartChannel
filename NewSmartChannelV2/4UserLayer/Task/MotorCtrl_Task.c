@@ -25,6 +25,7 @@
 #include "comm.h"
 #include "string.h"
 #include"Monitor_Task.h"
+#include "bsp_led.h"
 
 
 /*----------------------------------------------*
@@ -99,16 +100,23 @@ static void vTaskMotorCtrl(void *pvParameters)
         {
             //消息接收成功，发送接收到的消息
             dbh("recv from host and send to MA:",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
-            RS485_SendBuf(COM4, ptMotor->data,MOTORCTRL_QUEUE_BUF_LEN);//操作A电机  
+            RS485_SendBuf(COM4, ptMotor->data,MOTORCTRL_QUEUE_BUF_LEN);//操作A电机
+    
+//   全绿    
+//            r     g
+//    L 4C   6C 01 67 00   
+//    M 4D   6C 01 67 00
+//    R 52   6C 01 67 00
 
-            //判定是否是关门指令
-//            if(memcmp(ptMotor->data,CloseDoor,MOTORCTRL_QUEUE_BUF_LEN) == 0)
-//            {                
-//                printf("the door is closing,enable monitor task\r\n");
-//                NotifyValue = 0x55;
-//                vTaskResume(xHandleTaskMonitor);            
+
+//            if(ptMotor->data[5]==0x02)
+//            {
+//                //进门，由出口往出进口方向开门
+//                LED_L_R = 1;
+//                LED_L_G = 0;
+//                LED_R_R = 0;
+//                LED_R_G = 1;                
 //            }
-        
         }
         else
         {
@@ -117,64 +125,30 @@ static void vTaskMotorCtrl(void *pvParameters)
         }  
         
 
-        vTaskDelay(50);
-        
-         #if 1 
+        vTaskDelay(100);
+
         if(deal_motor_Parse(COM4,&rxFromHost) != 0)
         { 
-            dbh("recv MA and send to host:", rxFromHost.rxBuff,rxFromHost.rxCnt); 
-            send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);              
+            dbh("recv MA and send to host:", (char*)rxFromHost.rxBuff,rxFromHost.rxCnt); 
+            send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);   
+
+//            if(rxFromHost.rxBuff[3] == 0x08)
+//            {               
+//                //关门到位
+//                LED_L_R = 1;
+//                LED_L_G = 0;
+//                LED_R_R = 1;
+//                LED_R_G = 0;       
+//                LED_M_R = 1;
+//                LED_M_G = 0;                  
+//            }
+            
             Motro_A = 0;
             memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));            
         }
-        #else
-        
-      
-        readLen = RS485_Recv(COM4,buf,8);  
-        
-        if(readLen == 7 || readLen == 8)
-        {            
-            iCRC = CRC16_Modbus(buf, readLen-2);  
-
-            crcBuf[0] = iCRC >> 8;
-            crcBuf[1] = iCRC & 0xff;  
-
-            if(crcBuf[1] == buf[readLen-2] && crcBuf[0] == buf[readLen-1])
-            {  
-
-                dbh("a send host",buf,readLen);
-                i = 0;
-                send_to_host(CONTROLMOTOR_A,buf,readLen);              
-                Motro_A = 0;
-
-                //这里判定是否是关到位,0x08代表电机关到位
-//                if(buf[3] == 0x08 && NotifyValue == 0x55)
-//                {
-//                    //置信号量，停用监控任务
-//                    printf("the door is closed,disable monitor task\r\n");
-//                    NotifyValue = 0xAA;
-//                    vTaskSuspend(xHandleTaskMonitor); 
-//                }                
-            }
-        } 
-//        else
-//        {
-//            if(i++ == READ_MOTOR_STATUS_TIMES)
-//            {
-//                i = 0;
-//                DBG("door a connect error!\r\n"); 
-//                //RS485_SendBuf(COM4, resetMotor,MOTORCTRL_QUEUE_BUF_LEN);//查询A电机状态
-//                
-//                SendAsciiCodeToHost(ERRORINFO,MOTOR_A_ERR,"Motor A fault");
-//            }
-//            
-//        }
-
-#endif
 
         /* 发送事件标志，表示任务正常运行 */        
-        xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_1);
-      
+        xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_1);      
     }
 
 }

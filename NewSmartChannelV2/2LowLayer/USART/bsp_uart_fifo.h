@@ -46,7 +46,7 @@
 #define	UART2_FIFO_EN	1
 #define	UART3_FIFO_EN	1
 #define	UART4_FIFO_EN	1
-#define	UART5_FIFO_EN	1
+#define	UART5_FIFO_EN	0
 #define	UART6_FIFO_EN	0
 
 
@@ -55,7 +55,7 @@
 #define	UART2_RS485_EN	0
 #define	UART3_RS485_EN	0
 #define	UART4_RS485_EN	1
-#define	UART5_RS485_EN	1
+#define	UART5_RS485_EN	0
 #define	UART6_RS485_EN	0
 
 

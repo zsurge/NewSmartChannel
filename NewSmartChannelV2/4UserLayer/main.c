@@ -96,7 +96,7 @@ static void AppTaskCreate (void)
     CreateMotorCtrlTask();//7 1
 
     //B门电机控制处理
-    CreateMotorCtrlSecDoorTask(); //6 6
+//    CreateMotorCtrlSecDoorTask(); //6 6
 
 //    //串口任务
     CreateToHostTask();//12 4

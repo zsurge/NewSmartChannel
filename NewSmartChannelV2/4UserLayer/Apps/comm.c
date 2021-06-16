@@ -104,7 +104,8 @@ void deal_Serial_Parse(void)
     
     while(1)
     { 
-        if(bsp_DMAUsart1ReadOne(&ch) != 1)
+        if(BSP_UartRead(SCOM1,&ch,1)!=1)
+//        if(bsp_DMAUsart1ReadOne(&ch) != 1)
         {
             delay_ms(10);
             
@@ -228,7 +229,7 @@ void deal_rx_data(void)
                 {
                     //指令解析失败，向上位机发送解析失败的状态，要求重发
                      DBG("parseJSON error\r\n");
-                    SendAsciiCodeToHost(ERRORINFO,COMM_PARSE_ERR,"cmd parse error");
+//                    SendAsciiCodeToHost(ERRORINFO,COMM_PARSE_ERR,"cmd parse error");
                 }
 
                 init_serial_boot();   
@@ -238,9 +239,9 @@ void deal_rx_data(void)
             else
             {
                 DBG("CRC ERROR\r\n");
-                dbh("CRC ERROR RxdBuf", (char *)gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
+//                dbh("CRC ERROR RxdBuf", (char *)gRecvHost.RxdBuf, gRecvHost.RxdTotalLen);
 //                DBG("bccHi = %02x,bccLo = %02x",bccHi,bccLo);
-                SendAsciiCodeToHost(ERRORINFO,COMM_CRC_ERR,"deal rx data crc error");
+//                SendAsciiCodeToHost(ERRORINFO,COMM_CRC_ERR,"deal rx data crc error");
 
                 init_serial_boot();
               
@@ -248,7 +249,7 @@ void deal_rx_data(void)
         }
         else
         {
-            DBG("-----------execute deal_rx_data-----------\r\n");
+//            DBG("-----------execute deal_rx_data-----------\r\n");
             init_serial_boot();
         }
     }
@@ -262,7 +263,7 @@ SYSERRORCODE_E send_to_host(uint8_t cmd,uint8_t *buf,uint8_t len)
     uint16_t json_len = 0;
     uint8_t TxdBuf[MAX_TXD_BUF_LEN]={0};
     uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
-//    uint16_t iCRC = 0;
+    //uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
 
 
@@ -339,7 +340,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
         return CJSON_PARSE_ERR;
     }
 
-    DBG("json data = %s\r\n",text);
+//    DBG("json data = %s\r\n",text);
 
     //获取KEY,指令描述
 //    cmd_rx->cmd_desc = (uint8_t *)cJSON_GetObjectItem(root,"cmd")->valuestring;  
@@ -727,12 +728,12 @@ void send_to_device(CMD_RX_T *cmd_rx)
             return;//这里不需要向上位机上送，在另外一个任务中才上送
 
        case SET_MOTOR_A_PARAM:
-            DBG("SET_MOTOR_A_PARAM!  cmd_rx = %s\r\n",cmd_rx->cmd_data);
+//            DBG("SET_MOTOR_A_PARAM!  cmd_rx = %s\r\n",cmd_rx->cmd_data);
             parseMotorParam(cmd_rx);  
             return;
 
        case SET_MOTOR_B_PARAM:
-            DBG("SET_MOTOR_B_PARAM!\r\n");
+//            DBG("SET_MOTOR_B_PARAM!\r\n");
             parseMotorParam(cmd_rx);  
             return;
 
@@ -880,7 +881,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     TxdBuf[i++] = 0xA5;    
 
 
-    dbh("SendAsciiCodeToHost", (char *)TxdBuf, i);
+//    dbh("SendAsciiCodeToHost", (char *)TxdBuf, i);
 
 //    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
 //    {

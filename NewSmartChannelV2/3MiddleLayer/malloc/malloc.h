@@ -16,12 +16,12 @@
 
 //mem1内存参数设定,mem1完全处于内部SRAM里面
 #define MEM1_BLOCK_SIZE	32  			//内存块大小为32字节
-#define MEM1_MAX_SIZE		60*1024 	//最大管理内存 110k
+#define MEM1_MAX_SIZE		50*1024 	//最大管理内存 110k
 #define MEM1_ALLOC_TABLE_SIZE MEM1_MAX_SIZE/MEM1_BLOCK_SIZE  //内存表大小
 
 //mem2内存参数设定,mem2处于外部SRAM里面
 #define MEM2_BLOCK_SIZE	32  			//内存块大小为32字节
-#define MEM2_MAX_SIZE		80*1024 	//如果外部SRAM1M，最大管理内存 960K,目前我们没有用，所以设置为1
+#define MEM2_MAX_SIZE		1*1024 	//如果外部SRAM1M，最大管理内存 960K,目前我们没有用，所以设置为1
 #define MEM2_ALLOC_TABLE_SIZE MEM2_MAX_SIZE/MEM2_BLOCK_SIZE  //内存表大小
 
 //mem3内存参数设定,mem3处于CCM,用于管理CCM(特别注意,这部分SRAM,近CPU可以访问)

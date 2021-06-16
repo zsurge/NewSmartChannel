@@ -20,7 +20,6 @@
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_usart.h"
 #include "stm32f4xx_dma.h"
-#include "log.h"
 
 
 #include "UARTQueue.h"
@@ -873,8 +872,6 @@ uint32_t BSP_UartTxIdleState(uint8_t COM)
     while(BSP_UartTxIdleState(COM) == 1);
 
     resLen = BSP_UartWrite(COM,buffter,len);
-    
-    logDebug("end send uart %d data\r\n",len);
 
     return resLen;
 }

@@ -16,7 +16,7 @@
     修改内容   : 创建文件
 
 ******************************************************************************/
-#include "bsp_dma_usart1.h"
+//#include "bsp_dma_usart1.h"
 /* FreeRTOS头文件 */
 #include "FreeRTOS.h"
 #include "task.h"

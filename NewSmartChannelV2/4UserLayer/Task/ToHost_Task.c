@@ -3,7 +3,8 @@
  *----------------------------------------------*/
 #include "ToHost_Task.h"
 #include "string.h"
-#include "bsp_dma_usart1.h"
+//#include "bsp_dma_usart1.h"
+#include "BSP_Uart.h"
 #include "log.h"
 #include "tool.h"
 #include "malloc.h"
@@ -66,7 +67,8 @@ static void vTaskToHost(void *pvParameters)
             if(send->len != 0)
             {                
                 //消息接收成功，发送接收到的消息
-                bsp_DMAUsart1Send(send->data,send->len);     
+//                bsp_DMAUsart1Send(send->data,send->len);     
+                BSP_UartSend(SCOM1,send->data,send->len); 
             }
             else
             {

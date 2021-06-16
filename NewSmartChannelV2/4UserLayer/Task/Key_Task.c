@@ -93,28 +93,14 @@ static void vTaskKey(void *pvParameters)
 			switch (ucKeyCode)
 			{
 				/* K1键按下 打印任务执行情况 */
-				case KEY_DOOR_B_PRES:	   
-					DBG("KEY_DOOR_B_PRES is press\r\n");
-//                    KeyOpenDoorB();
-					break;				
-				/* K2键按下，打印串口操作命令 */
+				case KEY_DOOR_B_PRES:	
 				case KEY_FIREFIGHTING_PRES:
-				    DBG("KEY_FIREFIGHTING_PRES is press\r\n");
-                    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
-                    optDoor(MOTOR_NO1);
-//				    optDoor(MOTOR_NO2);
-					break;
+                case KEY_OPEN_DOOR_B_PRES: 				
 				case KEY_OPEN_DOOR_A_PRES: 
 				    DBG("KEY_OPEN_DOOR_A_PRES is press\r\n");				    
                     SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
                     optDoor(MOTOR_NO1);
 					break;
-				case KEY_OPEN_DOOR_B_PRES: 
-				    DBG("KEY_OPEN_DOOR_B_PRES is press\r\n");                    
-//                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
-//                    optDoor(MOTOR_NO2);
-					break;                
-				
 				/* 其他的键值不处理 */
 				default:   
 				    DBG("KEY_default\r\n");

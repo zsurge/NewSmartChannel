@@ -61,7 +61,6 @@ static void vTaskToHost(void *pvParameters)
                                  (TickType_t)20);  /* ÉèÖÃ×èÈûÊ±¼ä */
         if(pdTRUE == xReturn)
         { 
-            DBG("======vTaskDataProcess mem perused = %3d%======\r\n",mem_perused(SRAMIN));
             dbh("send to host",(char *)send->data,send->len);
             
             if(send->len != 0)

@@ -24,7 +24,7 @@
 #include "bsp_uart_fifo.h"
 #include "comm.h"
 #include "string.h"
-
+#include "bsp_led.h"
 
 
 /*----------------------------------------------*
@@ -107,46 +107,40 @@ static void vTaskMotorCtrl(void *pvParameters)
 //    M 4D   6C 01 67 00
 //    R 52   6C 01 67 00
 
-            if(ptMotor->data[5]==0x03)
-            {
-                //进门，由进口往出口方向开门                
-                LED_L_R = 0;
-                LED_L_G = 1;
-                LED_R_R = 1;
-                LED_R_G = 0;
-            }
-            else if(ptMotor->data[5]==0x02)
-            {
-                //进门，由出口往出进口方向开门
-                LED_L_R = 1;
-                LED_L_G = 0;
-                LED_R_R = 0;
-                LED_R_G = 1;                
-            }
+
+//            if(ptMotor->data[5]==0x02)
+//            {
+//                //进门，由出口往出进口方向开门
+//                LED_L_R = 1;
+//                LED_L_G = 0;
+//                LED_R_R = 0;
+//                LED_R_G = 1;                
+//            }
         }
         else
         {
             //发送默认数据包
             RS485_SendBuf(COM4, ReadStatus,MOTORCTRL_QUEUE_BUF_LEN);//查询A电机状态
-        }
+        }  
+        
 
         vTaskDelay(100);
 
         if(deal_motor_Parse(COM4,&rxFromHost) != 0)
         { 
-            dbh("recv MA and send to host:", rxFromHost.rxBuff,rxFromHost.rxCnt); 
+            dbh("recv MA and send to host:", (char*)rxFromHost.rxBuff,rxFromHost.rxCnt); 
             send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);   
 
-            if(rxFromHost.rxBuff[3] == 0x08)
-            {               
-                //关门到位
-                LED_L_R = 1;
-                LED_L_G = 0;
-                LED_R_R = 1;
-                LED_R_G = 0;       
-                LED_M_R = 1;
-                LED_M_G = 0;                  
-            }
+//            if(rxFromHost.rxBuff[3] == 0x08)
+//            {               
+//                //关门到位
+//                LED_L_R = 1;
+//                LED_L_G = 0;
+//                LED_R_R = 1;
+//                LED_R_G = 0;       
+//                LED_M_R = 1;
+//                LED_M_G = 0;                  
+//            }
             
             Motro_A = 0;
             memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));            

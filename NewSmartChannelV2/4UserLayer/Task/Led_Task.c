@@ -122,22 +122,6 @@ static void vTaskLed(void *pvParameters)
             
 //            showTask();
         }
-
-//        //获取任务通知，等待100个时间节拍，获取到，则执行上位机指令，获取不到，则执行状态查询
-//		xReturn=xTaskNotifyWait(0x0,			//进入函数的时候不清除任务bit
-//                            ULONG_MAX,	        //退出函数的时候清除所有的bit
-//                            (uint32_t *)&recvbuff,//保存任务通知值                    
-//                            (TickType_t)xMaxBlockTime);	//阻塞时间
-//                            
-//        if( pdTRUE == xReturn )
-//        {            
-//            memcpy(tmp,recvbuff,MAX_EXLED_LEN);      
-
-//                bsp_Ex_SetLed((uint8_t*)tmp); 
-//                respondLed();                
-//                gTime2 = xTaskGetTickCount();
-//                DBG("set led use %d ms\r\n",gTime2 - gTime1);
-//        }         
         
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_0);  

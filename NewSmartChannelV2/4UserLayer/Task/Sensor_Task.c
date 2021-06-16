@@ -72,7 +72,6 @@ static void vTaskSensor(void *pvParameters)
 
         if(code != ERR_INFRARED)
         {
-            DBG("A key is pressed\r\n");
             memset(dat,0x00,sizeof(dat));
             
             dat[0] = code>>16;    

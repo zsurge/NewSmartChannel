@@ -97,8 +97,8 @@ static void vTaskKey(void *pvParameters)
 				case KEY_FIREFIGHTING_PRES:
                 case KEY_OPEN_DOOR_B_PRES: 				
 				case KEY_OPEN_DOOR_A_PRES: 
-				    DBG("KEY_OPEN_DOOR_A_PRES is press\r\n");				    
-                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
+				    DBG("KEY_OPEN_DOOR_A_PRES is press\r\n");		
+				    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
                     optDoor(MOTOR_NO1);
 					break;
 				/* 其他的键值不处理 */

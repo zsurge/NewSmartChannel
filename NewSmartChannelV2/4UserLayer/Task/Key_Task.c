@@ -42,6 +42,8 @@
 #define MOTOR_NO1        1
 #define MOTOR_NO2        2
 
+#define MAX_TIME_OUT    100
+
 
 /*----------------------------------------------*
  * 常量定义                                     *
@@ -73,6 +75,8 @@ void CreateKeyTask(void)
                 (TaskHandle_t*  )&xHandleTaskKey); 
 }
 
+
+#if 0
 static void vTaskKey(void *pvParameters)
 { 
 	uint8_t ucKeyCode;
@@ -98,8 +102,7 @@ static void vTaskKey(void *pvParameters)
                 case KEY_OPEN_DOOR_B_PRES: 				
 				case KEY_OPEN_DOOR_A_PRES: 
 				    DBG("KEY_OPEN_DOOR_A_PRES is press\r\n");		
-				    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
-                    optDoor(MOTOR_NO1);
+				    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");                   
 					break;
 				/* 其他的键值不处理 */
 				default:   
@@ -116,6 +119,8 @@ static void vTaskKey(void *pvParameters)
 	}  
 
 }
+
+#endif
 
 
 static void optDoor(uint8_t motorNo)
@@ -143,6 +148,114 @@ static void optDoor(uint8_t motorNo)
         }   
 
 
+    }
+
+}
+
+
+static void vTaskKey(void *pvParameters)
+{
+    int32_t iTime1, iTime2;
+
+    while (1)
+    {        
+        switch (Key_Scan(GPIO_PORT_KEY, GPIO_PIN_KEY_DOOR_B))
+        {
+            case KEY_ON:    
+                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
+                SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");    
+                break;            
+            case KEY_HOLD:
+                break;
+            case KEY_OFF:  
+                iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
+
+                if(iTime2 - iTime1 > MAX_TIME_OUT)
+                {
+                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                }
+                break;
+            case KEY_ERROR:              
+                break;
+            default:
+                break;
+        }
+
+        switch (Key_Scan(GPIO_PORT_KEY, GPIO_PIN_FIREFIGHTING))
+        {
+            case KEY_ON:       
+                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
+                SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");    
+                break;            
+            case KEY_HOLD:
+                break;
+            case KEY_OFF:   
+                iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
+            
+                if(iTime2 - iTime1 > MAX_TIME_OUT)
+                {
+                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                }
+
+                break;
+            case KEY_ERROR:              
+                break;
+            default:
+                break;
+
+        }
+
+        switch (Key_Scan(GPIO_PORT_OPEN_DOOR, GPIO_PIN_OPEN_DOOR_A))
+        {
+            case KEY_ON:     
+                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
+                SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");    
+                break;            
+            case KEY_HOLD:
+                break;
+            case KEY_OFF:    
+                iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
+            
+                if(iTime2 - iTime1 > MAX_TIME_OUT)
+                {
+                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                }
+
+                break;
+            case KEY_ERROR:              
+                break;
+            default:
+                break;
+
+        }        
+
+        switch (Key_Scan(GPIO_PORT_OPEN_DOOR, GPIO_PIN_OPEN_DOOR_B))
+        {
+            case KEY_ON:   
+                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
+                SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");    
+                break;            
+            case KEY_HOLD:
+                break;
+            case KEY_OFF:    
+                iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
+            
+                if(iTime2 - iTime1 > MAX_TIME_OUT)
+                {
+                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                }
+
+                break;
+            case KEY_ERROR:              
+                break;
+            default:
+                break;
+
+        }
+        
+        /* 发送事件标志，表示任务正常运行 */
+		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_7);     
+        vTaskDelay(30);
     }
 
 }

@@ -51,8 +51,35 @@
 #define KEY_OPEN_DOOR_B_PRES 	4	//B门开门键按下
 
 
+//宏定义
+#define    	KEY_OFF	   		1
+#define    	KEY_ON	   	 	0
+#define    	KEY_HOLD		2
+#define		KEY_IDLE		3
+#define		KEY_ERROR		10
+
+#define		HOLD_COUNTS			50
+#define 	SHAKES_COUNTS		5
+
+
+//按键状态结构体，存储四个变量
+typedef struct
+{
+ 	uint8_t KeyLogic;
+	uint8_t KeyPhysic;
+ 	uint8_t KeyONCounts;
+ 	uint8_t KeyOFFCounts;
+}KEY_TypeDef;
+
+
+
+
+
+
+
 void bsp_key_Init(void);	//IO初始化
-uint8_t bsp_key_Scan(uint8_t);  		//按键扫描函数		
+//uint8_t bsp_key_Scan(uint8_t);  		//按键扫描函数		
+uint8_t Key_Scan(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
 
 
 #endif

@@ -47,7 +47,7 @@
 #define	UART3_FIFO_EN	1
 #define	UART4_FIFO_EN	1
 #define	UART5_FIFO_EN	1
-#define	UART6_FIFO_EN	0
+#define	UART6_FIFO_EN	1
 
 
 /* 定义使能的485接口, 0 表示不使能（不增加代码大小）， 1表示使能 */
@@ -56,7 +56,7 @@
 #define	UART3_RS485_EN	0
 #define	UART4_RS485_EN	1
 #define	UART5_RS485_EN	1
-#define	UART6_RS485_EN	0
+#define	UART6_RS485_EN	1
 
 
 
@@ -68,6 +68,11 @@
 /* RS485芯片发送使能GPIO, PE5 */
 #define RS485_U5_RX_EN()	    GPIOG->BSRRH = GPIO_Pin_0
 #define RS485_U5_TX_EN()	    GPIOG->BSRRL = GPIO_Pin_0
+
+/* RS485芯片发送使能GPIO, PG1 */
+#define RS485_U6_RX_EN()	    GPIOG->BSRRH = GPIO_Pin_1
+#define RS485_U6_TX_EN()	    GPIOG->BSRRL = GPIO_Pin_1
+
 
 
 extern volatile uint8_t Motro_A;
@@ -117,9 +122,9 @@ typedef enum
 #endif
 
 #if UART6_FIFO_EN == 1
-	#define UART6_BAUD			115200
-	#define UART6_TX_BUF_SIZE	1*1024
-	#define UART6_RX_BUF_SIZE	1*1024
+	#define UART6_BAUD			9600
+	#define UART6_TX_BUF_SIZE	1*256
+	#define UART6_RX_BUF_SIZE	1*256
 #endif
 
 /* 串口设备结构体 */

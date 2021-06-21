@@ -54,6 +54,9 @@
 #define WGREADER                        0xA9
 #define QRREADER                        0xA0
 
+#define PRESSUP                         0xAA    //按键离开
+#define SHOWINFORMATION                 0x21    //设置LED显示信息
+
 #define REQUEST_OPEN_DOOR_B             0xB7
 #define CONTROLMOTOR_B                  0xB8
 

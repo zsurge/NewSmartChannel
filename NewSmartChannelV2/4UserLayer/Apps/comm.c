@@ -59,7 +59,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx); //Ë½ÓÐº¯Êý
 static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
 static uint16_t  packetDeviceInfo(uint8_t *command_data);
 static void parseMotorParam(CMD_RX_T *cmd_rx);
-static void SetLedShowInfo(CMD_RX_T *cmd_rx);
+static void SetLedShowInfo(CMD_RX_T *cmd_rx,char mode);
 
 
 //static void displayTask(void);
@@ -740,8 +740,12 @@ void send_to_device(CMD_RX_T *cmd_rx)
             parseMotorParam(cmd_rx);  
             return;
 
+       case SHOWINFORMATION_STATIC:
+            SetLedShowInfo(cmd_rx,SHOWINFORMATION_STATIC);
+            return;
+
        case SHOWINFORMATION:
-            SetLedShowInfo(cmd_rx);
+            SetLedShowInfo(cmd_rx,SHOWINFORMATION);
             return;
             
         default:
@@ -837,10 +841,11 @@ static void parseMotorParam(CMD_RX_T *cmd_rx)
     }
 }
 
-static void SetLedShowInfo(CMD_RX_T *cmd_rx)
+static void SetLedShowInfo(CMD_RX_T *cmd_rx,char mode)
 {
     uint8_t tmpBuf[MAX_HOST_CMD_LEN] = {0};
     uint16_t i = 0;
+    uint8_t times = 5;
 
     if(cmd_rx == NULL)
     {
@@ -855,10 +860,18 @@ static void SetLedShowInfo(CMD_RX_T *cmd_rx)
     tmpBuf[i++] = 0x20;    
     tmpBuf[i++] = 0x0C;   
     
-    tmpBuf[i++] = 0x21;  
+    tmpBuf[i++] = mode;  
     tmpBuf[i++] = 0x20;  
+    if(mode == 0x20)
+    {
+        tmpBuf[i++] = 0xFF;
+    }
+    else
+    {
+        tmpBuf[i++] = 0x20;
+    }
+      
     tmpBuf[i++] = 0x20;  
-    tmpBuf[i++] = 0x21;  
 
     tmpBuf[i++] = 0x20 + cmd_rx->len;  
     
@@ -866,10 +879,15 @@ static void SetLedShowInfo(CMD_RX_T *cmd_rx)
     
     tmpBuf[i+cmd_rx->len] = 0x03;
 
-//   dbh("SetLedShowInfo", (char *)tmpBuf, i+cmd_rx->len+1);
+    dbh("SetLedShowInfo", (char *)tmpBuf, i+cmd_rx->len+1);
 
+    while (times--)
+    {   
+        RS485_SendBuf(COM6,tmpBuf,i+cmd_rx->len+1); 
+        vTaskDelay(200);  
+    }
 
-    RS485_SendBuf(COM6,tmpBuf,i+cmd_rx->len+1);     
+        
 }
 
 

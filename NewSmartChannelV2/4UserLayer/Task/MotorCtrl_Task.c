@@ -124,7 +124,6 @@ static void vTaskMotorCtrl(void *pvParameters)
             RS485_SendBuf(COM4, ReadStatus,MOTORCTRL_QUEUE_BUF_LEN);//查询A电机状态
         }  
         
-
         vTaskDelay(100);
 
         if(deal_motor_Parse(COM4,&rxFromHost) != 0)
@@ -132,16 +131,6 @@ static void vTaskMotorCtrl(void *pvParameters)
             dbh("recv MA and send to host:", (char*)rxFromHost.rxBuff,rxFromHost.rxCnt); 
             send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);   
 
-//            if(rxFromHost.rxBuff[3] == 0x08)
-//            {               
-//                //关门到位
-//                LED_L_R = 1;
-//                LED_L_G = 0;
-//                LED_R_R = 1;
-//                LED_R_G = 0;       
-//                LED_M_R = 1;
-//                LED_M_G = 0;                  
-//            }
             
             Motro_A = 0;
             memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));            

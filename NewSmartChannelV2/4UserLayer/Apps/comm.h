@@ -55,7 +55,8 @@
 #define QRREADER                        0xA0
 
 #define PRESSUP                         0xAA    //按键离开
-#define SHOWINFORMATION                 0x21    //设置LED显示信息
+#define SHOWINFORMATION_STATIC          0x20    //设置LED显示静态信息
+#define SHOWINFORMATION                 0x21    //设置LED显示滚动信息
 
 #define REQUEST_OPEN_DOOR_B             0xB7
 #define CONTROLMOTOR_B                  0xB8

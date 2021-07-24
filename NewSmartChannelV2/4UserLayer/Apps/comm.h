@@ -54,6 +54,12 @@
 #define WGREADER                        0xA9
 #define QRREADER                        0xA0
 
+#define PRESSUP                         0xAA    //按键离开
+#define SHOWINFORMATION_STATIC          0x20    //设置LED显示静态信息
+#define SHOWINFORMATION                 0x21    //设置LED显示滚动信息
+
+#define SETLEDVALUE                     0x22
+
 #define REQUEST_OPEN_DOOR_B             0xB7
 #define CONTROLMOTOR_B                  0xB8
 
@@ -85,8 +91,19 @@
 #define MAX_CMD_BCD_BUF_LEN				256  
 
 #define MAX_HOST_CMD_LEN			    256 
-#define MAX_CMD_DESC_LEN			    20
+#define MAX_CMD_DESC_LEN			    20 
+
 #define MAX_EXLED_LEN                   0x0F
+
+//typedef enum
+//{
+//    NoCMD = 0xA0,
+//    GetSensor = 0xA1,
+//    SetLed,
+//    GetDeviceStatus,
+//    GetVersion,
+//    UpGradeApp    
+//}CommandType;    
 
 typedef struct
 {

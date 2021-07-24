@@ -441,5 +441,29 @@ int StrReplace(char strRes[],char from[], char to[])
     return flag;
 }
 
+void u16ToU8(uint16_t src,uint8_t *Hi,uint8_t *Low)
+{
+    *Hi = (uint8_t)(src >> 8);
+    *Low = (uint8_t)src;
+}
+
+uint16_t u8ToU16(uint8_t Hi,uint8_t Low)
+{
+    return ((uint16_t)Hi << 8) | ((uint16_t)(Low));
+}
+
+
+void u32ToU8(uint32_t src,uint8_t *Hi_hi,uint8_t *Hi_Low,uint8_t *Low_hi,uint8_t *Low_low)
+{
+    *Hi_hi = (uint8_t)(src >> 24);    
+    *Hi_Low = (uint8_t)(src >> 16);    
+    *Low_hi = (uint8_t)(src >> 8);    
+    *Low_low = (uint8_t)src;
+
+}
+uint32_t u8ToU32(uint8_t Hi_hi,uint8_t Hi_Low,uint8_t Low_hi,uint8_t Low_low)
+{
+    return  ((uint32_t)Hi_hi << 24) | ((uint32_t)Hi_Low << 16) | ((uint32_t)Low_hi << 8) | ((uint32_t)Low_low);
+}
 
 

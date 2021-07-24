@@ -42,6 +42,8 @@
 #define MOTOR_NO1        1
 #define MOTOR_NO2        2
 
+#define MAX_TIME_OUT    100
+
 
 /*----------------------------------------------*
  * 常量定义                                     *
@@ -73,65 +75,6 @@ void CreateKeyTask(void)
                 (TaskHandle_t*  )&xHandleTaskKey); 
 }
 
-static void vTaskKey(void *pvParameters)
-{ 
-	uint8_t ucKeyCode;
-	
-//	uint8_t pcWriteBuffer[1024];
-//    uint32_t g_memsize;  
-//    int32_t iTime1, iTime2;
-
-    
-    while(1)
-    {
-        ucKeyCode = bsp_key_Scan(0);      
-		
-		if (ucKeyCode != KEY_NONE)
-		{
-            DBG("ucKeyCode = %d\r\n",ucKeyCode);
-              
-			switch (ucKeyCode)
-			{
-				/* K1键按下 打印任务执行情况 */
-				case KEY_DOOR_B_PRES:	   
-					DBG("KEY_DOOR_B_PRES is press\r\n");
-//                    KeyOpenDoorB();
-					break;				
-				/* K2键按下，打印串口操作命令 */
-				case KEY_FIREFIGHTING_PRES:
-				    DBG("KEY_FIREFIGHTING_PRES is press\r\n");
-                    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
-                    optDoor(MOTOR_NO1);
-//				    optDoor(MOTOR_NO2);
-					break;
-				case KEY_OPEN_DOOR_A_PRES: 
-				    DBG("KEY_OPEN_DOOR_A_PRES is press\r\n");				    
-                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
-                    optDoor(MOTOR_NO1);
-					break;
-				case KEY_OPEN_DOOR_B_PRES: 
-				    DBG("KEY_OPEN_DOOR_B_PRES is press\r\n");                    
-//                    SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
-//                    optDoor(MOTOR_NO2);
-					break;                
-				
-				/* 其他的键值不处理 */
-				default:   
-				    DBG("KEY_default\r\n");
-					break;
-			}
-		}
-		
-
-        /* 发送事件标志，表示任务正常运行 */
-		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_7);
-		
-		vTaskDelay(30);
-	}  
-
-}
-
-
 static void optDoor(uint8_t motorNo)
 {
     MOTORCTRL_QUEUE_T *ptMotor; 
@@ -141,12 +84,14 @@ static void optDoor(uint8_t motorNo)
     ptMotor = &gMotorCtrlQueue;
 	/* 初始化结构体指针 */
     ptMotor->cmd = 0;
+    ptMotor->len = 0;
     memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN); 	
     
     if(motorNo == MOTOR_NO1)
     {   
         ptMotor->cmd = CONTROLMOTOR_A;
-        memcpy(ptMotor->data,OpenDoor,MOTORCTRL_QUEUE_BUF_LEN); 
+        ptMotor->len = 8;
+        memcpy(ptMotor->data,OpenDoor,ptMotor->len); 
     
         /* 使用消息队列实现指针变量的传递 */
         if(xQueueSend(gxMotorCtrlQueue,             /* 消息队列句柄 */
@@ -157,6 +102,120 @@ static void optDoor(uint8_t motorNo)
         }   
 
 
+    }
+
+}
+
+
+static void vTaskKey(void *pvParameters)
+{
+    int32_t iTime1, iTime2;
+
+    while (1)
+    {        
+        switch (Key_Scan(GPIO_PORT_KEY, GPIO_PIN_KEY_DOOR_B))
+        {
+            case KEY_ON:    
+                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
+                SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+                KeyOpenDoorB();
+                break;            
+            case KEY_HOLD:
+                break;
+            case KEY_OFF:  
+                iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
+
+                if(iTime2 - iTime1 > MAX_TIME_OUT)
+                {
+                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                }
+                break;
+            case KEY_ERROR:              
+                break;
+            default:
+                break;
+        }
+
+        switch (Key_Scan(GPIO_PORT_KEY, GPIO_PIN_FIREFIGHTING))
+        {
+            case KEY_ON:       
+                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
+                optDoor(MOTOR_NO1);
+                optDoor(MOTOR_NO2);
+                SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+                break;            
+            case KEY_HOLD:
+                break;
+            case KEY_OFF:   
+                iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
+            
+                if(iTime2 - iTime1 > MAX_TIME_OUT)
+                {
+                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                }
+
+                break;
+            case KEY_ERROR:              
+                break;
+            default:
+                break;
+
+        }
+
+        switch (Key_Scan(GPIO_PORT_OPEN_DOOR, GPIO_PIN_OPEN_DOOR_A))
+        {
+            case KEY_ON:     
+                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
+                optDoor(MOTOR_NO1);
+                SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
+                
+                break;            
+            case KEY_HOLD:
+                break;
+            case KEY_OFF:    
+                iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
+            
+                if(iTime2 - iTime1 > MAX_TIME_OUT)
+                {
+                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                }
+
+                break;
+            case KEY_ERROR:              
+                break;
+            default:
+                break;
+
+        }        
+
+        switch (Key_Scan(GPIO_PORT_OPEN_DOOR, GPIO_PIN_OPEN_DOOR_B))
+        {
+            case KEY_ON:   
+                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
+                optDoor(MOTOR_NO2);
+                SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
+                break;            
+            case KEY_HOLD:
+                break;
+            case KEY_OFF:    
+                iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
+            
+                if(iTime2 - iTime1 > MAX_TIME_OUT)
+                {
+                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                }
+
+                break;
+            case KEY_ERROR:              
+                break;
+            default:
+                break;
+
+        }
+        
+        /* 发送事件标志，表示任务正常运行 */
+		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_7);     
+        vTaskDelay(30);
     }
 
 }

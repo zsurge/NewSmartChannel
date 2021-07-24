@@ -868,7 +868,7 @@ uint32_t BSP_UartTxIdleState(uint8_t COM)
  uint32_t BSP_UartSend(uint8_t COM, uint8_t *buffter, uint32_t len)
 {
     uint32_t resLen = 0;
-
+    
     while(BSP_UartTxIdleState(COM) == 1);
 
     resLen = BSP_UartWrite(COM,buffter,len);

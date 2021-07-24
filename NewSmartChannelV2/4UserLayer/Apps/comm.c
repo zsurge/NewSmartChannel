@@ -30,7 +30,6 @@
 #include "pub_options.h"
 #include "led_task.h"
 #include "log.h"
-#include "bsp_dma_usart1.h"
 
 
 /*----------------------------------------------*
@@ -61,8 +60,8 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx); //私有函数
 static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
 static uint16_t  packetDeviceInfo(uint8_t *command_data);
 static void parseMotorParam(CMD_RX_T *cmd_rx);
+static void SetLedShowInfo(CMD_RX_T *cmd_rx,char mode);
 
-static int count = 0;
 
 //static void displayTask(void);
 
@@ -103,14 +102,19 @@ void deal_Serial_Parse(void)
     uint8_t ch = 0; 
     
     while(1)
-    { 
+    {  
+//        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
+//        if(comGetChar(COM1, &ch) != 1)    //读取串口数据
+
         if(BSP_UartRead(SCOM1,&ch,1)!=1)
-//        if(bsp_DMAUsart1ReadOne(&ch) != 1)
+//        if(bsp_Usart1_RecvOne(&ch) != 1)  //读取串口数据
         {
             delay_ms(10);
             
             return;
         }
+
+        
         switch (gRecvHost.RxdStatus)
         { /*接收数据状态*/                
             case 0:
@@ -362,7 +366,7 @@ static SYSERRORCODE_E parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
     if(cmd == NULL)
     {
         DBG("3.Error before: [%s]\r\n", cJSON_GetErrorPtr());
-        cJSON_Delete(root);
+          cJSON_Delete(root);
         return CJSON_GETITEM_ERR;
     } 
     
@@ -429,30 +433,23 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
     char *TxdBuf;
     cJSON *root; // cJSON指针
     uint16_t len = 0;//返回json的长度
+    uint8_t strCmd[3] = {0};
 
     uint8_t tmp_code = cmd_tx->code;
-//    uint8_t tmpCmddata[MAX_CMD_BUF_LEN] = {0}; 
-    
-//    memset(tmpCmddata,0x00,sizeof(tmpCmddata));
     root=cJSON_CreateObject(); // 创建root对象，返回值为cJSON指针
 
     if (root == NULL)                 // 如果转化错误，则报错退出
-    {
-        my_free(TxdBuf);
+    {        
         cJSON_Delete(root);
         return 0;
     }
 
-    //这里若是不中转则，JSON打包的数据会变，原因未知  2019.07.12 surge
-//    memcpy(tmpCmddata,cmd_tx->data,strlen((const char*)cmd_tx->data));
+
+    sprintf(strCmd,"%02x",cmd_tx->cmd);
     
-    sprintf(TxdBuf,"%02x",cmd_tx->cmd);
-    
-    cJSON_AddStringToObject(root,"cmd",TxdBuf);
+    cJSON_AddStringToObject(root,"cmd",strCmd);
     cJSON_AddNumberToObject(root,"code",tmp_code);
-//    cJSON_AddStringToObject(root,"data",(const char*)tmpCmddata);   
-    cJSON_AddStringToObject(root,"data",(const char*)cmd_tx->data);   
-    
+    cJSON_AddStringToObject(root,"data",(const char*)cmd_tx->data); 
 
     TxdBuf = cJSON_PrintUnformatted(root); 
 
@@ -460,6 +457,7 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data)
     {
         my_free(TxdBuf);
         cJSON_Delete(root);
+        TxdBuf=NULL;  
         return 0;
     }
 
@@ -558,22 +556,32 @@ void send_to_device(CMD_RX_T *cmd_rx)
 //    uint8_t setLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0x85,0x7a };
     uint8_t setLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0xA5,0xA5 };
     
-//    uint16_t iCRC = 0;
+    //uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
     
     MOTORCTRL_QUEUE_T *ptMotor = &gMotorCtrlQueue; 
     MOTORCTRL_QUEUE_T *ptSecMotor = &gSecMotorCtrlQueue;  
+    LED_VALUE_STRU *ptLedValue = &gLedValueQueue;
 
     /* 清零 */
     ptMotor->cmd = 0;
+    ptMotor->len = 0;
     memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN); 
     
     /* 清零 */
     ptSecMotor->cmd = 0;
+    ptSecMotor->len = 0;
     memset(ptSecMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN);     
+
+    ptLedValue->cmd = 0;
+    ptLedValue->type = 0;
+    memset(ptLedValue->data,0x00,SETLED_QUEUE_BUF_LEN);
     
     memset(&cmd_tx,0x00,sizeof(CMD_TX_T));
     memset(TxdBuf,0x00,sizeof(TxdBuf));
+
+	DBG("from android---> CMD = %02x,len = %d\r\n",cmd_rx->cmd,cmd_rx->len);
+    dbh("from android--->", (char *)cmd_rx->cmd_data, cmd_rx->len);
     
     switch (cmd_rx->cmd)
     {
@@ -599,21 +607,6 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[i++] = 0xA5;              
             break;
         case SETLED: //设置LED灯
-//            gTime1 = xTaskGetTickCount();
-//            xReturn = xTaskNotify( xHandleTaskLed, /*任务句柄*/
-//                                 (uint32_t)&cmd_rx->cmd_data,
-//                                 eSetValueWithOverwrite );/*覆盖当前通知*/
-//          
-//            if( xReturn != pdPASS )
-//            {
-//                SendAsciiCodeToHost(ERRORINFO,COMM_SEND_ERR,"set led error,try again");
-//                DBG("Set LED Send Error!\r\n");
-//                dbh("Set LED Send Error", (char *)cmd_rx->cmd_data, MAX_EXLED_LEN);                
-//            }
-//            else
-//            {
-//                dbh("SET LED", (char *)cmd_rx->cmd_data, cmd_rx->len);
-//            }
             bsp_Ex_SetLed((uint8_t*)cmd_rx->cmd_data);             
             i = 39;
             memcpy(TxdBuf,setLed,i);   
@@ -690,7 +683,8 @@ void send_to_device(CMD_RX_T *cmd_rx)
         case CONTROLMOTOR_A:
              //向电机发送控制指令
             ptMotor->cmd = CONTROLMOTOR_A;
-            memcpy(ptMotor->data,cmd_rx->cmd_data,MOTORCTRL_QUEUE_BUF_LEN); 
+            ptMotor->len = cmd_rx->len;
+            memcpy(ptMotor->data,cmd_rx->cmd_data,cmd_rx->len); 
 
 			/* 使用消息队列实现指针变量的传递 */
 			if(xQueueSend(gxMotorCtrlQueue,             /* 消息队列句柄 */
@@ -709,7 +703,8 @@ void send_to_device(CMD_RX_T *cmd_rx)
         case CONTROLMOTOR_B:
              //向电机发送控制指令
             ptSecMotor->cmd = CONTROLMOTOR_B;
-            memcpy(ptSecMotor->data,cmd_rx->cmd_data,MOTORCTRL_QUEUE_BUF_LEN); 
+            ptSecMotor->len = cmd_rx->len;
+            memcpy(ptSecMotor->data,cmd_rx->cmd_data,cmd_rx->len); 
 
 			/* 使用消息队列实现指针变量的传递 */
 			if(xQueueSend(gxMotorSecDoorCtrlQueue,      /* 消息队列句柄 */
@@ -737,6 +732,29 @@ void send_to_device(CMD_RX_T *cmd_rx)
             parseMotorParam(cmd_rx);  
             return;
 
+       case SHOWINFORMATION_STATIC:
+            SetLedShowInfo(cmd_rx,SHOWINFORMATION_STATIC);
+            return;
+
+       case SHOWINFORMATION:
+            SetLedShowInfo(cmd_rx,SHOWINFORMATION);
+            return;
+
+       case SETLEDVALUE: 
+            ptLedValue->cmd = SETLEDVALUE;
+            ptLedValue->type = 0x01;    //从上位机
+            memcpy(ptLedValue->data,cmd_rx->cmd_data,SETLED_QUEUE_BUF_LEN); 
+
+			/* 使用消息队列实现指针变量的传递 */
+			if(xQueueSend(gxLedSetQueue,      /* 消息队列句柄 */
+						 (void *) &ptLedValue,             /* 发送结构体指针变量ptReader的地址 */
+						 (TickType_t)50) != pdPASS )
+			{
+                xQueueReset(gxLedSetQueue);
+                DBG("gxLedSetQueue the queue is error!\r\n"); 
+            } 
+      
+            return;
             
         default:
             init_serial_boot(); 
@@ -746,14 +764,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 
     send_to_host_queue(TxdBuf,i);
 
-//    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
-//    {
-//        BSP_UartSend(SCOM1,TxdBuf,i);         
-//    }
-//    xSemaphoreGive(gxMutex);
-    
-//    gTime2 = xTaskGetTickCount();
-//    DBG("set led use %d ms\r\n",gTime2 - gTime1);
+
 
 }
 
@@ -776,6 +787,7 @@ static void parseMotorParam(CMD_RX_T *cmd_rx)
 
     /* 清零 */
     ptMotor->cmd = 0;
+    ptMotor->len = 0;
     memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN); 	  
 
     if(cmd_rx == NULL)
@@ -803,7 +815,7 @@ static void parseMotorParam(CMD_RX_T *cmd_rx)
 
         ptMotor->cmd = cmd_rx->cmd;
         
-        memcpy(ptMotor->data,TxdBuf,MOTORCTRL_QUEUE_BUF_LEN); 
+        memcpy(ptMotor->data,TxdBuf,ptMotor->len); 
 
         if(ptMotor->cmd == SET_MOTOR_A_PARAM)
         {
@@ -831,6 +843,55 @@ static void parseMotorParam(CMD_RX_T *cmd_rx)
     }
 }
 
+static void SetLedShowInfo(CMD_RX_T *cmd_rx,char mode)
+{
+    uint8_t tmpBuf[MAX_HOST_CMD_LEN] = {0};
+    uint16_t i = 0;
+    uint8_t times = 6;
+
+    if(cmd_rx == NULL)
+    {
+        return ;
+    }
+
+    memset(tmpBuf,0x00,sizeof(tmpBuf));
+
+    tmpBuf[i++] = 0x02;
+    tmpBuf[i++] = 0x21;
+    tmpBuf[i++] = 0x25;
+    tmpBuf[i++] = 0x20;    
+    tmpBuf[i++] = 0x0C;   
+    
+    tmpBuf[i++] = mode;  
+    tmpBuf[i++] = 0x20;  
+    if(mode == 0x20)
+    {
+        tmpBuf[i++] = 0xFF;
+    }
+    else
+    {
+        tmpBuf[i++] = 0x20;
+    }
+      
+    tmpBuf[i++] = 0x20;  
+
+    tmpBuf[i++] = 0x20 + cmd_rx->len;  
+    
+    memcpy(tmpBuf+i,cmd_rx->cmd_data,cmd_rx->len);
+    
+    tmpBuf[i+cmd_rx->len] = 0x03;
+
+    dbh("SetLedShowInfo", (char *)tmpBuf, i+cmd_rx->len+1);
+
+    while (times--)
+    {   
+        RS485_SendBuf(COM6,tmpBuf,i+cmd_rx->len+1); 
+        vTaskDelay(200);  
+    }
+
+        
+}
+
 
 SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
 {
@@ -840,7 +901,7 @@ SYSERRORCODE_E SendAsciiCodeToHost(uint8_t cmd,SYSERRORCODE_E code,uint8_t *buf)
     uint16_t json_len = 0;
     uint8_t TxdBuf[JSON_PACK_MAX]={0};
     uint8_t tmpBuf[MAX_TXD_BUF_LEN] = {0};
-//    uint16_t iCRC = 0;
+    //uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
 
     memset(tmpBuf,0x00,sizeof(tmpBuf));
@@ -900,7 +961,7 @@ void respondLed(void)
     uint8_t retLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0xA5,0xA5 };
 
 
-    DBG("SEND LED RESPOND\r\n\r\n");
+//    DBG("SEND LED RESPOND\r\n\r\n");
     
 //    if(xSemaphoreTake(gxMutex, portMAX_DELAY))
 //    {

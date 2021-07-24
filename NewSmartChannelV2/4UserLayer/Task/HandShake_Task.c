@@ -30,7 +30,7 @@
  * 宏定义                                       *
  *----------------------------------------------*/
 #define HANDSHAKE_TASK_PRIO	( tskIDLE_PRIORITY)
-#define HANDSHAKE_STK_SIZE  (configMINIMAL_STACK_SIZE*8)
+#define HANDSHAKE_STK_SIZE  (configMINIMAL_STACK_SIZE*6)
 
 /*----------------------------------------------*
  * 常量定义                                     *
@@ -64,32 +64,9 @@ static void DisplayDevInfo(void)
 void vTaskHandShake(void *pvParameters)
 {
 
-//    uint32_t i_boot_times = NULL;
-//    char *c_old_boot_times, c_new_boot_times[12] = {0};
     uint8_t bcdbuf[6] = {0x00,0x00,0x00,0x01,0x02,0x03};
-
+    
     DisplayDevInfo();
-#if 0
-
-    /* get the boot count number from Env */
-    c_old_boot_times = ef_get_env((const char*)"boot_times");
-    assert_param(c_old_boot_times);
-    i_boot_times = atol(c_old_boot_times);
-
-    /* boot count +1 */
-    i_boot_times ++;
-
-    /* interger to string */
-    sprintf(c_new_boot_times,"%012ld", i_boot_times);
-
-    printf("boot_times = %s\r\n",c_new_boot_times);
-
-    /* set and store the boot count number to Env */
-    ef_set_env("boot_times", c_new_boot_times);    
-
-    asc2bcd(bcdbuf,(uint8_t *)c_new_boot_times , 12, 1);
-
-#endif    
 
     send_to_host(HANDSHAKE,bcdbuf,6);  
 

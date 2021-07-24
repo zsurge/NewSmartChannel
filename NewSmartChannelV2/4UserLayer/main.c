@@ -44,6 +44,7 @@ SemaphoreHandle_t gxMutex = NULL;
 EventGroupHandle_t xCreatedEventGroup = NULL;
 QueueHandle_t gxMotorCtrlQueue = NULL; 
 QueueHandle_t gxMotorSecDoorCtrlQueue = NULL;
+QueueHandle_t gxLedSetQueue = NULL;
 QueueHandle_t gxToHostQueue = NULL;
 
 
@@ -86,10 +87,13 @@ int main(void)
 */
 static void AppTaskCreate (void)
 {
-//    //方向指示灯
-    CreateLedTask();//5     0
+    //进入临界区
+//    taskENTER_CRITICAL(); 
+    
+    //握手
+    CreateHandShakeTask();
 
-//    //与上位机通讯处理
+    //与上位机通讯处理
     CreateMsgParseTask();//8 2
     
     //A门电机控制处理
@@ -101,20 +105,29 @@ static void AppTaskCreate (void)
 //    //串口任务
     CreateToHostTask();//12 4
 
-//    //按键处理
+    //按键处理
     CreateKeyTask();//4     7
 
-//    //读卡器数据收集
+    //方向指示灯
+    CreateLedTask();//5     0
+
+    //读卡器数据收集
     CreateReaderTask();//3  4
 
-//    //条码扫描数据处理
+    //条码扫描数据处理
     CreateBarCodeTask();//2     5
 
-//    //红外传感器数据上送
+    //红外传感器数据上送
     CreateSensorTask();//1      3
 
-//    //看门狗
-    CreateWatchDogTask();//14      
+    //看门狗
+    CreateWatchDogTask();//9
+
+    //删除本身
+//    vTaskDelete(xHandleTaskAppCreate); //删除AppTaskCreate任务
+
+    //退出临界区
+//    taskEXIT_CRITICAL();            
 
 }
 
@@ -174,7 +187,15 @@ static void AppObjCreate (void)
         AppPrintf("创建xTransQueue2消息队列失败!\r\n");
     }	
 
-
+    /* 创建消息队列 */
+    gxLedSetQueue = xQueueCreate((UBaseType_t ) SETLED_QUEUE_LEN,/* 消息队列的长度 */
+                              (UBaseType_t ) sizeof(MOTORCTRL_QUEUE_T *));/* 消息的大小 */
+    if(gxLedSetQueue == NULL)
+    {
+        AppPrintf("创建xTransQueue2消息队列失败!\r\n");
+    }	
+	
+	
     /* 创建消息队列 */
     gxToHostQueue = xQueueCreate((UBaseType_t ) MOTORCTRL_QUEUE_LEN,/* 消息队列的长度 */
                               (UBaseType_t ) sizeof(TOHOST_QUEUE_T *));/* 消息的大小 */

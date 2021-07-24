@@ -20,6 +20,10 @@
 #define STEP1   0
 #define STEP2   10
 #define STEP3   20
+#define STEP4   30
+
+#define ENABLE_SEND 0
+#define DISABLE_SEND 1
 
 
 #define  USE_FreeRTOS      1
@@ -46,8 +50,8 @@
 #define	UART2_FIFO_EN	1
 #define	UART3_FIFO_EN	1
 #define	UART4_FIFO_EN	1
-#define	UART5_FIFO_EN	0
-#define	UART6_FIFO_EN	0
+#define	UART5_FIFO_EN	1
+#define	UART6_FIFO_EN	1
 
 
 /* 定义使能的485接口, 0 表示不使能（不增加代码大小）， 1表示使能 */
@@ -55,8 +59,8 @@
 #define	UART2_RS485_EN	0
 #define	UART3_RS485_EN	0
 #define	UART4_RS485_EN	1
-#define	UART5_RS485_EN	0
-#define	UART6_RS485_EN	0
+#define	UART5_RS485_EN	1
+#define	UART6_RS485_EN	1
 
 
 
@@ -68,6 +72,11 @@
 /* RS485芯片发送使能GPIO, PE5 */
 #define RS485_U5_RX_EN()	    GPIOG->BSRRH = GPIO_Pin_0
 #define RS485_U5_TX_EN()	    GPIOG->BSRRL = GPIO_Pin_0
+
+/* RS485芯片发送使能GPIO, PG1 */
+#define RS485_U6_RX_EN()	    GPIOG->BSRRH = GPIO_Pin_1
+#define RS485_U6_TX_EN()	    GPIOG->BSRRL = GPIO_Pin_1
+
 
 
 extern volatile uint8_t Motro_A;
@@ -117,9 +126,9 @@ typedef enum
 #endif
 
 #if UART6_FIFO_EN == 1
-	#define UART6_BAUD			115200
-	#define UART6_TX_BUF_SIZE	1*1024
-	#define UART6_RX_BUF_SIZE	1*1024
+	#define UART6_BAUD			9600
+	#define UART6_TX_BUF_SIZE	1*256
+	#define UART6_RX_BUF_SIZE	1*256
 #endif
 
 /* 串口设备结构体 */
@@ -150,7 +159,7 @@ typedef struct FROMHOST
     uint8_t rxCRCLow;                      //校验值    
     uint8_t rxLen;                     //需要接收的字节长度
     uint8_t rxCnt;                     //已接收字节数  
-    uint8_t rxBuff[8];                 //接收字节
+    uint8_t rxBuff[32];                 //接收字节
 }FROMHOST_STRU;
 
 uint8_t deal_motor_Parse(COM_PORT_E _ucPort,FROMHOST_STRU *rxFromDev);

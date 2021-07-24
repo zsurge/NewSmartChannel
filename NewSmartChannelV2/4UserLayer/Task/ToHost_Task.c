@@ -61,7 +61,7 @@ static void vTaskToHost(void *pvParameters)
                                  (TickType_t)20);  /* ÉèÖÃ×èÈûÊ±¼ä */
         if(pdTRUE == xReturn)
         { 
-            dbh("send to host",(char *)send->data,send->len);
+            //dbh("send to host",(char *)send->data,send->len);
             
             if(send->len != 0)
             {                

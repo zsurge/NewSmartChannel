@@ -24,6 +24,8 @@
 #include "bsp_uart_fifo.h"
 #include "comm.h"
 #include "string.h"
+#include "math.h"
+//#include"Monitor_Task.h"
 #include "bsp_led.h"
 
 
@@ -70,27 +72,37 @@ void CreateMotorCtrlTask(void)
 static void vTaskMotorCtrl(void *pvParameters)
 {  
     BaseType_t xReturn = pdTRUE;/* 定义一个创建信息返回值，默认为pdPASS */
-//    uint32_t i = 0;
-//    uint8_t buf[8] = {0};
-//    uint16_t readLen = 0;
-//    uint16_t iCRC = 0;
-//    uint8_t crcBuf[2] = {0};
-//    uint8_t CloseDoor[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
-    uint8_t ReadStatus[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
-//    uint8_t resetMotor[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x06,0x08,0x0C,0x00,0x07,0x0A,0x6B };
-//    uint32_t NotifyValue = 0x55;
-    FROMHOST_STRU rxFromHost;   
+
+    uint8_t OpenDoor[8] = { 0x01,0x06,0x08,0x0C,0x00,0x02,0xCA,0x68 };
+    uint8_t ReadStatus[8] = { 0x01,0x03,0x07,0x04,0x00,0x0A,0x85,0x78 };
+    uint16_t crc_data = 0;
+    uint8_t tmpBuf[8] = {0};
+    uint8_t sendBuf[8] = {0};
+    uint8_t direction = 0;
+    uint8_t isEnable = ENABLE_SEND;
+    uint32_t expectValue = 0;
+    uint32_t currentValue = 0;
+    float percentage = 0.0;
+
+
+	uint32_t tmp_expectValue = 0;
+    uint32_t tmp_currentValue = 0;
+    
+    FROMHOST_STRU rxFromHost;  
     MOTORCTRL_QUEUE_T *ptMotor; 
 	/* 初始化结构体指针 */
 	ptMotor = &gMotorCtrlQueue;
     
     /* 清零 */
     ptMotor->cmd = 0;
+    ptMotor->len = 0;
     memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN); 
     memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));  
     
     while (1)
     { 
+       memset(sendBuf,0x00,sizeof(sendBuf));
+                
         //获取到，则执行上位机指令，获取不到，则执行状态查询
         xReturn = xQueueReceive( gxMotorCtrlQueue,    /* 消息队列的句柄 */
                                  (void *)&ptMotor,  /*这里获取的是结构体的地址 */
@@ -98,49 +110,109 @@ static void vTaskMotorCtrl(void *pvParameters)
         if(pdTRUE == xReturn)
         {
             //消息接收成功，发送接收到的消息
-            dbh("recv from host and send to MA:",(char *)ptMotor->data, MOTORCTRL_QUEUE_BUF_LEN);
-            RS485_SendBuf(COM4, ptMotor->data,MOTORCTRL_QUEUE_BUF_LEN);//操作A电机
-    
-//   全绿    
-//            r     g
-//    L 4C   6C 01 67 00   
-//    M 4D   6C 01 67 00
-//    R 52   6C 01 67 00
-
-
-//            if(ptMotor->data[5]==0x02)
-//            {
-//                //进门，由出口往出进口方向开门
-//                LED_L_R = 1;
-//                LED_L_G = 0;
-//                LED_R_R = 0;
-//                LED_R_G = 1;                
-//            }
+            //dbh("recv from host and send to MA:",(char *)ptMotor->data, ptMotor->len);
+            if(ptMotor->len >= 8)
+            {
+                direction = ptMotor->data[8];
+                memcpy(sendBuf,ptMotor->data,8);
+            }
+            else
+            {
+                //direction = 0;
+                memcpy(sendBuf,ptMotor->data,8);
+            }
         }
         else
         {
             //发送默认数据包
-            RS485_SendBuf(COM4, ReadStatus,MOTORCTRL_QUEUE_BUF_LEN);//查询A电机状态
-        }  
-        
+            //RS485_SendBuf(COM4, ReadStatus,8);//查询A电机状态
+            memcpy(sendBuf,ReadStatus,8);
+        }
 
-        vTaskDelay(100);
+        //当从入口方向进入时，已关门角度大于50%时，触发红外，不开门，继续关闭
+        if(isEnable == DISABLE_SEND && sendBuf[5] == 0x02 && sendBuf[1] == 0x06)
+        {
+		   send_to_host(CONTROLMOTOR_A,OpenDoor,8); 
+           //RS485_SendBuf(COM4, ReadStatus,8);//查询A电机状态  
+        }
+        else
+        {
+           RS485_SendBuf(COM4, sendBuf,8);
+        }          
+
+		
+		//dbh("send to MA:",(char *)sendBuf, 8);
+       
+        vTaskDelay(50);
 
         if(deal_motor_Parse(COM4,&rxFromHost) != 0)
         { 
-            dbh("recv MA and send to host:", (char*)rxFromHost.rxBuff,rxFromHost.rxCnt); 
-            send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);   
+            //dbh("recv MA and send to host:", (char*)rxFromHost.rxBuff,rxFromHost.rxCnt);	
 
-//            if(rxFromHost.rxBuff[3] == 0x08)
-//            {               
-//                //关门到位
-//                LED_L_R = 1;
-//                LED_L_G = 0;
-//                LED_R_R = 1;
-//                LED_R_G = 0;       
-//                LED_M_R = 1;
-//                LED_M_G = 0;                  
-//            }
+			
+			 tmp_currentValue = u8ToU32(rxFromHost.rxBuff[3],rxFromHost.rxBuff[4],rxFromHost.rxBuff[5],rxFromHost.rxBuff[6]);
+			 tmp_expectValue = u8ToU32(rxFromHost.rxBuff[7],rxFromHost.rxBuff[8],rxFromHost.rxBuff[9],rxFromHost.rxBuff[10]);
+
+			 DBG("currentValue = <%d>, expectValue = <%d>\r\n",tmp_currentValue,tmp_expectValue);
+			
+            
+            if(rxFromHost.rxBuff[1] == 0x03 && rxFromHost.rxCnt== 25)
+            {            
+                //因为查询指令改了，所以这里重新打包数据给上位机，避免上位机改动
+                memset(tmpBuf,0x00,sizeof(tmpBuf));
+                tmpBuf[0] = 0x01;
+                tmpBuf[1] = 0x03;
+                tmpBuf[2] = 0x02;
+                tmpBuf[3] = rxFromHost.rxBuff[19];
+                tmpBuf[4] = rxFromHost.rxBuff[20];
+                crc_data = CRC16_Modbus(tmpBuf, 5);                
+                tmpBuf[5] = crc_data>>8;
+                tmpBuf[6] = crc_data & 0xFF;                 
+                send_to_host(CONTROLMOTOR_A,tmpBuf,7);
+            }
+            else
+            {
+                send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);
+            }          
+            
+            
+            //direction = 0x55 表示进方向，=0xAA 表示出方向
+            if(direction == 0x55 && rxFromHost.rxCnt== 25) 
+            {            
+                currentValue = u8ToU32(rxFromHost.rxBuff[3],rxFromHost.rxBuff[4],rxFromHost.rxBuff[5],rxFromHost.rxBuff[6]);
+                expectValue = u8ToU32(rxFromHost.rxBuff[7],rxFromHost.rxBuff[8],rxFromHost.rxBuff[9],rxFromHost.rxBuff[10]);
+
+				currentValue = abs(currentValue);
+				expectValue = abs(expectValue);
+				
+				
+				if(expectValue == 0 && percentage == 0.0F)
+				{
+					percentage = currentValue *0.6F;
+ 				}				
+
+
+                DBG("currentValue = %d, expectValue = %d,percentage = %f\r\n",currentValue,expectValue,percentage);
+                
+                //根据值设置标志位
+                if(currentValue <percentage)
+                {
+                    isEnable = DISABLE_SEND;
+                }
+                else 
+                {
+                    isEnable = ENABLE_SEND;
+                }
+            }
+
+
+            //到位后，重置状态
+            if(rxFromHost.rxBuff[19] == 0x08)
+            {
+                direction = 0;
+                isEnable = ENABLE_SEND;
+				expectValue = 0.0F;
+            }
             
             Motro_A = 0;
             memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));            

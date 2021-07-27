@@ -1,0 +1,447 @@
+commit 046b5ec1dc6094315977c8925e9e7348d287002d
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Jul 26 14:11:28 2021 +0800
+
+    暂存数据
+
+commit e2e03c57c3a6c703b01f43f32d06f0eb1a4fda2b
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Jul 26 11:47:00 2021 +0800
+
+    暂存数据
+
+commit 2806b86f93ea4ec47108761308737c157d0b906c
+Author: zhangduo <zdsurge@163.com>
+Date:   Tue Jul 13 11:00:32 2021 +0800
+
+    V1.0.9测试版
+    1.修正防夹逻辑
+    2.修改接收到指令的打印信息
+
+commit 2767ddf294afcfed9ef689c6dc8fdb2b5c3681e0
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Jul 12 10:47:00 2021 +0800
+
+    V1.0.9
+    1.测试版本
+    2.修改防夹的判定标准
+
+commit e50ef54d8a2d578d90804a9e3ba08061e971026d
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Jul 5 14:40:23 2021 +0800
+
+    V1.0.9 测试版
+    1.添加对LED屏的支持
+    2.添加对开关门新逻辑，防夹的支持
+    3.修改按键驱动，添加弹开按键事件
+    4.取消串口互斥信号量；
+    5.添加LED灯0X22,0X23的指令，暂未使用；
+    6.修改电机指令的长度为10个字节
+    7.添加LED的控制队列，暂时未使用
+
+commit 7c0d8343719ab1fb97f2d90110745aff660474d8
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon May 24 17:17:34 2021 +0800
+
+    V1.0.8
+    调整串口中断优先级
+
+commit 935fa8e35a16b61591fc0a93b6cce0ca1c5da24b
+Author: zhangduo <zdsurge@163.com>
+Date:   Sat May 22 11:15:34 2021 +0800
+
+    V1.0.8
+    山海四季使用版本
+
+commit b9d1eceebea0dc6277fbe3099dc621ae37ab9adc
+Author: zhangduo <zdsurge@163.com>
+Date:   Sat May 8 16:15:56 2021 +0800
+
+    删除一起DEBUG信息息
+
+commit fc97f3de6fcdf3afa1b38c7e70519391acb25ce9
+Author: zhangduo <zdsurge@163.com>
+Date:   Sat May 8 10:08:32 2021 +0800
+
+    V1.0.8
+    1.删除一些无效的上送语句；
+    2.修改红外时间延时10ms为30ms
+
+commit 8b2ba0a6dd8a65ad2f2753a5c931d6caab649b72
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Dec 9 14:36:56 2020 +0800
+
+    V1.0.8
+    1.所有上送android的数据全部使用固定CRC值；
+    2.在开机时设置亮绿灯
+
+commit a61f7c3d17c8822732b0fcac65ef3a9c013fd02c
+Author: zhangduo <zdsurge@163.com>
+Date:   Thu Nov 12 18:29:24 2020 +0800
+
+    V1.0.7
+    1.修改跟android通讯的CRC值为固定值，设计缺陷，校验值有可能等于包头或者包尾
+
+commit a7b7d0adf7359cd4efadef2d2d8e0fa664883c8b
+Author: zhangduo <zdsurge@163.com>
+Date:   Sat Nov 7 17:56:45 2020 +0800
+
+    V1.0.6
+    修正LED设置的方法；
+    修正JSON 空指针的销毁；
+
+commit 3ccd943bc799c8ed992d33ef757bc6b8344a4ab5
+Author: zhangduo <zdsurge@163.com>
+Date:   Tue Oct 13 17:02:07 2020 +0800
+
+    1.跟上位机通讯驱动改回1.4版；2.去掉cm_backtrace库
+
+commit 2df099acc2b004c6c531f7fa287e01aad556f9f3
+Author: zhangduo <zdsurge@163.com>
+Date:   Tue Oct 13 15:22:53 2020 +0800
+
+    1.修改跟上位机的串口1驱动；2.修改设置电机参数为广播模式
+
+commit 292b5004e87922830006cdcc0677e66c3f7cc508
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Aug 19 21:19:47 2020 +0800
+
+    IAP版本为V1.0.2；1.去掉SFUD，使用SPI——FLASH驱动;
+
+commit 29ad8c724d2bc56a76bb167ee48ea7ef38f73290
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Aug 19 21:08:48 2020 +0800
+
+    修改QRCODE的延时为600ms
+
+commit c73fb74e242a2716d8cf0007b0593f549dde5a06
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Aug 12 19:35:37 2020 +0800
+
+    1.修改看门狗时间为5秒喂狗
+
+commit 2ddad289948d2ec29a4a9f6a34c7b0a52bd6339c
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Aug 12 19:34:27 2020 +0800
+
+    1.添加了cm_backtrace库；2.修改了每个任务的优先级；3.修改了部分任务的延时间；4.修改看门狗分频为64，8秒不喂狗就重启;
+
+commit afe06f59ee72bd03d61450595930610ce22a7e06
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Aug 10 18:54:03 2020 +0800
+
+    1.删除无用的文件；2.删除SFUD，使用SPIFLASH驱动
+
+commit 049325c7775d51f0e669b595d8d5d0213e5c81ba
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Aug 10 15:32:54 2020 +0800
+
+    1.修正QR长度为512；2.修改LED、B门按键，直接发到上位机
+
+commit 80c8c230a09f95bc148e03df2b38d5bfcc37cd34
+Author: zhangduo <zdsurge@163.com>
+Date:   Sat Aug 8 16:52:31 2020 +0800
+
+    V1.0.4 初步修改完成，简单自测试没有问题
+
+commit dd05e32b7ed99bf68cc235928e0dc62594b7d63d
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Aug 3 19:56:50 2020 +0800
+
+    修改初始化，临时版本
+
+commit 18949d7f97a08d17b7ca5045716c93522894ef8e
+Author: zhangduo <zdsurge@163.com>
+Date:   Sun Jul 26 10:10:17 2020 +0800
+
+    modify qr code buff is 512
+
+commit 35bb176ac342e34263b8dd07cfc2f84a19e49f61
+Author: zhangduo <zdsurge@163.com>
+Date:   Thu May 28 18:31:17 2020 +0800
+
+    生成V1.0.4版
+
+commit 63ef92c6d240c212d3afbe945729c76d2f41b90b
+Author: zhangduo <zdsurge@163.com>
+Date:   Tue May 26 14:43:27 2020 +0800
+
+    添加触发红外后，向A门发送开门指令
+
+commit cb567e4939e66c78d4c67c54a7cef1230e893da1
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon May 25 19:54:49 2020 +0800
+
+    ARM板添加防夹功能
+
+commit b4f27a0ba08a2e9bd45a85772a78d964a2039f52
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon May 25 10:46:18 2020 +0800
+
+    修正merge时出正的重合
+
+commit 384c43142f93067e955071f6160a70ba43d164bb
+Merge: 01856e3 34d3aee
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon May 25 09:41:47 2020 +0800
+
+    meage test to master
+
+commit 34d3aeec7fa9812f8bcf1ddd959b0ee10a59f10f
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon May 25 09:37:36 2020 +0800
+
+    添加2.0.0版
+
+commit 39aeb861bc90dd0e628883b314c7d631db1dbb47
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon May 25 09:30:54 2020 +0800
+
+    升级gitignore
+
+commit d8e3e43ee64302ff99f60c323877d912ee8fd86a
+Author: zhangduo <zdsurge@163.com>
+Date:   Fri May 22 11:01:57 2020 +0800
+
+    修正看门狗BUG
+
+commit 4ed1a453be6207543116c8ab38fd661f0edcd2fd
+Author: zhangduo <zdsurge@163.com>
+Date:   Thu Apr 30 09:57:21 2020 +0800
+
+    格式调整
+
+commit 04b5cd02a2fd42e0132a40c697ea4c2bfcc6a4fa
+Author: zhangduo <zdsurge@163.com>
+Date:   Tue Apr 28 09:10:08 2020 +0800
+
+    del invalid file
+
+commit 1fd8a348e78fe032d265fbadfe6e01645df26ea5
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Feb 26 12:03:08 2020 +0800
+
+    1.修正QR连续读，可能因为数据不全，造成无数据上送的现象
+
+commit 5356d42814dc1ee66072c3ef00b65938223a8a26
+Author: zhangduo <zdsurge@163.com>
+Date:   Sat Dec 28 11:26:36 2019 +0800
+
+    添加遥控按键功能
+
+commit 47c7b60b90156c9fed3798f987a64fe20c9a8677
+Author: zhangduo <zdsurge@163.com>
+Date:   Sat Dec 28 11:19:49 2019 +0800
+
+    Revert "1.在检测到按键开门后，暂停电机状态查询；2.QR的线程栈空间改为1280个字字节"
+    
+    This reverts commit a871566997b541401bf626bc0f8932e26a01c4b7.
+
+commit a871566997b541401bf626bc0f8932e26a01c4b7
+Author: zhangduo <zdsurge@163.com>
+Date:   Fri Dec 20 17:17:21 2019 +0800
+
+    1.在检测到按键开门后，暂停电机状态查询；2.QR的线程栈空间改为1280个字字节
+
+commit 01856e32222909e5db95d52c59584cc1bc0ab37a
+Author: zhangduo <zdsurge@163.com>
+Date:   Fri Dec 6 13:55:47 2019 +0800
+
+    V1.0.3.003 因山东金猴北名居 QR线干涉，所以回退版本
+
+commit 1b27cdc31f4470db1b7d74cd49dfd74e276d4a7e
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Dec 4 14:21:02 2019 +0800
+
+    V1.0.3.002 1.恢复按键功能（消防联动，手动开A门，手动开B门，B门按键请求）
+
+commit 5a0597b1d87f14e1dc49ccc7de13474a80372d78
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Dec 2 17:20:02 2019 +0800
+
+    V1.0.3.001,修改红外的扫描频率，由100ms改为20ms
+
+commit 00af05d2d35da6af0d24ced19c4452229d4a0dee
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Dec 2 16:12:23 2019 +0800
+
+    V1.0.3,清恒小学已导入
+
+commit e813bf9f92617e81f61f4b9a6fb8f85ca0afe1ee
+Author: zhangduo <zdsurge@163.com>
+Date:   Sat Nov 30 10:08:57 2019 +0800
+
+    修正QR 延时时间，改善读大容量条码数据完整性
+
+commit c24a03e03b653fda1c5be7b1b04899d55450d990
+Author: zhangduo <zdsurge@163.com>
+Date:   Fri Nov 29 11:09:15 2019 +0800
+
+    修改红外查询时间以及指令查询时间
+
+commit 8855017a13399bb896714ba02326130610ee3e17
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Nov 27 17:11:32 2019 +0800
+
+    测试版本：1.修改A门电机通讯为RS485；2.按键恢复为B门开门按键
+
+commit e58d61fef0a0c1cb01419c3f4172d8faf583bb92
+Author: zhangduo <zdsurge@163.com>
+Date:   Tue Nov 26 18:17:03 2019 +0800
+
+    测试版本：注释掉按键，目前按键还有问题
+
+commit 15439b832f8f0aa38aea64c84dfbdaa1abafd11e
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Nov 25 14:04:01 2019 +0800
+
+    测试版本，上一版因为按键添加，导致FreeRTOS线程分配栈空间不足，修正上一次BUG
+
+commit 97638c898fa65c403fa923f1c9dec48a18329883
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Nov 25 10:03:06 2019 +0800
+
+    测试版本：1.添加电机状态，红外数据，电机数据到队列，计划在队列内判定是否需要重启？思路错误，暂暂停
+
+commit 594934b3a30a85f8b246ba512973470a813c4be9
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Nov 20 14:01:47 2019 +0800
+
+    测试版本：1.更改内存管理中，外部内存为1K；2.更改freeRTOS堆空间由50K提升到60K；3.去掉打印信息
+
+commit 55992836fbe46b3590bd0660e62722c0d52ab796
+Author: zhangduo <zdsurge@163.com>
+Date:   Tue Nov 12 17:11:06 2019 +0800
+
+    测试版本，把电机状态查询改为500ms一次
+
+commit 0d8e453040d99f2fda92838db5760ff2ab52b570
+Author: zhangduo <zdsurge@163.com>
+Date:   Thu Nov 7 10:38:58 2019 +0800
+
+    测试版本：1.在操作电机时，挂起电机查询线程，在收到电机操作返回后，恢复电机状态查询线程
+
+commit d53a3bce29ec9ebb242fe872254f43ea6d2f4055
+Author: zhangduo <zdsurge@163.com>
+Date:   Thu Oct 24 09:51:39 2019 +0800
+
+    1.添加USB接口供电功能，给音箱供电
+
+commit f3710531491f90ea728145c37eb8aaa11ec8871a
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Oct 16 10:21:29 2019 +0800
+
+    1.删除APP中查询LED就打印系统运行状态；2.修正IAP中断电后，需要重下两次APP的BUG
+
+commit e877644f3631cfac32132cd9202ca0ea61391185
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Oct 16 08:54:35 2019 +0800
+
+    重传main.c
+
+commit 869881bf1cd2ae40f7e92600a376e92546d6c3c7
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Oct 16 08:40:48 2019 +0800
+
+    重传main.c
+
+commit bde236f8a47cdeab1079d1e25b2d9ef8488e8f39
+Author: zhangduo <zdsurge@163.com>
+Date:   Tue Oct 15 18:04:21 2019 +0800
+
+    1.调整FreeRTOS栈空间为50K；2.调整内存整理函数；3.调整指令缓冲区为256字节; 4.调整部分数据长度类型；5.调整每个任务的使用空间
+
+commit 9657afc85163b688d1c626901100da35602f5d1e
+Author: zhangduo <zdsurge@163.com>
+Date:   Sun Oct 13 13:53:54 2019 +0800
+
+    1，修改二维码设置指令；2.修改二维码扫码时间；3.修改状态运行灯时间间隔；“
+    q
+    q
+    ;
+    w
+    q
+
+commit 3078af34885fc948fc83c9317ece3da7a5e4b382
+Author: zhangduo <zdsurge@163.com>
+Date:   Fri Oct 11 10:58:28 2019 +0800
+
+    1.添加对上位机参数的支持；2.修改SFUD SPI频率，使读写速度加快
+
+commit 4cc0324d4f3d8328b49892caa3dd9f326fcc2a12
+Author: zhangduo <zdsurge@163.com>
+Date:   Fri Sep 27 09:34:34 2019 +0800
+
+    1.更改红外驱动，目前测试良好
+
+commit 5628577a6be279d4180cf689055af044a40a1c41
+Author: zhangduo <zdsurge@163.com>
+Date:   Tue Sep 24 15:21:22 2019 +0800
+
+    1.修改红外驱动；2修改串口1驱动，改为DMA发送；
+
+commit 6fa37e4c1a4cdfecaf7f8b7d464312e79d60feca
+Author: zhangduo <zdsurge@163.com>
+Date:   Thu Sep 5 17:12:37 2019 +0800
+
+    1.去掉freertos中PORT.C的无理由延时；2.去掉SF和EF的调试信息
+
+commit 47b4c1ee66b77b263e9bfd70865ff5d1bd8e2426
+Author: zhangduo <zdsurge@163.com>
+Date:   Thu Aug 29 14:54:03 2019 +0800
+
+    1.修正LED灯闪烁，在串口数据接收时，串口4和串口5LED灯会闪烁；2.添加Reset指令；3.添加串口发送数据数据满了这种情况的处理
+
+commit acb246f07e9a1b95cc6c38fc6a9bea490cb04551
+Author: zhangduo <zdsurge@163.com>
+Date:   Tue Aug 27 09:12:59 2019 +0800
+
+    1.添加设备信息返回，2修正LED灯BUG
+
+commit c2b5c826d843e919087c431767af85e2d9351be7
+Author: zhangduo <zdsurge@163.com>
+Date:   Sat Aug 24 09:41:08 2019 +0800
+
+    1.添加设备信息; 2.添加全高门按键
+
+commit 4fe9266502f06891fe3c53becdf8f9fd22b20c82
+Author: zhangduo <zdsurge@163.com>
+Date:   Thu Aug 22 10:38:15 2019 +0800
+
+    1.去掉easyflash调试信息
+
+commit 01962292cf40290fa266abe2ce4a0538c315875a
+Author: zhangduo <zdsurge@163.com>
+Date:   Wed Aug 21 17:49:37 2019 +0800
+
+    1.在系统启动时打印版本号和编译时间
+
+commit 49cc02b8148c367e1d863ea1557d0bd59ff2e081
+Author: zhangduo <zdsurge@163.com>
+Date:   Tue Aug 20 20:06:45 2019 +0800
+
+    1.添加跟上位机握手；2.添加错误代码
+
+commit af802bd4766e07ad2409436b1e7f323a758e886e
+Author: zhangduo <zdsurge@163.com>
+Date:   Mon Aug 19 19:37:47 2019 +0800
+
+    1.更改串口驱动;2.添加读完后，对缓冲区的清零
+
+commit 78872cc5c40c9d5a2ba7f4ded4e4d6c338fd8664
+Author: zhangduo <zdsurge@163.com>
+Date:   Fri Aug 16 15:21:40 2019 +0800
+
+    修改串口数据错误BUG，但是现象还存在
+
+commit 27662aab8e035cf1550960cbdc5850a4cebf855c
+Author: zhangduo <zdsurge@163.com>
+Date:   Thu Aug 15 09:05:17 2019 +0800
+
+    初始版本
+
+commit 0207eeb8dd4c95ad225d4554142e629a874e4a74
+Author: surge <zdsurge@163.com>
+Date:   Thu Aug 15 08:52:22 2019 +0800
+
+    Initial commit

@@ -110,7 +110,7 @@ static void vTaskMotorCtrlSecDoor(void *pvParameters)
 
         if(deal_motor_Parse(COM5,&rxFromHost) != 0)
         {
-            dbh("recv MB and send to host:", rxFromHost.rxBuff,rxFromHost.rxCnt);  
+            dbh("recv MB and send to host:", (char*)rxFromHost.rxBuff,rxFromHost.rxCnt);  
 //            send_to_host(CONTROLMOTOR_B,rxFromHost.rxBuff,rxFromHost.rxCnt);     
 
 

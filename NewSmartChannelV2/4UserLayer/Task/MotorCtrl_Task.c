@@ -114,7 +114,7 @@ static void vTaskMotorCtrl(void *pvParameters)
   
         if(deal_motor_Parse(COM4,&rxFromHost) != 0)
         { 
-            dbh("recv MA and send to host:", rxFromHost.rxBuff,rxFromHost.rxCnt); 
+            dbh("recv MA and send to host:", (char *)rxFromHost.rxBuff,rxFromHost.rxCnt); 
             //send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);        
 
             if(rxFromHost.rxCnt == 7)

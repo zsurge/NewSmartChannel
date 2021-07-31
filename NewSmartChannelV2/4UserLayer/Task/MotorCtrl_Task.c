@@ -41,6 +41,7 @@
  * 常量定义                                     *
  *----------------------------------------------*/
 const char *MotorCtrlTaskName = "vMotorCtrlTask";      
+volatile uint8_t gKeyValue = 0x30;
 
 /*----------------------------------------------*
  * 模块级变量                                   *
@@ -54,6 +55,7 @@ TaskHandle_t xHandleTaskMotorCtrl = NULL;
  * 内部函数原型说明                             *
  *----------------------------------------------*/
 static void vTaskMotorCtrl(void *pvParameters);
+static void packetToQueue(uint8_t *data,uint8_t len);
 
 
 
@@ -68,6 +70,8 @@ void CreateMotorCtrlTask(void)
                 (TaskHandle_t*  )&xHandleTaskMotorCtrl);     
 
 }
+
+
 
 static void vTaskMotorCtrl(void *pvParameters)
 {  
@@ -93,11 +97,11 @@ static void vTaskMotorCtrl(void *pvParameters)
 	/* 初始化结构体指针 */
 	ptMotor = &gMotorCtrlQueue;
     
-    /* 清零 */
-    ptMotor->cmd = 0;
-    ptMotor->len = 0;
-    memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN); 
-    memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));  
+	ptMotor->cmd = 0;
+	ptMotor->len = 0;
+	memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN); 
+
+
     
     while (1)
     { 
@@ -106,14 +110,14 @@ static void vTaskMotorCtrl(void *pvParameters)
         //获取到，则执行上位机指令，获取不到，则执行状态查询
         xReturn = xQueueReceive( gxMotorCtrlQueue,    /* 消息队列的句柄 */
                                  (void *)&ptMotor,  /*这里获取的是结构体的地址 */
-                                 (TickType_t)30); /* 设置阻塞时间 */
+                                 (TickType_t)20); /* 设置阻塞时间 */
         if(pdTRUE == xReturn)
         {
             //消息接收成功，发送接收到的消息
             //dbh("recv from host and send to MA:",(char *)ptMotor->data, ptMotor->len);
             if(ptMotor->len >= 8)
             {
-                direction = ptMotor->data[8];
+                //direction = ptMotor->data[8];
                 memcpy(sendBuf,ptMotor->data,8);
             }
             else
@@ -153,7 +157,7 @@ static void vTaskMotorCtrl(void *pvParameters)
 			 tmp_currentValue = u8ToU32(rxFromHost.rxBuff[3],rxFromHost.rxBuff[4],rxFromHost.rxBuff[5],rxFromHost.rxBuff[6]);
 			 tmp_expectValue = u8ToU32(rxFromHost.rxBuff[7],rxFromHost.rxBuff[8],rxFromHost.rxBuff[9],rxFromHost.rxBuff[10]);
 
-			 DBG("currentValue = <%d>, expectValue = <%d>\r\n",tmp_currentValue,tmp_expectValue);
+			 //DBG("currentValue = <%d>, expectValue = <%d>\r\n",tmp_currentValue,tmp_expectValue);
 			
             
             if(rxFromHost.rxBuff[1] == 0x03 && rxFromHost.rxCnt== 25)
@@ -168,11 +172,13 @@ static void vTaskMotorCtrl(void *pvParameters)
                 crc_data = CRC16_Modbus(tmpBuf, 5);                
                 tmpBuf[5] = crc_data>>8;
                 tmpBuf[6] = crc_data & 0xFF;                 
-                send_to_host(CONTROLMOTOR_A,tmpBuf,7);
+                //send_to_host(CONTROLMOTOR_A,tmpBuf,7);   
+                packetToQueue(tmpBuf,7);
             }
             else
             {
-                send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);
+                //send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);
+                packetToQueue(rxFromHost.rxBuff,rxFromHost.rxCnt);
             }          
             
             
@@ -224,5 +230,39 @@ static void vTaskMotorCtrl(void *pvParameters)
 
 }
 
+
+//02 00 3B 7b 22 63 6d 64 22 3a 22 61 38 22 2c 22 63 6f 64 65 22 3a 30 2c 22 64 61 74 61 22 3a 22 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 30 22 2c 22 6b 65 79 22 3a 30 7d 03 A5 A5
+//02 00 39 7b 22 63 6d 64 22 3a 22 61 38 22 2c 22 63 6f 64 65 22 3a 30 2c 22 64 61 74 61 22 3a 22 30 30 30 30 30 30 30 30 30 30 30 30 30 30 22 2c 22 6b 65 79 22 3a 30 7d 03 A5 A5
+
+
+static void packetToQueue(uint8_t *data,uint8_t len)
+{
+    uint8_t asc[16] = {0};
+    uint8_t queryOpen[59] = { 0x02,0x00,0x39,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x38,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x22,0x2c,0x22,0x6b,0x65,0x79,0x22,0x3a,0x30,0x7d,0x03,0xA5,0xA5 };
+    uint8_t opterOpen[61] = { 0x02,0x00,0x3B,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x38,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x22,0x2c,0x22,0x6b,0x65,0x79,0x22,0x3a,0x30,0x7d,0x03,0xA5,0xA5 };
+    uint8_t tmpData[64] = {0};
+    uint8_t tmpLen = 0;
+    uint8_t keyValue = gKeyValue;
+    memset(tmpData,0x00,sizeof(tmpData));
+    
+    bcd2asc(asc, data, len*2, 1);
+    
+    if(len == 7)
+    {
+        memcpy(queryOpen+32,asc,14);     
+        tmpLen = 59;
+        memcpy(tmpData,queryOpen,tmpLen);
+        tmpData[54] = keyValue;
+    }
+    else if(len == 8)
+    {
+        memcpy(opterOpen+32,asc,16); 
+        tmpLen = 61;
+        memcpy(tmpData,opterOpen,tmpLen);  
+        tmpData[56] = keyValue;
+    }
+
+    send_to_host_queue(tmpData,tmpLen);   
+}
 
 

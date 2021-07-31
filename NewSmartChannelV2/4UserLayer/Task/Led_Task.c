@@ -35,7 +35,7 @@
  * 宏定义                                       *
  *----------------------------------------------*/
 #define LED_TASK_PRIO	    ( tskIDLE_PRIORITY+5)
-#define LED_STK_SIZE 		(configMINIMAL_STACK_SIZE*6)
+#define LED_STK_SIZE 		(configMINIMAL_STACK_SIZE)
 
 /*----------------------------------------------*
  * 常量定义                                     *
@@ -91,10 +91,7 @@ static void vTaskLed(void *pvParameters)
 {   
     uint16_t i = 0; 
     BaseType_t xReturn = pdTRUE;
-    LED_VALUE_STRU *ptLedValue = &gLedValueQueue;
-
-    uint8_t twinkleFlag = 0;
- 
+//    LED_VALUE_STRU *ptLedValue = &gLedValueQueue; 
     
     BEEP = 0;
     vTaskDelay(300);    
@@ -102,9 +99,9 @@ static void vTaskLed(void *pvParameters)
     
     while(1)
     {  
-        ptLedValue->cmd = 0;
-        ptLedValue->type = 0;
-        memset(ptLedValue->data,0x00,SETLED_QUEUE_BUF_LEN);
+//        ptLedValue->cmd = 0;
+//        ptLedValue->type = 0;
+//        memset(ptLedValue->data,0x00,SETLED_QUEUE_BUF_LEN);
         
         if(Motro_A== 1)
         {
@@ -125,57 +122,25 @@ static void vTaskLed(void *pvParameters)
         }    
 
         //系统状态运行灯，每100ms 一次
-        LED4=!LED4; 
-        
+        LED4=!LED4;         
 
-        if(i++ == 100)
-        {
-            i = 0;   
-//            showTask();
-			DBG("======vTaskDataProcess mem perused = %3d%======\r\n",mem_perused(SRAMIN));
 
-        }
-
-        //获取到，则执行上位机指令，获取不到，则执行状态查询
-        xReturn = xQueueReceive( gxLedSetQueue,    /* 消息队列的句柄 */
-                                 (void *)&ptLedValue,  /*这里获取的是结构体的地址 */
-                                 (TickType_t)30); /* 设置阻塞时间 */
-        if(pdTRUE == xReturn)
-        {
-            if(ptLedValue->cmd == 0x22) //开始闪烁
-            {           
-                twinkleFlag = 1;
-                LED_L_R = 0;
-                LED_R_R = 0;    
-                LED_M_R = 0;  
-                
-                LED_L_G = 1;
-                LED_R_G = 1;  
-                LED_M_G = 1;   
-                
-            }
-            else if(ptLedValue->cmd == 0x23) //关闭闪烁，显示绿灯
-            {              
-                twinkleFlag = 0;                
-                LED_L_R = 1;
-                LED_L_G = 0;
-                LED_R_R = 1;
-                LED_R_G = 0;       
-                LED_M_R = 1;
-                LED_M_G = 0;               
-            } 
-        }
-        else
-        {
-            
-        }
-
-        if(twinkleFlag)
-        {
-            LED_L_R = !LED_L_R;
-            LED_R_R = !LED_R_R;    
-            LED_M_R = !LED_M_R;
-        }                                 
+//        //获取到，则执行上位机指令，获取不到，则执行状态查询
+//        xReturn = xQueueReceive( gxLedSetQueue,    /* 消息队列的句柄 */
+//                                 (void *)&ptLedValue,  /*这里获取的是结构体的地址 */
+//                                 (TickType_t)30); /* 设置阻塞时间 */
+//        if(pdTRUE == xReturn)
+//        {
+//            if(ptLedValue->cmd == 0x22) //开始闪烁
+//            {  
+//                
+//            }
+//            else if(ptLedValue->cmd == 0x23) //关闭闪烁，显示绿灯
+//            {    
+//                
+//            } 
+//        }
+                    
         
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_0);  

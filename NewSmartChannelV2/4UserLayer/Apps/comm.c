@@ -44,7 +44,7 @@
  * 模块级变量                                   *
  *----------------------------------------------*/
 
-MOTORCTRL_QUEUE_T gMotorCtrlQueue;    //定义一个结构体用于消息队列，用于同步处理相应数据
+MOTORCTRL_QUEUE_T gMotorCtrlQueue,gRecvMotorCtrlQueue;    //定义一个结构体用于消息队列，用于同步处理相应数据
 MOTORCTRL_QUEUE_T gSecMotorCtrlQueue;    //定义一个结构体用于消息队列，用于同步处理相应数据
 TOHOST_QUEUE_T     gToHostQueueBuf,gToHostQueueBuf_recv;
 
@@ -61,6 +61,7 @@ static uint16_t  packetJSON(CMD_TX_T *cmd_tx,uint8_t *command_data);
 static uint16_t  packetDeviceInfo(uint8_t *command_data);
 static void parseMotorParam(CMD_RX_T *cmd_rx);
 static void SetLedShowInfo(CMD_RX_T *cmd_rx,char mode);
+static void packetToMotorA(uint8_t cmd,uint8_t *buff,uint8_t len);
 
 
 //static void displayTask(void);
@@ -555,13 +556,18 @@ void send_to_device(CMD_RX_T *cmd_rx)
     
 //    uint8_t setLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0x85,0x7a };
     uint8_t setLed[39] = { 0x02,0x00,0x25,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x32,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x22,0x7d,0x03,0xA5,0xA5 };
+    uint8_t retSensor[43] = { 0x02,0x00,0x29,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x31,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x30,0x30,0x30,0x30,0x22,0x7d,0x03,0xa5,0xa5 };
     
+    uint8_t setLedValueStart[8] = { 0x01,0x06,0x08,0x0C,0x03,0x00,0x4B,0x59 };
+    uint8_t setLedValueEnd[8] = { 0x01,0x06,0x08,0x0C,0x0A,0x00,0x4D,0x09 };
+    
+    uint8_t setLedValueStart2[8] = { 0x02,0x06,0x08,0x0C,0x03,0x00,0x4B,0x6A };
+    uint8_t setLedValueEnd2[8] = { 0x02,0x06,0x08,0x0C,0x0A,0x00,0x4D,0x3A };    
     //uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
     
-    MOTORCTRL_QUEUE_T *ptMotor = &gMotorCtrlQueue; 
+    MOTORCTRL_QUEUE_T *ptMotor = &gRecvMotorCtrlQueue; 
     MOTORCTRL_QUEUE_T *ptSecMotor = &gSecMotorCtrlQueue;  
-    LED_VALUE_STRU *ptLedValue = &gLedValueQueue;
 
     /* 清零 */
     ptMotor->cmd = 0;
@@ -571,11 +577,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
     /* 清零 */
     ptSecMotor->cmd = 0;
     ptSecMotor->len = 0;
-    memset(ptSecMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN);     
-
-    ptLedValue->cmd = 0;
-    ptLedValue->type = 0;
-    memset(ptLedValue->data,0x00,SETLED_QUEUE_BUF_LEN);
+    memset(ptSecMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN);  
     
     memset(&cmd_tx,0x00,sizeof(CMD_TX_T));
     memset(TxdBuf,0x00,sizeof(TxdBuf));
@@ -586,25 +588,30 @@ void send_to_device(CMD_RX_T *cmd_rx)
     switch (cmd_rx->cmd)
     {
         case GETSENSOR://获取红外状态，目前只有两组红外
-//            displayTask();
-            i = 3;
-            TxdBuf[0] = STX;            
-            cmd_tx.cmd = GETSENSOR;
-            cmd_tx.code = 0x00;
-//            bsp_GetSensorStatus(cmd_tx.data);      
-            bsp_GetSensorValue(cmd_tx.data);
-            i += packetJSON(&cmd_tx,tmpBuf);            
-            memcpy(TxdBuf+3,tmpBuf,i-3); 
-            TxdBuf[i++] = ETX;  
-            
-            TxdBuf[1] = i>>8; //high
-            TxdBuf[2] = i&0xFF; //low
-            
-//            iCRC = CRC16_Modbus(TxdBuf, i); 
-//            TxdBuf[i++] = iCRC >> 8;
-//            TxdBuf[i++] = iCRC & 0xff;          
-            TxdBuf[i++] = 0xA5;
-            TxdBuf[i++] = 0xA5;              
+
+//            i = 3;
+//            TxdBuf[0] = STX;            
+//            cmd_tx.cmd = GETSENSOR;
+//            cmd_tx.code = 0x00;
+   
+            i=43;
+           	bsp_GetSensorValue(cmd_tx.data);
+			memcpy(retSensor+32,cmd_tx.data,6);			
+			memcpy(TxdBuf,retSensor,i);  
+//		
+//            i += packetJSON(&cmd_tx,tmpBuf);            
+//            memcpy(TxdBuf+3,tmpBuf,i-3); 
+//            TxdBuf[i++] = ETX;  
+//            
+//            TxdBuf[1] = i>>8; //high
+//            TxdBuf[2] = i&0xFF; //low
+//            
+//       
+//            TxdBuf[i++] = 0xA5;
+//            TxdBuf[i++] = 0xA5;     
+
+			//dbh("GETSENSOR", TxdBuf, i);
+			
             break;
         case SETLED: //设置LED灯
             bsp_Ex_SetLed((uint8_t*)cmd_rx->cmd_data);             
@@ -678,26 +685,23 @@ void send_to_device(CMD_RX_T *cmd_rx)
             break;
         case UPGRADE:
             SystemUpdate();
-            break;         
-
+            break; 
+            
         case CONTROLMOTOR_A:
              //向电机发送控制指令
-            ptMotor->cmd = CONTROLMOTOR_A;
-            ptMotor->len = cmd_rx->len;
-            memcpy(ptMotor->data,cmd_rx->cmd_data,cmd_rx->len); 
+//            ptMotor->cmd = CONTROLMOTOR_A;
+//            ptMotor->len = cmd_rx->len;
+//            memcpy(ptMotor->data,cmd_rx->cmd_data,cmd_rx->len); 
 
-			/* 使用消息队列实现指针变量的传递 */
-			if(xQueueSend(gxMotorCtrlQueue,             /* 消息队列句柄 */
-						 (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
-						 (TickType_t)50) != pdPASS )
-			{
-                xQueueReset(gxMotorCtrlQueue);
-                DBG("A the queue is error!\r\n"); 
-            } 
-//            else
-//            {
-//                DBG("A the queue is success!\r\n"); 
-//            }
+//			/* 使用消息队列实现指针变量的传递 */
+//			if(xQueueSend(gxMotorCtrlQueue,             /* 消息队列句柄 */
+//						 (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
+//						 (TickType_t)50) != pdPASS )
+//			{
+//                xQueueReset(gxMotorCtrlQueue);
+//                DBG("A the queue is error!\r\n"); 
+//            } 
+            packetToMotorA(CONTROLMOTOR_A,cmd_rx->cmd_data,cmd_rx->len);
             
             return;//这里不需要向上位机上送，在另外一个任务中才上送
         case CONTROLMOTOR_B:
@@ -741,21 +745,44 @@ void send_to_device(CMD_RX_T *cmd_rx)
             return;
 
        case SETLEDVALUE: 
-            ptLedValue->cmd = SETLEDVALUE;
-            ptLedValue->type = 0x01;    //从上位机
-            memcpy(ptLedValue->data,cmd_rx->cmd_data,SETLED_QUEUE_BUF_LEN); 
+            ptMotor->cmd = SETLEDVALUE;
+            ptMotor->len = 8;
+            memcpy(ptMotor->data,setLedValueStart,8); 
 
 			/* 使用消息队列实现指针变量的传递 */
-			if(xQueueSend(gxLedSetQueue,      /* 消息队列句柄 */
-						 (void *) &ptLedValue,             /* 发送结构体指针变量ptReader的地址 */
+			if(xQueueSend(gxMotorCtrlQueue,             /* 消息队列句柄 */
+						 (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
 						 (TickType_t)50) != pdPASS )
 			{
-                xQueueReset(gxLedSetQueue);
-                DBG("gxLedSetQueue the queue is error!\r\n"); 
+                xQueueReset(gxMotorCtrlQueue);
+                DBG("A the queue is error!\r\n"); 
             } 
-      
-            return;
+
             
+             //向电机发送控制指令
+            packetToMotorA(SETLEDVALUE,setLedValueStart2,8);
+//            packetToMotorA(SETLEDVALUE,setLedValueStart2,8);
+            return;            
+       case SETLEDVALUE_END: 
+
+            ptMotor->cmd = SETLEDVALUE_END;
+            ptMotor->len = 8;
+            memcpy(ptMotor->data,setLedValueEnd,8); 
+
+			/* 使用消息队列实现指针变量的传递 */
+			if(xQueueSend(gxMotorCtrlQueue,             /* 消息队列句柄 */
+						 (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
+						 (TickType_t)50) != pdPASS )
+			{
+                xQueueReset(gxMotorCtrlQueue);
+                DBG("A the queue is error!\r\n"); 
+            } 
+
+            
+             //向电机发送控制指令
+//            packetToMotorA(SETLEDVALUE_END,setLedValueEnd,8);
+            packetToMotorA(SETLEDVALUE_END,setLedValueEnd2,8);            
+            return;                        
         default:
             init_serial_boot(); 
             return;
@@ -1040,5 +1067,27 @@ char send_to_host_queue(uint8_t *buf,int len)
     return NO_ERR;    
 }
 
+
+
+static void packetToMotorA(uint8_t cmd,uint8_t *buff,uint8_t len)
+{
+    MOTORCTRL_QUEUE_T *ptMotor = &gMotorCtrlQueue; 
+  
+    ptMotor->len = 0;
+    memset(ptMotor->data,0x00,MOTORCTRL_QUEUE_BUF_LEN);     
+
+    ptMotor->cmd = cmd;
+    ptMotor->len = len;
+    memcpy(ptMotor->data,buff,len); 
+
+	/* 使用消息队列实现指针变量的传递 */
+	if(xQueueSend(gxMotorCtrlQueue,             /* 消息队列句柄 */
+				 (void *) &ptMotor,             /* 发送结构体指针变量ptReader的地址 */
+				 (TickType_t)20) != pdPASS )
+	{
+        xQueueReset(gxMotorCtrlQueue);
+        DBG("A the queue is error!\r\n"); 
+    }     
+}
 
 

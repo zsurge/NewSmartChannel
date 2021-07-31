@@ -59,6 +59,8 @@
 #define SHOWINFORMATION                 0x21    //设置LED显示滚动信息
 
 #define SETLEDVALUE                     0x22
+#define SETLEDVALUE_END                 0x23
+
 
 #define REQUEST_OPEN_DOOR_B             0xB7
 #define CONTROLMOTOR_B                  0xB8

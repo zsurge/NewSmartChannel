@@ -97,10 +97,12 @@ extern QueueHandle_t gxLedSetQueue;
 extern QueueHandle_t gxToHostQueue;
 
 
-extern MOTORCTRL_QUEUE_T gMotorCtrlQueue;    //定义一个结构体用于消息队列，跟andorid通信
+extern MOTORCTRL_QUEUE_T gMotorCtrlQueue,gRecvMotorCtrlQueue;    //定义一个结构体用于消息队列，跟andorid通信
 extern MOTORCTRL_QUEUE_T gSecMotorCtrlQueue;
 extern LED_VALUE_STRU gLedValueQueue;
 extern TOHOST_QUEUE_T    gToHostQueueBuf,gToHostQueueBuf_recv;
+
+extern volatile uint8_t gKeyValue;
 
 
 /*----------------------------------------------*

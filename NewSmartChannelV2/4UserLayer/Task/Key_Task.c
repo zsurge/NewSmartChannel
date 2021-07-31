@@ -111,24 +111,29 @@ static void vTaskKey(void *pvParameters)
 {
     int32_t iTime1, iTime2;
 
+	uint8_t keyValue[53] = { 0x02,0x00,0x33,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x61,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x74,0x68,0x65,0x20,0x6b,0x65,0x79,0x20,0x70,0x72,0x65,0x73,0x73,0x20,0x75,0x70,0x22,0x7d,0x03,0xa5,0xa5 };
+
     while (1)
     {        
         switch (Key_Scan(GPIO_PORT_KEY, GPIO_PIN_KEY_DOOR_B))
         {
             case KEY_ON:    
-                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
-                SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */              
+//                SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
                 KeyOpenDoorB();
                 break;            
             case KEY_HOLD:
+                gKeyValue = 0x31;
                 break;
             case KEY_OFF:  
                 iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
 
                 if(iTime2 - iTime1 > MAX_TIME_OUT)
                 {
-                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                    //SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");
+					send_to_host_queue(keyValue,53);
                 }
+                gKeyValue = 0x30;
                 break;
             case KEY_ERROR:              
                 break;
@@ -142,18 +147,20 @@ static void vTaskKey(void *pvParameters)
                 iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
                 optDoor(MOTOR_NO1);
                 optDoor(MOTOR_NO2);
-                SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
+//                SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
                 break;            
             case KEY_HOLD:
+                gKeyValue = 0x31;
                 break;
             case KEY_OFF:   
                 iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
             
                 if(iTime2 - iTime1 > MAX_TIME_OUT)
                 {
-                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                    //SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+					send_to_host_queue(keyValue,53);
                 }
-
+                gKeyValue = 0x30;
                 break;
             case KEY_ERROR:              
                 break;
@@ -167,19 +174,21 @@ static void vTaskKey(void *pvParameters)
             case KEY_ON:     
                 iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
                 optDoor(MOTOR_NO1);
-                SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
+//                SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_A,NO_ERR,"Open door A manually"); 
                 
                 break;            
             case KEY_HOLD:
+                gKeyValue = 0x31;
                 break;
             case KEY_OFF:    
                 iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
             
                 if(iTime2 - iTime1 > MAX_TIME_OUT)
                 {
-                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                    //SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+					send_to_host_queue(keyValue,53);
                 }
-
+                gKeyValue = 0x30;
                 break;
             case KEY_ERROR:              
                 break;
@@ -193,18 +202,20 @@ static void vTaskKey(void *pvParameters)
             case KEY_ON:   
                 iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
                 optDoor(MOTOR_NO2);
-                SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
+//                SendAsciiCodeToHost(MANUALLY_OPEN_DOOR_B,NO_ERR,"Open door B manually");
                 break;            
             case KEY_HOLD:
+                gKeyValue = 0x31;
                 break;
             case KEY_OFF:    
                 iTime2 = xTaskGetTickCount();	/* 记下结束时间 */
             
                 if(iTime2 - iTime1 > MAX_TIME_OUT)
                 {
-                    SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+                    //SendAsciiCodeToHost(PRESSUP,NO_ERR,"the key press up");  
+					send_to_host_queue(keyValue,53);
                 }
-
+                gKeyValue = 0x30;
                 break;
             case KEY_ERROR:              
                 break;

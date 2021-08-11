@@ -89,7 +89,10 @@ void vTaskHandShake(void *pvParameters)
 
     asc2bcd(bcdbuf,(uint8_t *)c_new_boot_times , 12, 1);
 
-#endif    
+#endif
+    
+    LED_L_G = 1;
+    LED_R_G = 1;
 
     send_to_host(HANDSHAKE,bcdbuf,6);  
 

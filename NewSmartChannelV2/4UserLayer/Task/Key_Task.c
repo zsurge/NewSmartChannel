@@ -48,8 +48,8 @@
  *----------------------------------------------*/
 const char *keyTaskName = "vKeyTask";     
 
-static uint8_t isFirstOpen = FIRSTDOOR_ISOPEN_YES;
-static uint8_t isSecondOpen = SECDOOR_ISOPEN_YES;
+//static uint8_t isFirstOpen = FIRSTDOOR_ISOPEN_YES;
+//static uint8_t isSecondOpen = SECDOOR_ISOPEN_YES;
 
 /*----------------------------------------------*
  * 模块级变量                                   *
@@ -97,7 +97,7 @@ static void vTaskKey(void *pvParameters)
 			{
 				/* K1键按下 打印任务执行情况 */
 				case KEY_DOOR_B_PRES:	   
-					DBG("KEY_DOOR_B_PRES is press\r\n");					
+//					DBG("KEY_DOOR_B_PRES is press\r\n");					
 //	                iTime1 = xTaskGetTickCount();   /* 记下开始时间 */
 //	                iTime2 = xTaskGetTickCount();   /* 记下结束时间 */
 //	                DBG ( "修改记录成功，耗时: %dms\r\n",iTime2 - iTime1 );
@@ -119,9 +119,8 @@ static void vTaskKey(void *pvParameters)
 					break;				
 				/* K2键按下，打印串口操作命令 */
 				case KEY_FIREFIGHTING_PRES:
-				    DBG("KEY_FIREFIGHTING_PRES is press\r\n");
-                    SendAsciiCodeToHost(REQUEST_OPEN_DOOR_B,NO_ERR,"Request to open the door");
-                    optDoor(MOTOR_NO1);
+//				    DBG("KEY_FIREFIGHTING_PRES is press\r\n");
+				    optDoor(MOTOR_NO1);
 				    optDoor(MOTOR_NO2);
 					break;
 				case KEY_OPEN_DOOR_A_PRES: 

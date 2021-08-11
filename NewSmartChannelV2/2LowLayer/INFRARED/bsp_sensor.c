@@ -196,17 +196,17 @@ uint32_t bsp_sensor_scan(void)
 
 void bsp_GetSensorValue(uint8_t *dat)
 {
-	//static uint32_t code = 0;
-	uint8_t bcd[3+1] = {0};
-	uint8_t buf[6+1] = {0};
-	//uint8_t i;
+	uint32_t code = gSensorValue.code;
+	uint8_t bcd[4] = {0};
+	uint8_t buf[8] = {0};
+
 
     memset(bcd,0x00,sizeof(bcd));
     memset ( buf,0x00,sizeof ( buf ) );
     
-	bcd[0] = gSensorValue.code>>16;
-	bcd[1] = gSensorValue.code>>8;
-	bcd[2] = gSensorValue.code&0xff;	
+	bcd[0] = code>>16;
+	bcd[1] = code>>8;
+	bcd[2] = code&0xff;	
 	
 	bcd2asc ( buf, bcd, 6, 1 );
 	memcpy ( dat,buf,6 );

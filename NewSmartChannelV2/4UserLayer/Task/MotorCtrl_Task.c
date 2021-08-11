@@ -26,7 +26,7 @@
 #include "string.h"
 #include"Monitor_Task.h"
 #include "bsp_led.h"
-
+#include "BSP_Uart.h"
 
 /*----------------------------------------------*
  * 宏定义                                       *
@@ -79,8 +79,12 @@ static void vTaskMotorCtrl(void *pvParameters)
 //    uint8_t crcBuf[2] = {0};
 //    uint8_t CloseDoor[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x06,0x08,0x0C,0x00,0x01,0x8A,0x69 };
     uint8_t ReadStatus[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x03,0x07,0x0C,0x00,0x01,0x45,0x7D };
-//    uint8_t resetMotor[MOTORCTRL_QUEUE_BUF_LEN] = { 0x01,0x06,0x08,0x0C,0x00,0x07,0x0A,0x6B };
-//    uint32_t NotifyValue = 0x55;
+
+    uint8_t queryOpen[51] = { 0x02,0x00,0x31,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x38,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x22,0x7d,0x03,0xa5,0xa5 };
+    uint8_t opterOpen[53] = { 0x02,0x00,0x33,0x7b,0x22,0x63,0x6d,0x64,0x22,0x3a,0x22,0x61,0x38,0x22,0x2c,0x22,0x63,0x6f,0x64,0x65,0x22,0x3a,0x30,0x2c,0x22,0x64,0x61,0x74,0x61,0x22,0x3a,0x22,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x22,0x7d,0x03,0xa5,0xa5 };
+
+    uint8_t asc[16] = {0};
+    
     FROMHOST_STRU rxFromHost;   
     MOTORCTRL_QUEUE_T *ptMotor; 
 	/* 初始化结构体指针 */
@@ -93,6 +97,8 @@ static void vTaskMotorCtrl(void *pvParameters)
     
     while (1)
     { 
+        memset(asc,0x00,sizeof(asc));
+        
         //获取到，则执行上位机指令，获取不到，则执行状态查询
         xReturn = xQueueReceive( gxMotorCtrlQueue,    /* 消息队列的句柄 */
                                  (void *)&ptMotor,  /*这里获取的是结构体的地址 */
@@ -132,13 +138,13 @@ static void vTaskMotorCtrl(void *pvParameters)
             RS485_SendBuf(COM4, ReadStatus,MOTORCTRL_QUEUE_BUF_LEN);//查询A电机状态
         }
 
-        vTaskDelay(100);
-
+        vTaskDelay(50);
+        
+  
         if(deal_motor_Parse(COM4,&rxFromHost) != 0)
         { 
             dbh("recv MA and send to host:", rxFromHost.rxBuff,rxFromHost.rxCnt); 
-            send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);   
-
+            //send_to_host(CONTROLMOTOR_A,rxFromHost.rxBuff,rxFromHost.rxCnt);       
             if(rxFromHost.rxBuff[3] == 0x08)
             {               
                 //关门到位
@@ -149,6 +155,35 @@ static void vTaskMotorCtrl(void *pvParameters)
                 LED_M_R = 1;
                 LED_M_G = 0;                  
             }
+						 
+            if(rxFromHost.rxCnt == 7)
+            {
+                bcd2asc(asc, rxFromHost.rxBuff, 14, 1);
+                
+                memcpy(queryOpen+32,asc,14);            
+
+                //if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+                //{
+                    BSP_UartSend(SCOM1,queryOpen,51); 
+                //}
+                
+                //xSemaphoreGive(gxMutex);      
+            }
+            else if(rxFromHost.rxCnt == 8)
+            {
+                bcd2asc(asc, rxFromHost.rxBuff, 16, 1);
+                
+                memcpy(opterOpen+32,asc,16);            
+
+                //if(xSemaphoreTake(gxMutex, portMAX_DELAY))
+                //{
+                    BSP_UartSend(SCOM1,opterOpen,53); 
+                //}
+                
+                //xSemaphoreGive(gxMutex);                
+            }    			
+
+
             
             Motro_A = 0;
             memset(&rxFromHost,0x00,sizeof(FROMHOST_STRU));            

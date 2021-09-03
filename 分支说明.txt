@@ -1,0 +1,9 @@
+  remotes/bsg/master					
+  remotes/origin/SwingDoor				
+  remotes/origin/cbg_pro				//城邦电机+慧阳控制板，已停止更新，同时，没有实际使用过 
+  remotes/origin/master					//主分支，目前所用智慧通道都使用该程序
+  remotes/origin/singleMotor0616		//门口机+全高门,已停止使用，使用singleMotorQueue0616代替
+  remotes/origin/singleMotorQueue0616	//门口机+全高门，1.红外使用固定格式，而不使用JSON打包；2.跟安卓通讯使用队列的方式
+  remotes/origin/swingDoor_0620			//摆闸+全高门 
+  remotes/origin/testQueue0426			//singleMotorQueue0616 的双电机版本，暂时未使用，未调试，未测试
+  release_two_motor						//A+B门智慧通道 生产所用程序

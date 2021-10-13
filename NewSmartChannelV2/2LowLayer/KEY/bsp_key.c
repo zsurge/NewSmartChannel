@@ -19,6 +19,14 @@
 
 #include "bsp_key.h"
 
+//按键结构体数组，初始状态都是关闭
+static KEY_TypeDef Key[4] =
+	{{KEY_OFF, KEY_OFF, 0, 0},
+	 {KEY_OFF, KEY_OFF, 0, 0},
+     {KEY_OFF, KEY_OFF, 0, 0},
+     {KEY_OFF, KEY_OFF, 0, 0}};
+
+
 
 //按键初始化函数
 void bsp_key_Init ( void )
@@ -45,6 +53,8 @@ void bsp_key_Init ( void )
 	
 }
 
+
+#if 0
 //按键处理函数
 //返回按键值
 //mode:0,不支持连续按;1,支持连续按;
@@ -91,6 +101,154 @@ u8 bsp_key_Scan ( u8 mode )
 }
 
 
+#endif
+
+
+/*
+ * 函数名：Key_Scan
+ * 描述  ：检测是否有按键按下
+ * 输入  ：GPIOx：gpio的port
+ *		   GPIO_Pin：gpio的pin
+ * 输出  ：KEY_OFF、KEY_ON、KEY_HOLD、KEY_IDLE、KEY_ERROR
+ */
+ 
+uint8_t Key_Scan(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
+{
+	KEY_TypeDef *KeyTemp;
+
+	//检查按下的是哪一个按钮
+	switch ((uint32_t)GPIOx)
+	{
+    	case ((uint32_t)GPIO_PORT_KEY):
+    		switch (GPIO_Pin)
+    		{
+        		case GPIO_PIN_KEY_DOOR_B:
+        			KeyTemp = &Key[0];
+        			break;	
+        		case GPIO_PIN_FIREFIGHTING:
+        			KeyTemp = &Key[1];
+        			break;	
+
+        		//port和pin不匹配
+        		default:
+        			//printf("error: GPIO port pin not match\r\n");
+        			return KEY_IDLE;
+    		}
+    		break;
+
+    	case ((uint32_t)GPIO_PORT_OPEN_DOOR):
+    		switch (GPIO_Pin)
+    		{
+        		case GPIO_PIN_OPEN_DOOR_A:
+        			KeyTemp = &Key[2];
+        			break;
+        		case GPIO_PIN_OPEN_DOOR_B:
+        			KeyTemp = &Key[3];
+        			break;				
+
+        		//port和pin不匹配
+        		default:
+        			//printf("error: GPIO port pin not match\r\n");
+        			return KEY_IDLE;
+    		}
+    		break;
+
+    	default:
+    		//printf("error: key do not exist\r\n");
+    		return KEY_IDLE;
+	}
+
+	/* 检测按下、松开、长按 */
+	KeyTemp->KeyPhysic = GPIO_ReadInputDataBit(GPIOx, GPIO_Pin);
+
+	switch (KeyTemp->KeyLogic)
+	{
+	
+	case KEY_ON:
+		switch (KeyTemp->KeyPhysic)
+		{
+		
+		//（1，1）中将关闭计数清零，并对开启计数累加直到切换至逻辑长按状态
+		case KEY_ON:
+			KeyTemp->KeyOFFCounts = 0;
+			KeyTemp->KeyONCounts++;
+			if (KeyTemp->KeyONCounts >= HOLD_COUNTS)
+			{
+				KeyTemp->KeyONCounts = 0;
+				KeyTemp->KeyLogic = KEY_HOLD;
+				return KEY_HOLD;
+			}
+			return KEY_IDLE;
+			
+		//（1，0）中对关闭计数累加直到切换至逻辑关闭状态
+		case KEY_OFF:
+			KeyTemp->KeyOFFCounts++;
+			if (KeyTemp->KeyOFFCounts >= SHAKES_COUNTS)
+			{
+				KeyTemp->KeyLogic = KEY_OFF;
+				KeyTemp->KeyOFFCounts = 0;
+				return KEY_OFF;
+			}
+			return KEY_IDLE;
+
+		default:
+			break;
+		}
+
+	case KEY_OFF:
+		switch (KeyTemp->KeyPhysic)
+		{
+		
+		//（0，1）中对开启计数累加直到切换至逻辑开启状态
+		case KEY_ON:
+			(KeyTemp->KeyONCounts)++;
+			if (KeyTemp->KeyONCounts >= SHAKES_COUNTS)
+			{
+				KeyTemp->KeyLogic = KEY_ON;
+				KeyTemp->KeyONCounts = 0;
+
+				return KEY_ON;
+			}
+			return KEY_IDLE;
+			
+		//（0，0）中将开启计数清零
+		case KEY_OFF:
+			(KeyTemp->KeyONCounts) = 0;
+			return KEY_IDLE;
+		default:
+			break;
+		}
+
+	case KEY_HOLD:
+		switch (KeyTemp->KeyPhysic)
+		{
+		
+		//（2，1）对关闭计数清零
+		case KEY_ON:
+			KeyTemp->KeyOFFCounts = 0;
+			return KEY_HOLD;
+		//（2，0）对关闭计数累加直到切换至逻辑关闭状态
+		case KEY_OFF:
+			(KeyTemp->KeyOFFCounts)++;
+			if (KeyTemp->KeyOFFCounts >= SHAKES_COUNTS)
+			{
+				KeyTemp->KeyLogic = KEY_OFF;
+				KeyTemp->KeyOFFCounts = 0;
+				return KEY_OFF;
+			}
+			return KEY_IDLE;
+
+		default:
+			break;
+		}
+
+	default:
+		break;
+	}
+	
+	//一般不会到这里
+	return KEY_ERROR;
+}
 
 
 
